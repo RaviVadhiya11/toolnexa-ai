@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   }
   // Preview branch aliases and immutable deployment URLs can have different hosts.
   // Only trust the explicitly configured return origin or Vercel's own deployment URL.
-  const returnOrigin = process.env.PHONEPE_RETURN_ORIGIN?.replace(/\\/$/, "");
+  const returnOrigin = process.env.PHONEPE_RETURN_ORIGIN;
   const deploymentOrigin = process.env.VERCEL_URL
     ? "https://" + process.env.VERCEL_URL
     : null;
