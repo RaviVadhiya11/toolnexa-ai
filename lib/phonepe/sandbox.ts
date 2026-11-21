@@ -13,7 +13,7 @@ async function getToken(): Promise<string> {
   const clientId = process.env.PHONEPE_CLIENT_ID;
   const clientSecret = process.env.PHONEPE_CLIENT_SECRET;
   const clientVersion = process.env.PHONEPE_CLIENT_VERSION;
-  if (!clientId || !clientSecret || !clientVersion || !/^\\d+$/.test(clientVersion)) {
+  if (!clientId || !clientSecret || !clientVersion || !/^[0-9]+$/.test(clientVersion)) {
     throw new Error("PhonePe sandbox credentials are not configured");
   }
   const body = new URLSearchParams({
