@@ -16,10 +16,28 @@ export async function POST(request: NextRequest) {
   if (request.headers.get("origin") !== requestOrigin) {
     return NextResponse.json({ error: "Origin not allowed" }, { status: 403 });
   }
-  const returnOrigin = process.env.PHONEPE_RETURN_ORIGIN;
-  if (!returnOrigin || returnOrigin !== requestOrigin || !returnOrigin.startsWith("https://")) {
+  // Preview branch aliases and immutable deployment URLs can have different hosts.
+  // Only trust the explicitly configured return origin or Vercel's own deployment URL.
+  const returnOrigin = process.env.PHONEPE_RETURN_ORIGIN?.replace(/\\/$/, "");
+  const deploymentOrigin = process.env.VERCEL_URL
+    ? "https://" + process.env.VERCEL_URL
+    : null;
+  let configuredOrigin: string | null = null;
+  try {
+    if (returnOrigin) {
+      const url = new URL(returnOrigin);
+      if (url.protocol === "https:" && !url.username && !url.password &&
+          url.pathname === "/" && !url.search && !url.hash) {
+        configuredOrigin = url.origin;
+      }
+    }
+  } catch { /* Invalid configuration: fail closed. */ }
+  if (!configuredOrigin ||
+      (requestOrigin !== configuredOrigin && requestOrigin !== deploymentOrigin)) {
     return NextResponse.json({ error: "Sandbox return origin not configured" }, { status: 503 });
   }
+  // Return to the same verified host that initiated checkout, never a client-supplied URL.
+  const verifiedReturnOrigin = requestOrigin;
   const session = await serverSupabase();
   if (!session) return NextResponse.json({ error: "Auth unavailable" }, { status: 503 });
   const { data: { user }, error: authError } = await session.auth.getUser();
@@ -61,7 +79,7 @@ export async function POST(request: NextRequest) {
     await db.from("billing_subscriptions").delete().eq("id", subscription.id).eq("status", "pending");
     return NextResponse.json({ error: "Unable to reserve checkout" }, { status: 503 });
   }
-  const redirectBack = returnOrigin + "/pricing?phonepe_order=" + encodeURIComponent(merchantOrderId);
+  const redirectBack = verifiedReturnOrigin + "/pricing?phonepe_order=" + encodeURIComponent(merchantOrderId);
   try {
     const response = await sandboxPhonePe("/checkout/v2/pay", "POST", {
       merchantOrderId,
