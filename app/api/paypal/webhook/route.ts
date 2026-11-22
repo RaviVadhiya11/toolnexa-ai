@@ -43,12 +43,42 @@ export async function POST(request:NextRequest){
    return NextResponse.json({ok:true});
   const db=adminDb();
   if(!db)return NextResponse.json({error:'Database unavailable'},{status:503});
-  // Repeated and out-of-order events converge to the same current PayPal state.
-  // Only an authenticated, previously claimed subscription can be modified.
-  const {error}=await db.from('paypal_subscriptions')
-   .update({status:subscription.status,updated_at:new Date().toISOString()})
-   .eq('subscription_id',id).eq('plan_id',subscription.plan_id).neq('status',subscription.status);
-  if(error)return NextResponse.json({error:'Database update failed'},{status:500});
+  // A PayPal activation webhook may arrive before the buyer's browser
+  // returns to /api/paypal/verify. Never lose that legitimate activation.
+  // Only PayPal-confirmed ACTIVE subscriptions can be linked automatically.
+  const {data:existing,error:lookupError}=await db.from('paypal_subscriptions')
+   .select('user_id,plan_id').eq('subscription_id',id).maybeSingle();
+  if(lookupError)return NextResponse.json({error:'Database lookup failed'},{status:500});
+  if(existing){
+   // Keep the original owner and plan immutable. A PayPal event must never
+   // reassign a subscription already claimed by a different user.
+   if(existing.plan_id!==subscription.plan_id||
+      (subscription.custom_id&&existing.user_id!==subscription.custom_id))
+    return NextResponse.json({ok:true});
+   const {error}=await db.from('paypal_subscriptions')
+    .update({status:subscription.status,updated_at:new Date().toISOString()})
+    .eq('subscription_id',id).eq('user_id',existing.user_id)
+    .eq('plan_id',existing.plan_id).neq('status',subscription.status);
+   if(error)return NextResponse.json({error:'Database update failed'},{status:500});
+  }else if(subscription.status==='ACTIVE'){
+   const userId=subscription.custom_id;
+   // The opaque custom_id must match a real Supabase Auth user; never link
+   // an event with a missing or malformed identity.
+   if(typeof userId!=='string'||!(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i).test(userId))
+    return NextResponse.json({ok:true});
+   const {data:owner,error:ownerError}=await db.auth.admin.getUserById(userId);
+   if(ownerError)return NextResponse.json({error:'Owner lookup failed'},{status:503});
+   if(!owner.user)return NextResponse.json({ok:true});
+   const {error:insertError}=await db.from('paypal_subscriptions').insert({
+    subscription_id:id,user_id:userId,plan_id:subscription.plan_id,
+    status:'ACTIVE',updated_at:new Date().toISOString()
+   });
+   // Another valid claim may win the race. Never replace its owner.
+   if(insertError&&insertError.code!=='23505')
+    return NextResponse.json({error:'Unable to record activation'},{status:500});
+  }
+  // No record is created for APPROVED, CANCELLED, or otherwise non-ACTIVE
+  // subscriptions. Browser verification still records valid APPROVED claims.
   // Refunds and failed payments are not necessarily cancellations. If PayPal
   // still reports ACTIVE, don't invent a cancellation; reconcile billing
   // entitlement separately before promising immediate revocation.
