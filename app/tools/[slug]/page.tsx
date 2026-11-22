@@ -11,7 +11,7 @@ export default async function ToolPage({params}:{params:Promise<{slug:string}>})
  return <div className="tool-detail-page">
   <nav className="tool-breadcrumb" aria-label="Breadcrumb"><Link href="/tools">All Tools</Link><span>›</span><span>{tool.category}</span><span>›</span><strong>{tool.title}</strong></nav>
   <header className="tool-detail-hero"><div className="tool-detail-hero-icon">{tool.icon}</div><div className="tool-detail-hero-main"><span className="tool-detail-category">{tool.category} TOOL · FREE TO USE</span><h1>{tool.title}</h1><p>{tool.description}. Easy to use, with browser-based processing and quick results.</p></div></header>
-  <ToolRunner tool={tool}/>
+  <ToolRunner key={slug} tool={tool}/>
   <section className="tool-detail-info">
    <h2>How to use this tool</h2>
    <div className="tool-info-steps">
