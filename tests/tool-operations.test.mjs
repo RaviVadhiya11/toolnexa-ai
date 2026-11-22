@@ -12,7 +12,7 @@ const ops=await import('data:text/javascript;base64,'+Buffer.from(compiled).toSt
 test('word counter handles blank text, multiple lines and Unicode',()=>{
  assert.equal(ops.wordStats('  ').words,0);
  assert.deepEqual({...ops.wordStats('Hello world\nनमस्ते भारत'),readingMinutes:ops.wordStats('Hello world\nनमस्ते भारत').readingMinutes},{
-  words:4,characters:24,lines:2,sentences:2,readingMinutes:4/200
+  words:4,characters:23,lines:2,sentences:2,readingMinutes:4/200
  });
  assert.match(ops.wordReport('hello world'),/Words: 2/);
 });
