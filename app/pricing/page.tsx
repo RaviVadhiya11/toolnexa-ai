@@ -1,1 +1,11 @@
-export default function Pricing(){return <><h1 className="text-3xl font-extrabold">Simple, transparent pricing</h1><p className="muted mt-2 mb-6">Free tools are available now. Premium subscriptions are proposed and not available for purchase yet.</p><div className="pricing-grid">{[{name:'Free',price:'₹0',features:['20 utility tools','Browser-based processing','No account required']},{name:'Pro',price:'₹199/month',features:['Higher processing limits','AI credits (planned)','Ad-free experience (planned)']},{name:'Business',price:'₹499/month',features:['More AI credits (planned)','Batch processing (planned)','Team features (planned)']}].map(p=><div className="panel" key={p.name}><b>{p.name}</b><h2 className="text-3xl font-extrabold my-5">{p.price}</h2>{p.features.map(f=><p className="muted mt-3 text-sm" key={f}>✓ {f}</p>)}<button className="button mt-7" disabled={p.name!=='Free'} style={p.name!=='Free'?{opacity:.5,cursor:'not-allowed'}:{}}>{p.name==='Free'?'Available Now':'Coming Soon'}</button></div>)}</div></>}
+import {PayPalSubscribe} from '@/components/paypal-subscribe';
+export default function Pricing(){
+ const enabled=process.env.PAYPAL_CHECKOUT_ENABLED==='true' && !!process.env.PAYPAL_CLIENT_ID && !!process.env.PAYPAL_PLAN_ID;
+ return <><h1 className="text-3xl font-extrabold">Simple, transparent pricing</h1>
+ <p className="muted mt-2 mb-6">Free tools are available now. Premium features are being prepared.</p>
+ <div className="pricing-grid">
+ <div className="panel"><b>Free</b><h2 className="text-3xl font-extrabold my-5">₹0</h2><p>20 utility tools</p><p>Browser-based processing</p><p>No account required</p><button className="button mt-7">Available Now</button></div>
+ <div className="panel"><b>Pro International</b><h2 className="text-3xl font-extrabold my-5">$3.99/month</h2><p>Monthly recurring subscription</p><p className="muted mt-3">Premium features will be available when launched.</p>{enabled?<div className="mt-7"><PayPalSubscribe clientId={process.env.PAYPAL_CLIENT_ID!} planId={process.env.PAYPAL_PLAN_ID!}/></div>:<button className="button mt-7" disabled>Coming Soon</button>}</div>
+ <div className="panel"><b>Business</b><h2 className="text-3xl font-extrabold my-5">₹499/month</h2><p className="muted">Team features (planned)</p><button className="button mt-7" disabled>Coming Soon</button></div>
+ </div></>
+}
