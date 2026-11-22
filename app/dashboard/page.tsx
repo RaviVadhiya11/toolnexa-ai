@@ -1,7 +1,6 @@
 'use client';
 import {useEffect,useState} from 'react';
 import Link from 'next/link';
-import {AccountStatus} from '@/components/account-status';
 import {ManageSubscription} from '@/components/manage-subscription';
 import {browserSupabase} from '@/lib/supabase/client';
 
@@ -59,7 +58,6 @@ export default function Dashboard(){
   <header className="member-heading">
    <div><p className="eyebrow muted">TOOLNEXA AI WORKSPACE</p><h1>Your Dashboard</h1>
     <p className="muted mt-2">Your tools, membership and subscriptions in one place.</p></div>
-   <AccountStatus/>
   </header>
   <section className="member-hero">
    <div className="member-hero-content">
