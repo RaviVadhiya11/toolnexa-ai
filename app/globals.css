@@ -461,3 +461,35 @@ body{background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,syst
  .premium-tools-header h1{font-size:26px}
 }
 @media(prefers-reduced-motion:reduce){.premium-sidebar,.button,.tool-catalogue-card{transition:none!important}html{scroll-behavior:auto}}
+
+
+/* Design 6.1: mobile All Tools compact first viewport, based on real-phone feedback. */
+@media(max-width:670px){
+ .premium-tools-page{min-width:0}
+ .premium-tools-page .premium-tools-header{padding:17px 17px 16px;margin-bottom:13px;border-radius:17px}
+ .premium-tools-page .premium-tools-eyebrow{font-size:9px;letter-spacing:.7px;padding:6px 10px}
+ .premium-tools-page .premium-tools-header h1{font-size:clamp(23px,6.6vw,28px);margin:10px 0 5px;line-height:1.16;letter-spacing:-.7px}
+ .premium-tools-page .premium-tools-header p{font-size:12px;line-height:1.45}
+ .premium-tools-page .tool-catalogue{margin-top:0}
+ .premium-tools-page .tool-discovery-bar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;margin-bottom:12px}
+ .premium-tools-page .tool-discovery-input{grid-column:1/-1;min-width:0;min-height:48px;border-radius:13px;padding:0 12px}
+ .premium-tools-page .tool-discovery-input input{font-size:13px;padding:12px 0}
+ .premium-tools-page .tool-discovery-input span{font-size:20px}
+ .premium-tools-page .tool-sort{grid-column:1/-1;min-height:44px;padding:9px 12px;font-size:13px;border-radius:12px}
+ .premium-tools-page .tool-category-tabs{margin:6px 0;gap:7px;padding-bottom:3px}
+ .premium-tools-page .tool-category-tabs .chip{min-height:38px;font-size:12px;padding:8px 11px;gap:6px}
+ .premium-tools-page .tool-category-count{min-width:18px;height:18px;padding:2px 4px}
+ .premium-tools-page .tool-catalogue-meta{margin:5px 0 8px;min-height:26px;font-size:12px}
+ .premium-tools-page .tool-catalogue-card{padding:13px}
+ .premium-tools-page .tool-catalogue-card .tool-icon{min-width:36px;min-height:36px;padding:7px;font-size:18px}
+ .premium-tools-page .tool-catalogue-card-top{margin-bottom:6px}
+ .premium-tools-page .tool-catalogue-card strong{font-size:14px;margin-bottom:3px}
+ .premium-tools-page .tool-catalogue-card p{font-size:11px;line-height:1.5;margin-bottom:7px}
+ .premium-tools-page .tool-card-category{font-size:9px}
+ .premium-tools-page .tool-card-action{font-size:11px}
+ /* Tools page already has an H1 and dedicated search; remove redundant global context. */
+ .premium-main:has(.premium-tools-page) .premium-top .premium-context-title{display:none}
+ .premium-main:has(.premium-tools-page) .premium-top{justify-content:flex-end;border-bottom:0;padding-bottom:0;margin-bottom:11px;gap:8px;min-height:0}
+ .premium-main:has(.premium-tools-page) .premium-top .shell-theme-toggle{min-height:38px;padding:7px 10px}
+ .premium-main:has(.premium-tools-page) .premium-top .button{font-size:12px}
+}
