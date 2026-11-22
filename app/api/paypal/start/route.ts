@@ -9,6 +9,7 @@ const tiers=new Set<Tier>(['Starter','Pro','Premium']);
 const noStore={'Cache-Control':'no-store'};
 
 export async function POST(request:NextRequest){
+ let stage='setup';
  try{
   if(process.env.PAYPAL_CHECKOUT_ENABLED!=='true'||process.env.PAYPAL_ENV!=='live'||
      !process.env.PAYPAL_CLIENT_ID||!process.env.PAYPAL_CLIENT_SECRET||
@@ -17,6 +18,7 @@ export async function POST(request:NextRequest){
   const origin=request.headers.get('origin');
   if(!origin||origin!==request.nextUrl.origin)
    return NextResponse.json({error:'Invalid request origin'},{status:403,headers:noStore});
+  stage='authentication';
   const auth=await serverSupabase();
   const {data:{user}}=auth?await auth.auth.getUser():{data:{user:null}};
   if(!user)return NextResponse.json({error:'Sign in required'},{status:401,headers:noStore});
@@ -31,6 +33,7 @@ export async function POST(request:NextRequest){
   // Prevent accidental duplicate subscriptions for already subscribed users.
   const db=adminDb();
   if(!db)return NextResponse.json({error:'Membership service unavailable'},{status:503,headers:noStore});
+  stage='membership_lookup';
   const {data:existing,error:existingError}=await db.from('paypal_subscriptions')
    .select('subscription_id,plan_id').eq('user_id',user.id)
    .in('plan_id',Object.values(paypalTierSettings).map(p=>p.planId).filter(Boolean))
@@ -45,7 +48,9 @@ export async function POST(request:NextRequest){
     return NextResponse.json({error:'You already have an approved or active subscription. Manage the existing plan before starting another.'},{status:409,headers:noStore});
   }
 
+  stage='paypal_authentication';
   const token=await paypalToken();
+  stage='paypal_create_subscription';
   // Fixed, trusted return URLs avoid untrusted Host header based redirects.
   const site='https://toolnexa-ai.vercel.app';
   const response=await fetch(paypalBase+'/v1/billing/subscriptions',{
@@ -62,8 +67,30 @@ export async function POST(request:NextRequest){
    }),cache:'no-store'
   });
   if(!response.ok){
-   // Do not leak raw PayPal response or credentials to the customer.
-   return NextResponse.json({error:'PayPal could not start this subscription. Please contact support if it continues.'},{status:502,headers:noStore});
+   // Only log PayPal's sanitized issue codes, HTTP status, and debug ID.
+   // Never log bearer tokens, user identifiers, request bodies, or credentials.
+   let issue='UNKNOWN';
+   try{
+    const payload=await response.json() as {
+     name?:string;details?:{issue?:string;field?:string}[];debug_id?:string
+    };
+    issue=String(payload.details?.[0]?.issue||payload.name||'UNKNOWN').slice(0,80);
+    console.error('PayPal subscription create rejected',{
+     status:response.status,
+     issue,
+     field:String(payload.details?.[0]?.field||'').slice(0,80),
+     debugId:String(payload.debug_id||response.headers.get('paypal-debug-id')||'').slice(0,80)
+    });
+   }catch{
+    console.error('PayPal subscription create rejected',{status:response.status});
+   }
+   return NextResponse.json({
+    error:response.status===400
+     ?'PayPal rejected the subscription request. The merchant must check the plan and PayPal error details.'
+     :response.status===401||response.status===403
+      ?'PayPal rejected the live API credentials or account permissions.'
+      :'PayPal could not start this subscription. Please contact support if it continues.'
+   },{status:502,headers:noStore});
   }
   const result=await response.json() as {id?:string;links?:{href?:string;rel?:string}[]};
   const link=result.links?.find(l=>l.rel==='approve')?.href;
@@ -72,5 +99,9 @@ export async function POST(request:NextRequest){
   if(url.protocol!=='https:'||!(url.hostname==='paypal.com'||url.hostname.endsWith('.paypal.com')))
    return NextResponse.json({error:'Invalid payment approval destination'},{status:502,headers:noStore});
   return NextResponse.json({approvalUrl:url.toString()},{headers:noStore});
- }catch{return NextResponse.json({error:'Unable to start subscription'},{status:502,headers:noStore})}
+ }catch(error){
+  // A stage label identifies the failing subsystem without exposing sensitive values.
+  console.error('PayPal hosted subscription unexpected failure',{stage,errorType:error instanceof Error?error.name:'Unknown'});
+  return NextResponse.json({error:stage==='paypal_authentication'?'PayPal live API authentication failed. Check the Live Client ID and Secret in Vercel.':stage==='membership_lookup'?'Could not access subscription records. Check Supabase configuration.':'Unable to start subscription. Please contact support.'},{status:502,headers:noStore});
+ }
 }
