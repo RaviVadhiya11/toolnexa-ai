@@ -81,7 +81,7 @@ export function PayPalSubscribe({clientId,planId}:{clientId:string;planId:string
   return()=>{active=false;subscription.unsubscribe()};
  },[]);
  useEffect(()=>{
-  if(!userId)return;
+  if(!userId||!planId)return;
   let cancelled=false;
   let script:HTMLScriptElement|null=null;
   const render=()=>{
