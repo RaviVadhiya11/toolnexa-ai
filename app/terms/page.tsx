@@ -1,0 +1,16 @@
+import Link from 'next/link';
+import type {Metadata} from 'next';
+export const metadata:Metadata={title:'Terms of Use',description:'Terms and practical limitations of ToolNexa AI free utilities and paid monthly memberships.',alternates:{canonical:'/terms'}};
+export default function TermsPage(){return <article className="legal-page">
+ <header className="legal-hero"><p className="legal-kicker">USING TOOLNEXA AI</p><h1>Terms of Use</h1><p>Important information about free tools and optional paid features.</p><span>Last updated: 22 November 2026</span></header>
+ <div className="legal-content">
+  <section><h2>1. What the website offers</h2><p>ToolNexa AI provides 20 browser-based utility tools and an optional paid Batch Text Analyzer. Results are automated and may not be accurate or appropriate for every purpose. Check important documents, calculations and outputs before relying on them.</p></section>
+  <section><h2>2. Acceptable use</h2><p>Use the website lawfully and only with files and data you are permitted to process. Do not attempt to bypass authentication, paid-access controls or security measures, interfere with the service or misuse it to harm others.</p></section>
+  <section><h2>3. Accounts</h2><p>Some features require an account. You are responsible for protecting your login credentials and the activity associated with your account. Do not share your password or access tokens.</p></section>
+  <section><h2>4. Monthly subscriptions</h2><p>Starter costs $3.99/month and allows 5 texts per Batch Text Analyzer request. Pro costs $5.99/month for 20 texts per request. Premium costs $9.99/month for 50 texts per request. Each text supports up to 20,000 characters. These are recurring monthly subscriptions, subject to live plan availability and PayPal checkout approval. Other premium tools, team features, AI credits and monthly usage quotas are not currently included.</p></section>
+  <section><h2>5. Cancellation</h2><p>You may cancel using the Dashboard's Manage Subscription section or via your PayPal account. Cancellation initiated through the website is intended to be immediate rather than delayed until the current billing period ends, and may end paid access immediately. PayPal must confirm the cancellation before it is treated as complete. See <Link href="/billing">Billing & Cancellation</Link> for details.</p></section>
+  <section><h2>6. Tool limitations</h2><p>Some browsers and file types are unsupported. PDF tools do not support password-protected documents. Text-to-PDF visually renders Unicode text as images, so text in the resulting PDF may not be selectable or searchable. Image conversion may remove metadata and animations. The free tools are not a substitute for professional advice or document review.</p></section>
+  <section><h2>7. Availability and changes</h2><p>Features and service availability may change as the website evolves. A successful website build does not guarantee that every file format will work in every browser. Paid plan entitlements are verified through the connected subscription provider.</p></section>
+  <section><h2>8. Contact and policies</h2><p>For help, visit <Link href="/support">Support</Link>. Please also read the <Link href="/privacy">Privacy Policy</Link> and <Link href="/billing">Billing & Cancellation</Link> information.</p></section>
+ </div>
+ </article>}
