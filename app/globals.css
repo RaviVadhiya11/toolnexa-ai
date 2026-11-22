@@ -493,3 +493,21 @@ body{background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,syst
  .premium-main:has(.premium-tools-page) .premium-top .shell-theme-toggle{min-height:38px;padding:7px 10px}
  .premium-main:has(.premium-tools-page) .premium-top .button{font-size:12px}
 }
+
+
+/* Pro-grade free tool controls: clear progress, download and accessible tuning. */
+.tool-range-input{display:block;width:100%;accent-color:#9466f7;cursor:pointer;min-height:28px}
+.tool-output-actions{align-items:center}
+.tool-output-actions>.small-note{line-height:1.45;font-size:12px;overflow-wrap:anywhere}
+.tool-workspace .tool-output-content{overflow-wrap:anywhere;word-break:break-word}
+.tool-workspace .tool-checkbox{cursor:pointer}
+.tool-file-input:focus-visible,.tool-range-input:focus-visible{outline:3px solid #aa7afb;outline-offset:3px}
+.tool-run-button{justify-content:center;display:inline-flex;align-items:center}
+@media(max-width:670px){
+ .tool-workspace-heading{gap:9px}
+ .tool-workspace-free{padding:7px 10px;font-size:10px}
+ .tool-output-actions{align-items:stretch}
+ .tool-output-actions .button{flex:1 1 auto;text-align:center;justify-content:center}
+ .tool-workspace .tool-editor .field{font-size:14px;min-height:44px}
+ .tool-workspace .tool-input-hint{gap:6px}
+}
