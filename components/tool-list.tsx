@@ -1,5 +1,5 @@
 'use client';
-import {useState} from 'react';
+import {useEffect,useState} from 'react';
 import Link from 'next/link';
 import {useSearchParams} from 'next/navigation';
 import {categories,tools} from '@/lib/tools';
@@ -9,6 +9,10 @@ export function ToolList({compact=false}:{compact?:boolean}){
  const [category,setCategory]=useState<string|null>(null);
  const [search,setSearch]=useState<string|null>(null);
  const [sort,setSort]=useState<'default'|'az'>('default');
+ // Sync URL-driven search/category navigation (sidebar links and browser history).
+ const urlCategory=params.get('category');
+ const urlSearch=params.get('q');
+ useEffect(()=>{setCategory(urlCategory);setSearch(urlSearch);},[urlCategory,urlSearch]);
  const cat=category??params.get('category')??'All';
  const q=search??params.get('q')??'';
  const term=q.trim().toLowerCase();
