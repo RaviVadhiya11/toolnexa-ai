@@ -23,7 +23,7 @@ export async function POST(request:NextRequest){
    const {data:existing,error:lookupError}=await db.from('paypal_subscriptions').select('user_id,plan_id').eq('subscription_id',id).maybeSingle();
    if(lookupError||!existing)return NextResponse.json({error:'Unable to verify subscription owner'},{status:503});
    if(existing.user_id!==user.id||existing.plan_id!==paypalPlanId)return NextResponse.json({error:'Subscription already linked to another account'},{status:409});
-   const {error:updateError}=await db.from('paypal_subscriptions').update({status:'ACTIVE',updated_at:new Date().toISOString()}).eq('subscription_id',id).eq('user_id',user.id).eq('plan_id',paypalPlanId);
+   const {error:updateError}=await db.from('paypal_subscriptions').update({status:subscription.status,updated_at:new Date().toISOString()}).eq('subscription_id',id).eq('user_id',user.id).eq('plan_id',paypalPlanId);
    if(updateError)return NextResponse.json({error:'Unable to refresh subscription'},{status:503});
   }
   return NextResponse.json({ok:true,status:subscription.status},{headers:{'Cache-Control':'no-store'}});
