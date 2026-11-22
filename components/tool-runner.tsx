@@ -9,7 +9,7 @@ function utf8To64(s:string){const bytes=new TextEncoder().encode(s);let str='';f
 function from64(s:string){const raw=atob(s);return new TextDecoder('utf-8',{fatal:true}).decode(Uint8Array.from(raw,c=>c.charCodeAt(0)))}
 function validFile(file:File|undefined,types:string[]){if(!file)throw Error('Choose a file first');if(file.size>25*1024*1024)throw Error('Maximum file size is 25 MB');if(!types.some(t=>file.type===t||file.name.toLowerCase().endsWith(t==='application/pdf'?'.pdf':'.'+t.split('/').pop())))throw Error('Invalid file type');return file}
 function parsePageRanges(input:string,max:number){const pages=new Set<number>();for(const part of input.split(',')){const s=part.trim();if(!/^\d+(\s*-\s*\d+)?$/.test(s))throw Error('Use page numbers such as 1,3-5');const [a,b]=s.split('-').map(x=>Number(x.trim()));const end=b||a;if(a<1||end>max||end<a)throw Error('Page range out of bounds');for(let i=a;i<=end;i++)pages.add(i-1)}if(!pages.size)throw Error('Specify pages');return [...pages].sort((a,b)=>a-b)}
-export function ToolRunner({tool}:{tool:Tool}){const [text,setText]=useState(''),[mode,setMode]=useState('encode'),[num,setNum]=useState('1000'),[num2,setNum2]=useState('18'),[files,setFiles]=useState<File[]>([]),[output,setOutput]=useState(''),[qr,setQr]=useState(''),[working,setWorking]=useState(false),[symbols,setSymbols]=useState(true);const slug=tool.slug;
+export function ToolRunner({tool}:{tool:Tool}){const [text,setText]=useState(''),[mode,setMode]=useState('encode'),[num,setNum]=useState('1000'),[num2,setNum2]=useState('18'),[files,setFiles]=useState<File[]>([]),[output,setOutput]=useState(''),[qr,setQr]=useState(''),[working,setWorking]=useState(false),[symbols,setSymbols]=useState(true),[fileKey,setFileKey]=useState(0),[copyMessage,setCopyMessage]=useState('');const slug=tool.slug;
 const textSlugs=['word-counter','case-converter','text-reverser','json-formatter','base64-encoder','url-encoder','qr-code-generator','text-to-pdf'];const fileSlugs=['image-resizer','image-to-png','image-to-jpg','image-to-webp','image-to-pdf','merge-pdf','split-pdf'];
 async function run(){setWorking(true);setOutput('');setQr('');try{let output='';const a=Number(slug==='password-generator'&&num==='1000'?'16':slug==='image-resizer'&&num==='1000'?'800':num),b=Number(num2);if(['gst-calculator','percentage-calculator','profit-margin'].includes(slug)&&(!Number.isFinite(a)||!Number.isFinite(b)))throw Error('Enter valid numbers');switch(slug){
 case 'word-counter':output=`Words: ${text.trim()?text.trim().split(/\s+/).length:0}\nCharacters: ${[...text].length}\nLines: ${text?text.split(/\r?\n/).length:0}`;break;
@@ -30,4 +30,60 @@ case 'text-to-pdf':{if(!text.trim())throw Error('Enter text first');const pdf=aw
 case 'merge-pdf':{if(files.length<2)throw Error('Select at least 2 PDF files');if(files.length>15)throw Error('Select at most 15 PDF files');const pdf=await PDFDocument.create();for(const f of files){validFile(f,['application/pdf']);const src=await PDFDocument.load(await f.arrayBuffer());const pages=await pdf.copyPages(src,src.getPageIndices());pages.forEach(p=>pdf.addPage(p))}download(new Blob([new Uint8Array(await pdf.save())],{type:'application/pdf'}),'toolnexa-merged.pdf');output=`Merged ${files.length} PDFs`;break}
 case 'split-pdf':{const file=validFile(files[0],['application/pdf']);const src=await PDFDocument.load(await file.arrayBuffer());const indexes=parsePageRanges(text,src.getPageCount());const pdf=await PDFDocument.create();const pages=await pdf.copyPages(src,indexes);pages.forEach(p=>pdf.addPage(p));download(new Blob([new Uint8Array(await pdf.save())],{type:'application/pdf'}),'toolnexa-extracted.pdf');output=`Extracted ${indexes.length} pages`;break}
 }setOutput(output);remember(slug);recordUse(slug)}catch(error){setOutput(`Error: ${error instanceof Error?error.message:'Processing failed'}`)}finally{setWorking(false)}}
-return <div className="panel mt-7"><h2 className="text-xl font-bold mb-3">Try {tool.title}</h2>{textSlugs.includes(slug)&&<><label className="font-semibold text-sm">{slug==='qr-code-generator'?'Text or URL':'Your text'}</label><textarea value={text} onChange={e=>setText(e.target.value)} rows={slug==='qr-code-generator'?2:6} className="field" placeholder="Enter text here..."/></>}{fileSlugs.includes(slug)&&<><label className="font-semibold text-sm">Select {slug==='image-to-pdf'?'images':slug==='merge-pdf'?'PDF files':slug==='split-pdf'?'a PDF file':'an image'}</label><input type="file" className="field" accept={slug.includes('pdf')&&slug!=='image-to-pdf'&&slug!=='text-to-pdf'?'application/pdf,.pdf':'image/*'} multiple={slug==='merge-pdf'||slug==='image-to-pdf'} onChange={e=>setFiles(Array.from(e.target.files||[]))}/><p className="small-note">Files are processed locally in your browser. Max 25 MB per file.</p></>}{slug==='split-pdf'&&<><label className="font-semibold text-sm">Pages to extract (e.g. 1,3-5)</label><input className="field" value={text} onChange={e=>setText(e.target.value)} placeholder="1-3,5"/></>}{['case-converter','base64-encoder','url-encoder','gst-calculator'].includes(slug)&&<><label className="font-semibold text-sm">Mode</label><select className="field" value={mode} onChange={e=>setMode(e.target.value)}>{(slug==='case-converter'?[['encode','Title Case'],['upper','UPPERCASE'],['lower','lowercase']]:slug==='gst-calculator'?[['encode','Add GST (exclusive)'],['inclusive','Remove included GST']]:[['encode','Encode'],['decode','Decode']]).map(([v,label])=><option key={v} value={v}>{label}</option>)}</select></>}{['password-generator','gst-calculator','percentage-calculator','profit-margin','image-resizer'].includes(slug)&&<><label className="font-semibold text-sm">{slug==='password-generator'?'Password length':slug==='image-resizer'?'New width (px)':slug==='profit-margin'?'Cost price':slug==='gst-calculator'?'Amount':'Base number'}</label><input type="number" className="field" value={slug==='password-generator'&&num==='1000'?'16':slug==='image-resizer'&&num==='1000'?'800':num} onChange={e=>setNum(e.target.value)}/></>}{['gst-calculator','percentage-calculator','profit-margin'].includes(slug)&&<><label className="font-semibold text-sm">{slug==='gst-calculator'?'GST rate (%)':slug==='profit-margin'?'Selling price':'Percentage (%)'}</label><input type="number" className="field" value={num2} onChange={e=>setNum2(e.target.value)}/></>}{slug==='password-generator'&&<label className="flex items-center gap-2 mb-5"><input type="checkbox" checked={symbols} onChange={e=>setSymbols(e.target.checked)}/>Include symbols</label>}<div><button className="button" onClick={run} disabled={working}>{working?'Processing…':'Run Tool →'}</button></div>{output&&<div className="result" role="status">{output}</div>}{qr&&<div className="mt-5"><img src={qr} alt="Generated QR code" width={240} height={240}/><a className="button mt-3" href={qr} download="toolnexa-qr.png">Download PNG</a></div>}{output&&!output.startsWith('Error:')&&!qr&&<button className="button outline" onClick={()=>navigator.clipboard.writeText(output)}>Copy result</button>}</div>}
+const isText=textSlugs.includes(slug);
+const isFile=fileSlugs.includes(slug);
+const hasError=output.startsWith('Error:');
+const inputSize=Array.from(text).length;
+const runLabel=working?'Processing…':slug==='qr-code-generator'?'Generate QR code':slug==='password-generator'?'Generate password':slug==='uuid-generator'?'Generate UUID':slug==='merge-pdf'?'Merge PDF files':slug==='split-pdf'?'Extract PDF pages':slug.startsWith('image-')?'Process image':'Run tool';
+function reset(){
+ if(working)return;
+ setText('');setMode('encode');setNum('1000');setNum2('18');
+ setFiles([]);setOutput('');setQr('');setSymbols(true);setFileKey(v=>v+1);setCopyMessage('');
+}
+async function copyResult(){
+ if(!output||hasError)return;
+ try{await navigator.clipboard.writeText(output);setCopyMessage('Copied to clipboard')}
+ catch{setCopyMessage('Copy unavailable in this browser. Select the result text instead.')}
+}
+function downloadTextResult(){
+ if(!output||hasError)return;
+ download(new Blob([output],{type:'text/plain;charset=utf-8'}),`toolnexa-${slug}-result.txt`);
+}
+const fileAccept=slug.includes('pdf')&&slug!=='image-to-pdf'&&slug!=='text-to-pdf'?'application/pdf,.pdf':'image/*';
+return <section className="tool-workspace" aria-label={tool.title+' workspace'}>
+ <div className="tool-workspace-heading">
+  <div><p className="tool-workspace-kicker">SMART TOOL WORKSPACE</p><h2>Try {tool.title}</h2><p>Configure your input and generate a result in your browser.</p></div>
+  <span className="tool-workspace-free">Free tool</span>
+ </div>
+ <div className="tool-workspace-body">
+  <div className="tool-editor">
+   <div className="tool-editor-title"><h3>Input &amp; settings</h3><button type="button" className="tool-reset" onClick={reset} disabled={working}>Clear all</button></div>
+   {isText&&<div className="tool-field">
+    <label htmlFor="tool-text">{slug==='qr-code-generator'?'Text or URL':slug==='text-to-pdf'?'Document text':'Your text'}</label>
+    <textarea id="tool-text" value={text} onChange={e=>setText(e.target.value)} rows={slug==='qr-code-generator'?3:7} className="field tool-textarea" placeholder={slug==='qr-code-generator'?'Paste a URL or enter text to turn into a QR code…':'Enter or paste your text here…'}/>
+    <div className="tool-input-hint"><span>{inputSize.toLocaleString()} characters</span><span>{slug==='qr-code-generator'?'Maximum 2,000 characters':'Processed in your browser'}</span></div>
+   </div>}
+   {isFile&&<div className="tool-field">
+    <label htmlFor="tool-file">Select {slug==='image-to-pdf'?'images':slug==='merge-pdf'?'PDF files':slug==='split-pdf'?'a PDF file':'an image'}</label>
+    <input key={fileKey} id="tool-file" type="file" className="field tool-file-input" accept={fileAccept} multiple={slug==='merge-pdf'||slug==='image-to-pdf'} onChange={e=>{setFiles(Array.from(e.target.files||[]));setOutput('');setQr('')}}/>
+    {files.length>0?<div className="tool-file-summary"><strong>{files.length} file{files.length===1?'':'s'} selected</strong><span>{files.slice(0,3).map(f=>f.name).join(' · ')}{files.length>3?' and more':''}</span></div>:null}
+    <p className="small-note">Your files are processed locally. Maximum 25 MB per file. {slug==='image-to-pdf'?'Up to 20 images.':slug==='merge-pdf'?'Choose 2–15 PDFs.':''}</p>
+   </div>}
+   {slug==='split-pdf'&&<div className="tool-field"><label htmlFor="tool-page-ranges">Pages to extract</label><input id="tool-page-ranges" className="field" value={text} onChange={e=>setText(e.target.value)} placeholder="For example: 1-3,5"/><p className="small-note">Use commas and ranges, for example 1,3-5.</p></div>}
+   {['case-converter','base64-encoder','url-encoder','gst-calculator'].includes(slug)&&<div className="tool-field"><label htmlFor="tool-mode">Mode</label><select id="tool-mode" className="field" value={mode} onChange={e=>setMode(e.target.value)}>{(slug==='case-converter'?[['encode','Title Case'],['upper','UPPERCASE'],['lower','lowercase']]:slug==='gst-calculator'?[['encode','Add GST (exclusive)'],['inclusive','Remove included GST']]:[['encode','Encode'],['decode','Decode']]).map(([v,label])=><option key={v} value={v}>{label}</option>)}</select></div>}
+   {['password-generator','gst-calculator','percentage-calculator','profit-margin','image-resizer'].includes(slug)&&<div className="tool-field"><label htmlFor="tool-number">{slug==='password-generator'?'Password length':slug==='image-resizer'?'New width (px)':slug==='profit-margin'?'Cost price':slug==='gst-calculator'?'Amount':'Base number'}</label><input id="tool-number" type="number" inputMode="decimal" className="field" value={slug==='password-generator'&&num==='1000'?'16':slug==='image-resizer'&&num==='1000'?'800':num} onChange={e=>setNum(e.target.value)}/></div>}
+   {['gst-calculator','percentage-calculator','profit-margin'].includes(slug)&&<div className="tool-field"><label htmlFor="tool-number-2">{slug==='gst-calculator'?'GST rate (%)':slug==='profit-margin'?'Selling price':'Percentage (%)'}</label><input id="tool-number-2" type="number" inputMode="decimal" className="field" value={num2} onChange={e=>setNum2(e.target.value)}/></div>}
+   {slug==='password-generator'&&<label className="tool-checkbox"><input type="checkbox" checked={symbols} onChange={e=>setSymbols(e.target.checked)}/> Include symbols for stronger passwords</label>}
+   <div className="tool-editor-actions"><button type="button" className="button tool-run-button" onClick={()=>{setCopyMessage('');void run()}} disabled={working}>{runLabel} <span aria-hidden="true">→</span></button></div>
+  </div>
+  <aside className="tool-output" aria-label="Tool result">
+   <div className="tool-output-top"><div><p className="tool-workspace-kicker">RESULT</p><h3>Your output</h3></div><span className={'tool-result-status '+(hasError?'is-error':output||qr?'is-ready':'')}>{working?'Processing':hasError?'Error':output||qr?'Ready':'Waiting'}</span></div>
+   {working?<p className="tool-empty-result" role="status">Processing your request…</p>:output?<pre className={'tool-output-content '+(hasError?'tool-output-error':'')} role="status">{output}</pre>:<div className="tool-empty-result"><span aria-hidden="true">✦</span><p>Results will appear here after you run the tool.</p></div>}
+   {qr&&<div className="tool-qr-result"><img src={qr} alt="Generated QR code" width={240} height={240}/><a className="button" href={qr} download="toolnexa-qr.png">Download QR PNG</a></div>}
+   {output&&!hasError&&!qr&&<div className="tool-output-actions"><button type="button" className="button outline" onClick={()=>void copyResult()}>Copy result</button><button type="button" className="button outline" onClick={downloadTextResult}>Download .txt</button></div>}
+   {copyMessage&&<p className="small-note mt-3" role="status">{copyMessage}</p>}
+   <p className="tool-local-note">Privacy first · Local browser processing</p>
+  </aside>
+ </div>
+</section>;
+}
