@@ -12,5 +12,5 @@ export async function GET(){
   const {data,error}=await db.from('paypal_subscriptions').select('subscription_id').eq('user_id',user.id).eq('plan_id',process.env.PAYPAL_PLAN_ID).eq('status','ACTIVE').limit(1);
   if(error)return NextResponse.json({error:'Membership lookup failed'},{status:503,headers:{'Cache-Control':'no-store'}});
   return NextResponse.json({plan:data?.length?'Pro':'Free',authenticated:true},{headers:{'Cache-Control':'no-store'}});
- }catch{return NextResponse.json({error:'Membership service unavailable'},{status:503,headers:{'Cache-Control':'no-store'})}
+ }catch{return NextResponse.json({error:'Membership service unavailable'},{status:503,headers:{'Cache-Control':'no-store'}});}
 }
