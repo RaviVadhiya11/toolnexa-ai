@@ -1,6 +1,6 @@
 import {PayPalSubscribe} from '@/components/paypal-subscribe';
 export default function Pricing(){
- const enabled=process.env.PAYPAL_CHECKOUT_ENABLED==='true' && !!process.env.PAYPAL_CLIENT_ID && !!process.env.PAYPAL_PLAN_ID;
+ const enabled=process.env.PAYPAL_CHECKOUT_ENABLED==='true' && process.env.PAYPAL_ENV==='live' && !!process.env.PAYPAL_CLIENT_ID && !!process.env.PAYPAL_CLIENT_SECRET && !!process.env.PAYPAL_PLAN_ID && !!process.env.PAYPAL_WEBHOOK_ID && !!process.env.SUPABASE_SERVICE_ROLE_KEY;
  return <><h1 className="text-3xl font-extrabold">Simple, transparent pricing</h1>
  <p className="muted mt-2 mb-6">Free tools are available now. Premium features are being prepared.</p>
  <div className="pricing-grid">

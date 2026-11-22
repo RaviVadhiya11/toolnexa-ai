@@ -5,7 +5,7 @@ import {paypalPlanId,paypalSubscription} from '@/lib/paypal';
 export const runtime='nodejs';
 export async function POST(request:NextRequest){
  try {
-  if(process.env.PAYPAL_CHECKOUT_ENABLED!=='true')return NextResponse.json({error:'Checkout not enabled'},{status:503});
+  if(process.env.PAYPAL_CHECKOUT_ENABLED!=='true'||process.env.PAYPAL_ENV!=='live'||!process.env.PAYPAL_CLIENT_ID||!process.env.PAYPAL_CLIENT_SECRET||!process.env.PAYPAL_PLAN_ID||!process.env.PAYPAL_WEBHOOK_ID)return NextResponse.json({error:'Live checkout not configured'},{status:503});
   const origin=request.headers.get('origin');
   if(!origin||new URL(origin).origin!==request.nextUrl.origin)return NextResponse.json({error:'Invalid origin'},{status:403});
   const auth=await serverSupabase();const {data:{user}}=auth?await auth.auth.getUser():{data:{user:null}};
