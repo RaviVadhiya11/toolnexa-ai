@@ -14,9 +14,10 @@ export function Shell({children}:{children:React.ReactNode}){
   const useDark=localStorage.getItem('toolnexa-theme')!=='light';
   setDark(useDark);
   document.documentElement.classList.toggle('dark',useDark);
+  document.documentElement.classList.toggle('light',!useDark);
  },[]);
  useEffect(()=>{setMenuOpen(false)},[path]);
- function toggle(){const value=!dark;setDark(value);document.documentElement.classList.toggle('dark',value);localStorage.setItem('toolnexa-theme',value?'dark':'light')}
+ function toggle(){const value=!dark;setDark(value);document.documentElement.classList.toggle('dark',value);document.documentElement.classList.toggle('light',!value);localStorage.setItem('toolnexa-theme',value?'dark':'light')}
  function findTools(e:React.FormEvent<HTMLFormElement>){e.preventDefault();router.push('/tools?q='+encodeURIComponent(q.trim()))}
  const toolsIndex=path==='/tools';
  const searchBox=<form className="shell-search-form" onSubmit={findTools} role="search">
