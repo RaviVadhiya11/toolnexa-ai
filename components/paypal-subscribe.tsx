@@ -69,6 +69,8 @@ export function PayPalSubscribe({clientId,planId}:{clientId:string;planId:string
  const [userId,setUserId]=useState<string|null>(null);
  const [checking,setChecking]=useState(true);
  const [message,setMessage]=useState('');
+ const [sdkError,setSdkError]=useState(false);
+ const [retry,setRetry]=useState(0);
  useEffect(()=>{
   const supabase=browserSupabase();
   if(!supabase){setChecking(false);return}
@@ -84,37 +86,62 @@ export function PayPalSubscribe({clientId,planId}:{clientId:string;planId:string
   if(!userId||!planId)return;
   let cancelled=false;
   let script:HTMLScriptElement|null=null;
-  const render=()=>{
-   if(cancelled||!root.current||!window.paypal)return;
-   root.current.replaceChildren();
-   void window.paypal.Buttons({
-    style:{layout:'vertical',color:'blue',shape:'rect',label:'subscribe'},
-    createSubscription:(_data:unknown,actions:any)=>actions.subscription.create({plan_id:planId,custom_id:userId}),
-    onApprove:async(data:any)=>{
-     try{
-      const response=await fetch('/api/paypal/verify',{
-       method:'POST',headers:{'Content-Type':'application/json'},
-       body:JSON.stringify({subscriptionID:data.subscriptionID})
-      });
-      if(!response.ok)throw Error();
-      const result=await response.json();
-      setMessage(result.status==='ACTIVE'?'Subscription verified. Your Pro access is active.':'PayPal approved your subscription. Pro access will start once PayPal activates it.');
-     }catch{setMessage('PayPal approval received. Verification pending; contact support if this persists.')}
-    },
-    onError:()=>setMessage('PayPal checkout failed. Please try again.')
-   }).render(root.current);
+  setSdkError(false);
+  setMessage('');
+  const fail=(detail:string)=>{
+   if(cancelled)return;
+   setSdkError(true);
+   setMessage(detail);
   };
-  if(window.paypal)render();
+  const render=async()=>{
+   if(cancelled||!root.current)return;
+   if(!window.paypal?.Buttons){
+    fail('PayPal checkout could not initialize. Please retry, or use a browser without content blockers.');
+    return;
+   }
+   root.current.replaceChildren();
+   try{
+    await window.paypal.Buttons({
+     style:{layout:'vertical',color:'blue',shape:'rect',label:'subscribe'},
+     createSubscription:(_data:unknown,actions:any)=>actions.subscription.create({plan_id:planId,custom_id:userId}),
+     onApprove:async(data:any)=>{
+      try{
+       const response=await fetch('/api/paypal/verify',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({subscriptionID:data.subscriptionID})
+       });
+       if(!response.ok)throw Error();
+       const result=await response.json();
+       if(!cancelled)setMessage(result.status==='ACTIVE'?'Subscription verified. Your Pro access is active.':'PayPal approved your subscription. Pro access will start once PayPal activates it.');
+      }catch{
+       if(!cancelled)setMessage('PayPal approval received. Verification pending; contact support if this persists.');
+      }
+     },
+     onError:()=>{if(!cancelled)setMessage('PayPal could not complete checkout. No subscription was confirmed on this page.');}
+    }).render(root.current);
+   }catch{
+    fail('PayPal checkout buttons could not be displayed. Please retry.');
+   }
+  };
+  if(window.paypal?.Buttons){void render()}
   else{
+   // Remove a previously failed SDK script before retrying; never reuse a broken load.
+   document.querySelectorAll('script[data-toolnexa-paypal-sdk]').forEach(el=>el.remove());
    script=document.createElement('script');
-   script.src='https://www.paypal.com/sdk/js?client-id='+encodeURIComponent(clientId)+'&vault=true&intent=subscription';
-   script.onload=render;
-   script.onerror=()=>setMessage('PayPal unavailable');
+   script.dataset.toolnexaPaypalSdk='true';
+   script.src='https://www.paypal.com/sdk/js?client-id='+encodeURIComponent(clientId)+'&components=buttons&currency=USD&vault=true&intent=subscription';
+   script.async=true;
+   script.onload=()=>{void render()};
+   script.onerror=()=>fail('PayPal checkout failed to load. Check your connection or browser content blockers, then retry.');
    document.body.appendChild(script);
   }
-  return()=>{cancelled=true;if(script)script.remove()};
- },[clientId,planId,userId]);
+  return()=>{cancelled=true;if(script){script.onload=null;script.onerror=null;script.remove()}};
+ },[clientId,planId,userId,retry]);
  if(checking)return <p className="muted mt-7" role="status">Checking your account…</p>;
  if(!userId)return <SubscriptionAuth/>;
- return <div className="mt-7"><div ref={root}/>{message&&<p className="muted mt-3" role="status">{message}</p>}</div>;
+ return <div className="mt-7">
+  <div ref={root}/>
+  {message&&<p className="muted mt-3" role="status">{message}</p>}
+  {sdkError&&<button type="button" className="button outline mt-3" onClick={()=>{setMessage('');setRetry(n=>n+1)}}>Retry PayPal checkout</button>}
+ </div>;
 }
