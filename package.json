@@ -6,8 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "prebuild": "node scripts/verify-tool-coverage.mjs",
-    "check:tools": "node scripts/verify-tool-coverage.mjs"
+    "prebuild": "node scripts/verify-tool-coverage.mjs && node --test tests/tool-operations.test.mjs",
+    "check:tools": "node scripts/verify-tool-coverage.mjs",
+    "test:tools": "node --test tests/tool-operations.test.mjs"
   },
   "dependencies": {
     "next": "^15.5.0",
