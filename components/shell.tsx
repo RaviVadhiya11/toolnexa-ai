@@ -61,7 +61,7 @@ export function Shell({children}:{children:React.ReactNode}){
     <Link href="/pricing" className="button shell-pro-link"><Crown size={17}/> Pro</Link>
    </div>
    {children}
-   <footer className="premium-footer">© {new Date().getFullYear()} ToolNexa AI · Built for productivity · <Link href="/tools">Explore tools</Link></footer>
+   <footer className="premium-footer"><div>© {new Date().getFullYear()} ToolNexa AI · Built for productivity</div><nav className="premium-footer-links" aria-label="Website policies and help"><Link href="/tools">All Tools</Link><Link href="/pricing">Pricing</Link><Link href="/support">Support</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/billing">Billing &amp; Cancellation</Link></nav></footer>
   </main>
   <nav className="mobile-nav premium-mobile-nav" aria-label="Bottom navigation">{nav.map(item=><Link href={item.href} key={item.href} className={path===item.href||item.href==='/tools'&&path.startsWith('/tools/')?'active':''} aria-current={path===item.href||item.href==='/tools'&&path.startsWith('/tools/')?'page':undefined}><item.icon size={21}/><span>{item.label}</span></Link>)}</nav>
  </div>;
