@@ -25,13 +25,14 @@ export function Shell({children}:{children:React.ReactNode}){
   <button className="button outline shell-search-button" type="submit" aria-label="Search tools"><Search size={19}/></button>
  </form>;
  return <div className="shell premium-shell">
+  <a className="site-skip-link" href="#main-content">Skip to main content</a>
   <aside className={'sidebar premium-sidebar '+(menuOpen?'sidebar-open':'')} aria-label="Main menu">
    <div className="premium-sidebar-head">
     <Link href="/" className="brand premium-brand"><span className="brand-icon"><Sparkles size={22}/></span><span>ToolNexa <em>AI</em></span></Link>
     <button type="button" className="mobile-sidebar-close" aria-label="Close menu" onClick={()=>setMenuOpen(false)}><X size={20}/></button>
    </div>
    <p className="premium-sidebar-label">WORKSPACE</p>
-   <nav aria-label="Main pages">{nav.map(item=><Link key={item.href} className={'nav '+(path===item.href||item.href==='/tools'&&path.startsWith('/tools/')?'active':'')} href={item.href}>
+   <nav aria-label="Main pages">{nav.map(item=><Link key={item.href} className={'nav '+(path===item.href||item.href==='/tools'&&path.startsWith('/tools/')?'active':'')} href={item.href} aria-current={path===item.href||item.href==='/tools'&&path.startsWith('/tools/')?'page':undefined}>
     <item.icon size={19}/><span>{item.label}</span>{item.href==='/tools'&&<small>{tools.length}</small>}
    </Link>)}</nav>
    <p className="premium-sidebar-label premium-sidebar-categories">TOOL CATEGORIES</p>
@@ -46,7 +47,7 @@ export function Shell({children}:{children:React.ReactNode}){
    </div>
   </aside>
   {menuOpen&&<button className="premium-menu-backdrop" aria-label="Close menu overlay" onClick={()=>setMenuOpen(false)} type="button"/>}
-  <main className="main premium-main">
+  <main id="main-content" className="main premium-main" tabIndex={-1}>
    <div className="premium-mobile-brand-row">
     <button type="button" className="premium-menu-button" onClick={()=>setMenuOpen(true)} aria-label="Open menu"><Menu size={21}/></button>
     <Link href="/" className="brand premium-brand"><span className="brand-icon"><Sparkles size={18}/></span><span>ToolNexa <em>AI</em></span></Link>
@@ -62,6 +63,6 @@ export function Shell({children}:{children:React.ReactNode}){
    {children}
    <footer className="premium-footer">© {new Date().getFullYear()} ToolNexa AI · Built for productivity · <Link href="/tools">Explore tools</Link></footer>
   </main>
-  <nav className="mobile-nav premium-mobile-nav" aria-label="Bottom navigation">{nav.map(item=><Link href={item.href} key={item.href} className={path===item.href||item.href==='/tools'&&path.startsWith('/tools/')?'active':''}><item.icon size={21}/><span>{item.label}</span></Link>)}</nav>
+  <nav className="mobile-nav premium-mobile-nav" aria-label="Bottom navigation">{nav.map(item=><Link href={item.href} key={item.href} className={path===item.href||item.href==='/tools'&&path.startsWith('/tools/')?'active':''} aria-current={path===item.href||item.href==='/tools'&&path.startsWith('/tools/')?'page':undefined}><item.icon size={21}/><span>{item.label}</span></Link>)}</nav>
  </div>;
 }
