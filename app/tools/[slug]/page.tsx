@@ -19,7 +19,7 @@ export default async function ToolPage({params}:{params:Promise<{slug:string}>})
     <div><span>02</span><strong>Run the tool</strong><p>Review the input and start processing with one click.</p></div>
     <div><span>03</span><strong>Save your result</strong><p>Copy a text result or download the generated file when available.</p></div>
    </div>
-   <p className="small-note mt-4">Tools run in your browser. Browser capabilities and file formats may limit processing. The Text to PDF starter tool replaces unsupported non-Latin characters.</p>
+   <p className="small-note mt-4">Tools run in your browser. Browser capabilities and file formats may limit processing. Text to PDF visually renders Unicode text using browser fonts, so its output is image-based rather than searchable. Password-protected PDFs are not supported.</p>
   </section>
   {related.length>0&&<section className="tool-related"><div className="tool-section-heading"><h2>More {tool.category.toLowerCase()} tools</h2><Link href={'/tools?category='+tool.category}>View category →</Link></div><div className="tool-related-grid">{related.map(t=><Link href={'/tools/'+t.slug} key={t.slug} className="tool-related-card"><span>{t.icon}</span><strong>{t.title}</strong><small>{t.description}</small></Link>)}</div></section>}
  </div>;
