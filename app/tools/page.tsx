@@ -1,3 +1,5 @@
+import type {Metadata} from 'next';
+export const metadata:Metadata={title:'All 20 Free Online Tools',description:'Find free browser-based PDF, image, text, developer and business utilities. Browse all 20 ToolNexa AI tools.',alternates:{canonical:'/tools'}};
 import {Suspense} from 'react';
 import {ToolList} from '@/components/tool-list';
 import {Sparkles,Layers3} from 'lucide-react';

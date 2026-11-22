@@ -1,3 +1,5 @@
+import type {Metadata} from 'next';
+export const metadata:Metadata={title:'Premium Plans & Pricing',description:'Compare ToolNexa AI Starter, Pro and Premium monthly plans for Batch Text Analyzer. See limits before subscribing.',alternates:{canonical:'/pricing'}};
 import {PremiumPricing} from '@/components/premium-pricing';
 import {paypalTierSettings} from '@/lib/paypal';
 

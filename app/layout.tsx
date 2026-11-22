@@ -1,3 +1,22 @@
-import type { Metadata } from 'next';import './globals.css';import {Shell} from '@/components/shell';
-export const metadata:Metadata={title:{default:'ToolNexa AI | Free Smart Online Tools',template:'%s | ToolNexa AI'},description:'All-in-one PDF, image, text, developer and business tools. Fast, responsive and privacy-focused.'};
-export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en" suppressHydrationWarning><body><Shell>{children}</Shell></body></html>}
+import type {Metadata,Viewport} from 'next';
+import './globals.css';
+import {Shell} from '@/components/shell';
+
+const site='https://toolnexa-ai.vercel.app';
+export const metadata:Metadata={
+ metadataBase:new URL(site),
+ title:{default:'ToolNexa AI | 20 Free Online PDF, Image & Text Tools',template:'%s | ToolNexa AI'},
+ description:'Use 20 free online tools for PDF, images, text, developers and business. Fast, private, browser-based utilities, plus optional premium batch text analysis.',
+ applicationName:'ToolNexa AI',
+ robots:{index:true,follow:true},
+ openGraph:{
+  type:'website',siteName:'ToolNexa AI',url:site,
+  title:'ToolNexa AI — 20 Free Online Tools',
+  description:'PDF, Image, Text, Developer and Business tools in one premium workspace.'
+ },
+ twitter:{card:'summary',title:'ToolNexa AI — 20 Free Online Tools',description:'Fast, browser-based PDF, Image, Text and Developer utilities.'}
+};
+export const viewport:Viewport={width:'device-width',initialScale:1,themeColor:'#080e20'};
+export default function RootLayout({children}:{children:React.ReactNode}){
+ return <html lang="en" suppressHydrationWarning><body><Shell>{children}</Shell></body></html>;
+}
