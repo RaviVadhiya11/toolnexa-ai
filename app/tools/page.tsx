@@ -1,2 +1,7 @@
-import {Suspense} from 'react';import {ToolList} from '@/components/tool-list';
-export default function ToolsPage(){return <><h1 className="text-3xl font-extrabold">All Tools</h1><p className="muted mt-2">Explore 20 free tools. Choose a category or search for a tool.</p><Suspense fallback={<div className="panel mt-5">Loading tools…</div>}><ToolList/></Suspense></>}
+import {Suspense} from 'react';
+import {ToolList} from '@/components/tool-list';
+import {Sparkles,Layers3} from 'lucide-react';
+export default function ToolsPage(){return <div className="premium-tools-page">
+ <header className="premium-tools-header"><div><span className="premium-tools-eyebrow"><Sparkles size={14}/> 20 FREE ONLINE TOOLS</span><h1>Explore Powerful <span>Smart Tools</span></h1><p>Find the right tool for text, images, PDFs, development and business tasks.</p></div><div className="premium-tools-mark" aria-hidden="true"><Layers3 size={56}/></div></header>
+ <Suspense fallback={<div className="panel mt-5">Loading tools…</div>}><ToolList/></Suspense>
+ </div>}
