@@ -1,6 +1,6 @@
 import {NextRequest,NextResponse} from 'next/server';
 import {adminDb} from '@/lib/admin';
-import {paypalBase,paypalPlanId,paypalSubscription,paypalToken} from '@/lib/paypal';
+import {paypalBase,tierForPayPalPlan,paypalSubscription,paypalToken} from '@/lib/paypal';
 export const runtime='nodejs';
 
 const subscriptionEvents=new Set([
@@ -14,7 +14,7 @@ const allowedStatuses=new Set(['APPROVAL_PENDING','APPROVED','ACTIVE','SUSPENDED
 export async function POST(request:NextRequest){
  try{
   const webhookId=process.env.PAYPAL_WEBHOOK_ID;
-  if(!webhookId||!paypalPlanId)return NextResponse.json({error:'Not configured'},{status:503});
+  if(!webhookId||process.env.PAYPAL_ENV!=='live')return NextResponse.json({error:'Not configured'},{status:503});
   // Reject oversized payloads before contacting PayPal.
   const raw=await request.text();
   if(raw.length>256000)return NextResponse.json({error:'Payload too large'},{status:413});
@@ -39,7 +39,7 @@ export async function POST(request:NextRequest){
   if(typeof id!=='string'||!/^I-[A-Z0-9]+$/i.test(id))return NextResponse.json({ok:true});
   // Never trust the event's possibly stale status. Read the current PayPal state.
   const subscription=await paypalSubscription(id);
-  if(subscription.id!==id||subscription.plan_id!==paypalPlanId||!allowedStatuses.has(subscription.status))
+  if(subscription.id!==id||!tierForPayPalPlan(subscription.plan_id)||!allowedStatuses.has(subscription.status))
    return NextResponse.json({ok:true});
   const db=adminDb();
   if(!db)return NextResponse.json({error:'Database unavailable'},{status:503});
@@ -47,7 +47,7 @@ export async function POST(request:NextRequest){
   // Only an authenticated, previously claimed subscription can be modified.
   const {error}=await db.from('paypal_subscriptions')
    .update({status:subscription.status,updated_at:new Date().toISOString()})
-   .eq('subscription_id',id).eq('plan_id',paypalPlanId).neq('status',subscription.status);
+   .eq('subscription_id',id).eq('plan_id',subscription.plan_id).neq('status',subscription.status);
   if(error)return NextResponse.json({error:'Database update failed'},{status:500});
   // Refunds and failed payments are not necessarily cancellations. If PayPal
   // still reports ACTIVE, don't invent a cancellation; reconcile billing
