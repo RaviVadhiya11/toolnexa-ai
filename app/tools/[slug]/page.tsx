@@ -1,8 +1,17 @@
 import Link from 'next/link';
 import {notFound} from 'next/navigation';
+import type {Metadata} from 'next';
 import {tools} from '@/lib/tools';
 import {ToolRunner} from '@/components/tool-runner';
 export function generateStaticParams(){return tools.map(t=>({slug:t.slug}))}
+export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata>{
+ const {slug}=await params;const tool=tools.find(item=>item.slug===slug);
+ if(!tool)return {title:'Tool not found',robots:{index:false,follow:false}};
+ const description=`Free online ${tool.title.toLowerCase()}. ${tool.description}. Process in your browser with ToolNexa AI.`;
+ const url='/tools/'+tool.slug;
+ return {title:`${tool.title} — Free Online ${tool.category} Tool`,description,alternates:{canonical:url},openGraph:{title:`Free ${tool.title} | ToolNexa AI`,description,url,type:'website'}};
+}
+
 export default async function ToolPage({params}:{params:Promise<{slug:string}>}){
  const {slug}=await params;
  const tool=tools.find(t=>t.slug===slug);
