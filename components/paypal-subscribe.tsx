@@ -13,7 +13,7 @@ export function PayPalSubscribe({clientId,planId}:{clientId:string;planId:string
    const render=()=>{if(cancelled||!root.current||!window.paypal)return;
     window.paypal.Buttons({style:{layout:'vertical',color:'blue',shape:'rect',label:'subscribe'},
      createSubscription:(_data:unknown,actions:any)=>actions.subscription.create({plan_id:planId,custom_id:user.id}),
-     onApprove:async(data:any)=>{try{const response=await fetch('/api/paypal/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subscriptionID:data.subscriptionID})});if(!response.ok)throw Error();setMessage('Subscription verified. Your Pro access is active.')}catch{setMessage('PayPal approval received. Verification pending; contact support if this persists.')}},
+     onApprove:async(data:any)=>{try{const response=await fetch('/api/paypal/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subscriptionID:data.subscriptionID})});if(!response.ok)throw Error();const result=await response.json();setMessage(result.status==='ACTIVE'?'Subscription verified. Your Pro access is active.':'PayPal approved your subscription. Pro access will start once PayPal activates it.')}catch{setMessage('PayPal approval received. Verification pending; contact support if this persists.')}},
      onError:()=>setMessage('PayPal checkout failed. Please try again.')
     }).render(root.current)};
    if(window.paypal){render();return}
