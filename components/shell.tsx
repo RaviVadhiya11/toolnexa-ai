@@ -1,3 +1,66 @@
-'use client';import Link from 'next/link';import {usePathname,useRouter} from 'next/navigation';import {useEffect,useState} from 'react';import {AccountStatus} from '@/components/account-status';import {ShieldCheck,Home,LayoutGrid,LayoutDashboard,Crown,Moon,Sun,Search,FileText,Image as ImageIcon,Code2,Briefcase,Type} from 'lucide-react';
+'use client';
+import Link from 'next/link';
+import {usePathname,useRouter} from 'next/navigation';
+import {useEffect,useState} from 'react';
+import {AccountStatus} from '@/components/account-status';
+import {tools} from '@/lib/tools';
+import {ShieldCheck,Home,LayoutGrid,LayoutDashboard,Crown,Moon,Sun,Search,FileText,Image as ImageIcon,Code2,Briefcase,Type,Menu,X,Sparkles,ArrowUpRight} from 'lucide-react';
 const nav=[{href:'/',label:'Home',icon:Home},{href:'/tools',label:'All Tools',icon:LayoutGrid},{href:'/dashboard',label:'Dashboard',icon:LayoutDashboard},{href:'/pricing',label:'Pricing',icon:Crown},{href:'/admin',label:'Admin',icon:ShieldCheck}];
-export function Shell({children}:{children:React.ReactNode}){const path=usePathname();const router=useRouter();const[dark,setDark]=useState(false);const[q,setQ]=useState('');useEffect(()=>{const d=localStorage.getItem('toolnexa-theme')==='dark';setDark(d);document.documentElement.classList.toggle('dark',d)},[]);function toggle(){const v=!dark;setDark(v);document.documentElement.classList.toggle('dark',v);localStorage.setItem('toolnexa-theme',v?'dark':'light')};return <div className="shell"><aside className="sidebar"><Link href="/" className="brand" style={{textDecoration:'none',color:'inherit'}}><span className="brand-icon">✦</span>ToolNexa <span style={{color:'#7562e9'}}>AI</span></Link><p className="muted text-xs font-bold tracking-widest mb-4 mt-8">WORKSPACE</p>{nav.map(x=><Link key={x.href} className={'nav '+(path===x.href?'active':'')} href={x.href}><x.icon size={19}/>{x.label}</Link>)}<p className="muted text-xs font-bold tracking-widest mb-3 mt-9">CATEGORIES</p>{[['PDF',FileText],['Image',ImageIcon],['Text',Type],['Developer',Code2],['Business',Briefcase]].map(([label,Icon])=>{const I=Icon as typeof FileText;return <Link className="nav" href={'/tools?category='+label} key={label as string}><I size={18}/>{label as string} Tools</Link>})}<div className="mt-9 p-4 rounded-xl text-white" style={{background:'linear-gradient(135deg,#4a5eea,#9259e8)'}}><b>✦ ToolNexa Pro</b><p className="text-xs mt-3 mb-4 opacity-80">Premium AI tools are on the roadmap.</p><Link href="/pricing" className="button" style={{background:'white',color:'#515bd8',fontSize:12}}>Explore Plans</Link></div></aside><main className="main"><div className="top"><form className="shell-search-form" onSubmit={e=>{e.preventDefault();router.push('/tools?q='+encodeURIComponent(q))}}><input className="search" placeholder="⌕ Search 20+ smart tools..." value={q} onChange={e=>setQ(e.target.value)} aria-label="Search tools"/><button className="button outline" style={{marginLeft:8}} aria-label="Search"><Search size={17}/></button></form><button className="button outline shell-theme-toggle" onClick={toggle} aria-label="Toggle dark mode">{dark?<Sun size={19}/>:<Moon size={19}/>}</button><AccountStatus/><Link href="/pricing" className="button shell-pro-link">Pro ✦</Link></div>{children}<footer className="text-center muted text-xs mt-12 mb-3">© {new Date().getFullYear()} ToolNexa AI • Built for productivity</footer></main><nav className="mobile-nav">{nav.map(x=><Link href={x.href} key={x.href}><x.icon size={20}/>{x.label}</Link>)}</nav></div>}
+const groups=[{name:'Text',icon:Type},{name:'Image',icon:ImageIcon},{name:'PDF',icon:FileText},{name:'Developer',icon:Code2},{name:'Business',icon:Briefcase}] as const;
+export function Shell({children}:{children:React.ReactNode}){
+ const path=usePathname(),router=useRouter();
+ const [dark,setDark]=useState(true),[q,setQ]=useState(''),[menuOpen,setMenuOpen]=useState(false);
+ useEffect(()=>{
+  const useDark=localStorage.getItem('toolnexa-theme')!=='light';
+  setDark(useDark);
+  document.documentElement.classList.toggle('dark',useDark);
+ },[]);
+ useEffect(()=>{setMenuOpen(false)},[path]);
+ function toggle(){const value=!dark;setDark(value);document.documentElement.classList.toggle('dark',value);localStorage.setItem('toolnexa-theme',value?'dark':'light')}
+ function findTools(e:React.FormEvent<HTMLFormElement>){e.preventDefault();router.push('/tools?q='+encodeURIComponent(q.trim()))}
+ const toolsIndex=path==='/tools';
+ const searchBox=<form className="shell-search-form" onSubmit={findTools} role="search">
+  <input className="search" placeholder="Search 20 smart tools…" aria-label="Search tools" value={q} onChange={e=>setQ(e.target.value)}/>
+  <button className="button outline shell-search-button" type="submit" aria-label="Search tools"><Search size={19}/></button>
+ </form>;
+ return <div className="shell premium-shell">
+  <aside className={'sidebar premium-sidebar '+(menuOpen?'sidebar-open':'')} aria-label="Main menu">
+   <div className="premium-sidebar-head">
+    <Link href="/" className="brand premium-brand"><span className="brand-icon"><Sparkles size={22}/></span><span>ToolNexa <em>AI</em></span></Link>
+    <button type="button" className="mobile-sidebar-close" aria-label="Close menu" onClick={()=>setMenuOpen(false)}><X size={20}/></button>
+   </div>
+   <p className="premium-sidebar-label">WORKSPACE</p>
+   <nav aria-label="Main pages">{nav.map(item=><Link key={item.href} className={'nav '+(path===item.href||item.href==='/tools'&&path.startsWith('/tools/')?'active':'')} href={item.href}>
+    <item.icon size={19}/><span>{item.label}</span>{item.href==='/tools'&&<small>{tools.length}</small>}
+   </Link>)}</nav>
+   <p className="premium-sidebar-label premium-sidebar-categories">TOOL CATEGORIES</p>
+   <nav aria-label="Tool categories">{groups.map(group=><Link className="nav premium-category-link" href={'/tools?category='+group.name} key={group.name}>
+    <group.icon size={18}/><span>{group.name} Tools</span><small>{tools.filter(tool=>tool.category===group.name).length}</small>
+   </Link>)}</nav>
+   <div className="premium-sidebar-upgrade">
+    <span className="premium-upgrade-icon"><Crown size={20}/></span>
+    <strong>ToolNexa Pro</strong>
+    <p>More power for batch text analysis. Plans from $3.99/month.</p>
+    <Link href="/pricing" className="premium-sidebar-cta">Explore plans <ArrowUpRight size={17}/></Link>
+   </div>
+  </aside>
+  {menuOpen&&<button className="premium-menu-backdrop" aria-label="Close menu overlay" onClick={()=>setMenuOpen(false)} type="button"/>}
+  <main className="main premium-main">
+   <div className="premium-mobile-brand-row">
+    <button type="button" className="premium-menu-button" onClick={()=>setMenuOpen(true)} aria-label="Open menu"><Menu size={21}/></button>
+    <Link href="/" className="brand premium-brand"><span className="brand-icon"><Sparkles size={18}/></span><span>ToolNexa <em>AI</em></span></Link>
+    <Link href="/pricing" className="premium-mobile-pro"><Crown size={16}/> Pro</Link>
+   </div>
+   <div className="top premium-top">
+    {!toolsIndex&&searchBox}
+    {toolsIndex&&<div className="premium-context-title"><LayoutGrid size={18}/><span>Tools workspace</span></div>}
+    <button className="button outline shell-theme-toggle" onClick={toggle} type="button" aria-label={dark?'Switch to light mode':'Switch to dark mode'}>{dark?<Sun size={20}/>:<Moon size={20}/>}</button>
+    <AccountStatus/>
+    <Link href="/pricing" className="button shell-pro-link"><Crown size={17}/> Pro</Link>
+   </div>
+   {children}
+   <footer className="premium-footer">© {new Date().getFullYear()} ToolNexa AI · Built for productivity · <Link href="/tools">Explore tools</Link></footer>
+  </main>
+  <nav className="mobile-nav premium-mobile-nav" aria-label="Bottom navigation">{nav.map(item=><Link href={item.href} key={item.href} className={path===item.href||item.href==='/tools'&&path.startsWith('/tools/')?'active':''}><item.icon size={21}/><span>{item.label}</span></Link>)}</nav>
+ </div>;
+}
