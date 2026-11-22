@@ -64,13 +64,14 @@ function SubscriptionAuth(){
  </div>
 }
 
-export function PayPalSubscribe({clientId,planId}:{clientId:string;planId:string}){
+export function PayPalSubscribe({clientId,planId,tier}:{clientId:string;planId:string;tier:'Starter'|'Pro'|'Premium'}){
  const root=useRef<HTMLDivElement>(null);
  const [userId,setUserId]=useState<string|null>(null);
  const [checking,setChecking]=useState(true);
  const [message,setMessage]=useState('');
  const [sdkError,setSdkError]=useState(false);
  const [retry,setRetry]=useState(0);
+ const [redirecting,setRedirecting]=useState(false);
  useEffect(()=>{
   const supabase=browserSupabase();
   if(!supabase){setChecking(false);return}
@@ -137,11 +138,37 @@ export function PayPalSubscribe({clientId,planId}:{clientId:string;planId:string
   }
   return()=>{cancelled=true;if(script){script.onload=null;script.onerror=null;script.remove()}};
  },[clientId,planId,userId,retry]);
+ async function hostedCheckout(){
+  setRedirecting(true);
+  setMessage('');
+  try{
+   const response=await fetch('/api/paypal/start',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({tier})
+   });
+   const data=await response.json();
+   if(!response.ok||typeof data.approvalUrl!=='string')
+    throw new Error(typeof data.error==='string'?data.error:'Unable to open PayPal checkout');
+   const url=new URL(data.approvalUrl);
+   if(url.protocol!=='https:'||!(url.hostname==='paypal.com'||url.hostname.endsWith('.paypal.com')))
+    throw new Error('Invalid PayPal approval link');
+   window.location.assign(url.toString());
+  }catch(error){
+   setRedirecting(false);
+   setMessage(error instanceof Error?error.message:'Unable to start PayPal checkout');
+  }
+ }
  if(checking)return <p className="muted mt-7" role="status">Checking your account…</p>;
  if(!userId)return <SubscriptionAuth/>;
  return <div className="mt-7">
   <div ref={root}/>
   {message&&<p className="muted mt-3" role="status">{message}</p>}
-  {sdkError&&<button type="button" className="button outline mt-3" onClick={()=>{setMessage('');setRetry(n=>n+1)}}>Retry PayPal checkout</button>}
+  {sdkError&&<div className="mt-3">
+   <button type="button" className="button w-full" disabled={redirecting}
+    onClick={()=>void hostedCheckout()}>{redirecting?'Opening PayPal…':'Continue securely on PayPal'}</button>
+   <p className="muted text-sm mt-2">You will review and approve the monthly subscription on PayPal before it can be activated.</p>
+   <button type="button" className="button outline mt-3" disabled={redirecting}
+    onClick={()=>{setMessage('');setRetry(n=>n+1)}}>Retry PayPal checkout button</button>
+  </div>}
  </div>;
 }
