@@ -4,7 +4,7 @@ import {tools} from '@/lib/tools';
 const site='https://toolnexa-ai.vercel.app';
 
 export default function sitemap():MetadataRoute.Sitemap {
- const publicPages=['','/tools','/pricing'];
+ const publicPages=['','/tools','/pricing','/privacy','/terms','/billing','/support'];
  const pages=publicPages.map(path=>({
   url:site+path,changeFrequency:'weekly' as const,priority:path===''?1:path==='/tools'?.9:.7
  }));

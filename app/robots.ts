@@ -10,6 +10,7 @@ export default function robots():MetadataRoute.Robots {
     '/admin',
     '/dashboard',
     '/login',
+    '/reset-password',
     '/signup',
     '/subscribe/',
     '/pro/'
