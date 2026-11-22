@@ -42,7 +42,7 @@ export function PremiumPricing({clientId,plans,enabled}:{clientId:string;plans:R
    {selected?<>
     <h2 className="text-xl font-extrabold">{selected} subscription — {tiers.find(x=>x.name===selected)?.price}/month</h2>
     <p className="muted text-sm mt-2">Sign up or log in here, then approve your recurring subscription securely with PayPal.</p>
-    {available?<PayPalSubscribe key={selected} clientId={clientId} planId={planId}/>:<p className="muted mt-5" role="status">This plan is coming soon. Its PayPal Live subscription plan must be configured before accepting payments.</p>}
+    {available?<PayPalSubscribe key={selected} clientId={clientId} planId={planId} tier={selected}/>:<p className="muted mt-5" role="status">This plan is coming soon. Its PayPal Live subscription plan must be configured before accepting payments.</p>}
    </>:<>
     <h2 className="text-xl font-extrabold">Select a plan to continue</h2>
     <p className="muted mt-2">Choose Starter, Pro, or Premium above to see login and secure checkout options.</p>
