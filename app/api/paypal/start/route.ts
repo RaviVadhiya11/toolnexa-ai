@@ -4,7 +4,7 @@ import {adminDb} from '@/lib/admin';
 import {paypalBase,paypalPlanIdForCheckout,configuredPayPalPlanIds,paypalSubscription,paypalToken} from '@/lib/paypal';
 
 export const runtime='nodejs';
-import {paidTiers,billingPeriods,type PaidTier,type BillingPeriod} from '@/lib/subscription-pricing';
+import {paidTiers,billingPeriods,subscriptionPrices,type PaidTier,type BillingPeriod} from '@/lib/subscription-pricing';
 const noStore={'Cache-Control':'no-store'};
 
 export async function POST(request:NextRequest){
@@ -54,6 +54,30 @@ export async function POST(request:NextRequest){
 
   stage='paypal_authentication';
   const token=await paypalToken();
+  if(billingPeriod==='yearly'){
+   stage='paypal_validate_yearly_plan';
+   // Confirm the real PayPal billing amount and recurrence before charging.
+   const detailResponse=await fetch(paypalBase+'/v1/billing/plans/'+encodeURIComponent(planId),{
+    headers:{Authorization:'Bearer '+token},cache:'no-store'
+   });
+   if(!detailResponse.ok)return NextResponse.json({error:'Annual PayPal plan details could not be verified'},{status:503,headers:noStore});
+   const details=await detailResponse.json() as {
+    status?:string;billing_cycles?:Array<{
+     tenure_type?:string;total_cycles?:number;
+     frequency?:{interval_unit?:string;interval_count?:number};
+     pricing_scheme?:{fixed_price?:{currency_code?:string;value?:string}}
+    }>
+   };
+   const cycles=details.billing_cycles??[];
+   const cycle=cycles[0];
+   const expectedPrice=Number(subscriptionPrices[tier].yearly);
+   const actualPrice=Number(cycle?.pricing_scheme?.fixed_price?.value);
+   if(details.status!=='ACTIVE'||cycles.length!==1||cycle?.tenure_type!=='REGULAR'||
+      cycle.total_cycles!==0||cycle.frequency?.interval_unit!=='YEAR'||
+      cycle.frequency.interval_count!==1||cycle.pricing_scheme?.fixed_price?.currency_code!=='USD'||
+      !Number.isFinite(actualPrice)||actualPrice!==expectedPrice)
+    return NextResponse.json({error:'Annual PayPal plan amount or renewal frequency does not match the published price. Checkout is disabled for safety.'},{status:503,headers:noStore});
+  }
   stage='paypal_create_subscription';
   // Fixed, trusted return URLs avoid untrusted Host header based redirects.
   const site='https://toolnexa-ai.vercel.app';
