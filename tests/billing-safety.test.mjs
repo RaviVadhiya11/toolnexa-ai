@@ -39,6 +39,8 @@ test('Max has a real capped quota and server-verified daily usage RPC',()=>{
  const pricingUi=source('components/premium-pricing.tsx');
  const publicPricing=source('app/pricing/page.tsx');
  const dashboard=source('app/dashboard/page.tsx');
+ const originalRunner=source('components/tool-runner.tsx');
+ const advancedRunner=source('components/advanced-tool-runner.tsx');
  assert.match(limits,/Max:3000/);
  assert.match(limits,/Max:300/);
  assert.doesNotMatch(limits,/Unlimited/);
@@ -56,6 +58,10 @@ test('Max has a real capped quota and server-verified daily usage RPC',()=>{
  assert.doesNotMatch(pricingUi,/Unlimited|unlimitedPreviewPrices/);
  assert.match(publicPricing,/maxEnabled=/);
  assert.doesNotMatch(dashboard,/Unlimited/);
+ assert.doesNotMatch(originalRunner,/Unlimited|no fixed daily run cap/i);
+ assert.doesNotMatch(advancedRunner,/Unlimited|no fixed daily run cap/i);
+ assert.match(originalRunner,/result.plan==='Max'/);
+ assert.match(advancedRunner,/data.plan==='Max'/);
  const migration=source('supabase/migrations/20261123_account_usage.sql');
  assert.match(migration,/p_limit integer/);
  assert.match(migration,/where public.daily_tool_usage.used < p_limit/);
