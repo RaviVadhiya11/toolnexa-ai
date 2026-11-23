@@ -83,7 +83,7 @@ export default function Dashboard(){
      ?`Your ${plan} subscription is verified with PayPal. Use the Batch Text Analyzer with up to ${benefits?.batch} texts per request.`
      :status==='error'?'We could not confirm your plan right now. Premium access is never assumed when verification is unavailable.'
      :status==='checking'?'Checking membership with the server…'
-     :signedIn?'You are currently on the Free plan. Upgrade whenever you need bigger batches.':'Sign in to subscribe, or keep using our 20 free tools.'}</p>
+     :signedIn?'You are currently on the Free plan. Upgrade whenever you need bigger batches.':'Sign in to subscribe, or keep using our 56 utility tools.'}</p>
     <div className="member-actions">
      {paid?<Link className="member-primary" href="/pro/text-batch">Open premium tool →</Link>
       :<Link className="member-primary" href="/pricing">View premium plans →</Link>}
