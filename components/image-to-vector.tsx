@@ -54,10 +54,11 @@ function traceSvg(image:HTMLImageElement,colors:TraceColors,detail:TraceDetail,r
  const settings=detail==='simple'?{pathomit:12,ltres:2,qtres:2,blurradius:1}:
   detail==='detailed'?{pathomit:2,ltres:.55,qtres:.55,blurradius:0}:
   {pathomit:6,ltres:1,qtres:1,blurradius:0};
- const xml=ImageTracer.imagedataToSVG(pixels,{
+ const traced=ImageTracer.imagedataToSVG(pixels,{
   ...settings,numberofcolors:colors,colorsampling:2,colorquantcycles:3,
   strokewidth:0,viewbox:true,scale:1,roundcoords:2,desc:false
  });
+ const xml=traced.replace(/^<svg\s/, '<svg width="'+w+'" height="'+h+'" ');
  if(!xml.startsWith('<svg')||xml.includes('<image')||xml.includes('<foreignObject')||!xml.includes('<path'))
   throw Error('Tracing did not produce editable vector paths. Try a clearer image.');
  if(xml.length>5500000)throw Error('Too many vector paths. Try fewer colors or Simple detail.');
