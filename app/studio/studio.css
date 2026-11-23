@@ -116,3 +116,18 @@
 @media(max-width:1280px){.suite-home-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.suite-editor-grid{grid-template-columns:minmax(215px,270px) minmax(0,1fr)}.suite-advanced{grid-column:1/-1}}
 @media(max-width:780px){.suite-home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.suite-editor-grid{grid-template-columns:1fr}.suite-advanced{grid-column:auto}.suite-before-after{grid-template-columns:1fr 1fr}.suite-tile{min-height:240px}.suite-head{margin-bottom:18px}}
 @media(max-width:450px){.suite-home-grid{grid-template-columns:1fr}.suite-before-after{grid-template-columns:1fr}.suite-tile{min-height:220px}.suite-artboard{min-height:225px}}
+
+
+/* Shared HD / 4K / 8K upscaling controls: actual pixel resampling. */
+.studio-quota{font-size:12px;line-height:1.55;color:var(--text);padding:11px 12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;margin:12px 0}
+.studio-quota a,.studio-upscale-panel a{color:#8b7cf8;font-weight:750}
+.studio-upscale-panel{margin-top:22px;padding:16px;background:var(--bg);border:1px solid var(--border);border-radius:14px;min-width:0}
+.studio-upscale-panel h2{font-size:17px;font-weight:800;margin:0 0 10px}
+.studio-upscale-panel label{display:block;font-weight:750;font-size:13px;margin:16px 0 7px}
+.studio-upscale-panel select{display:block;width:100%;max-width:100%;background:var(--panel);border:1px solid var(--border);color:var(--text);padding:11px;border-radius:10px}
+.studio-upscale-panel button{display:flex;justify-content:center;align-items:center;width:100%;min-height:43px;margin-top:12px;background:#6d28d9;color:#fff;border:none;border-radius:10px;padding:10px;font-weight:800;cursor:pointer}
+.studio-upscale-panel button:disabled{cursor:not-allowed;opacity:.6}
+.studio-upscale-result{font-size:13px;color:#60a5fa;font-weight:700;margin-top:14px}
+.studio-upscale-preview{max-height:280px;aspect-ratio:16/9;display:grid;place-items:center;overflow:hidden;margin-top:13px;border:1px solid var(--border);border-radius:10px;background:repeating-conic-gradient(#e5e7eb 0% 25%,#fff 0% 50%) 50% / 20px 20px}
+.studio-upscale-preview img{display:block;max-height:280px;max-width:100%;width:100%;height:100%;object-fit:contain}
+.studio-upscale-panel .studio-message{word-break:break-word}

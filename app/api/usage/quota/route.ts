@@ -3,10 +3,11 @@ import {serverSupabase} from '@/lib/supabase/server';
 import {adminDb} from '@/lib/admin';
 import {dailyLimits,type UsagePlan} from '@/lib/usage-limits';
 import {tools} from '@/lib/tools';
+import {studioRunSlugs} from '@/lib/studio-run-slugs';
 import {configuredPayPalPlanIds,paypalSubscription,tierForPayPalPlan,type PaidTier} from '@/lib/paypal';
 export const runtime='nodejs';
 const noStore={'Cache-Control':'no-store'};
-const allowed=new Set(tools.map(tool=>tool.slug));
+const allowed=new Set([...tools.map(tool=>tool.slug),...studioRunSlugs]);
 const reply=(data:object,status=200)=>NextResponse.json(data,{status,headers:noStore});
 
 async function member(){
