@@ -3,7 +3,7 @@
  * A browser-only tool cannot be made tamper-proof by localStorage.
  */
 export type UsagePlan='Free'|'Starter'|'Pro'|'Premium';
-export const dailyLimits:Record<UsagePlan,number>={Free:10,Starter:150,Pro:500,Premium:2000};
+export const dailyLimits:Record<UsagePlan,number>={Free:10,Starter:500,Pro:1000,Premium:1500};
 export const batchLimits={Starter:20,Pro:60,Premium:150} as const;
 export const planNames:UsagePlan[]=['Free','Starter','Pro','Premium'];
 export function isUsagePlan(value:unknown):value is UsagePlan{
