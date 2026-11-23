@@ -61,7 +61,38 @@ export function Shell({children}:{children:React.ReactNode}){
     <Link href="/pricing" className="button shell-pro-link"><Crown size={17}/> Pro</Link>
    </div>
    {children}
-   <footer className="premium-footer"><div>© {new Date().getFullYear()} ToolNexa AI · Built for productivity</div><nav className="premium-footer-links" aria-label="Website policies and help"><Link href="/tools">All Tools</Link><Link href="/pricing">Pricing</Link><Link href="/support">Support</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/billing">Billing &amp; Cancellation</Link></nav></footer>
+   <footer className="premium-footer editorial-footer">
+    <div className="editorial-footer-main">
+     <section className="editorial-footer-about" aria-labelledby="footer-about-title">
+      <Link href="/" className="brand premium-brand editorial-footer-brand"><span className="brand-icon"><Sparkles size={23}/></span><span>ToolNexa <em>AI</em></span></Link>
+      <h2 id="footer-about-title">ABOUT TOOLNEXA AI</h2>
+      <p>All your everyday PDF, image, text, developer and business tools in one smart workspace.</p>
+      <p className="editorial-footer-caption">20 browser-based free tools. Optional premium batch text analysis.</p>
+      <a href="https://github.com/RaviVadhiya11/toolnexa-ai/issues" className="editorial-footer-contact" target="_blank" rel="noopener noreferrer"><span className="editorial-footer-contact-icon"><Briefcase size={17}/></span>Report a technical issue <ArrowUpRight size={17}/></a>
+     </section>
+     <nav className="editorial-footer-column" aria-labelledby="footer-categories-title">
+      <h2 id="footer-categories-title">POPULAR CATEGORIES</h2>
+      {groups.map(group=><Link href={'/tools?category='+group.name} key={group.name}><group.icon size={17}/>{group.name} Tools</Link>)}
+     </nav>
+     <nav className="editorial-footer-column" aria-labelledby="footer-links-title">
+      <h2 id="footer-links-title">QUICK LINKS</h2>
+      <Link href="/">Home</Link>
+      <Link href="/tools">All Tools</Link>
+      <Link href="/pricing">Premium Pricing</Link>
+      <Link href="/dashboard">My Dashboard</Link>
+      <Link href="/support">Help &amp; Support</Link>
+     </nav>
+    </div>
+    <div className="editorial-footer-bottom">
+     <nav className="editorial-footer-legal" aria-label="Legal and help links">
+      <Link href="/privacy">Privacy Policy</Link>
+      <Link href="/terms">Terms &amp; Conditions</Link>
+      <Link href="/billing">Billing &amp; Cancellation</Link>
+      <Link href="/support">Contact &amp; Support</Link>
+     </nav>
+     <p>© {new Date().getFullYear()} ToolNexa AI. All rights reserved.</p>
+    </div>
+   </footer>
   </main>
   <nav className="mobile-nav premium-mobile-nav" aria-label="Bottom navigation">{nav.map(item=><Link href={item.href} key={item.href} className={path===item.href||item.href==='/tools'&&path.startsWith('/tools/')?'active':''} aria-current={path===item.href||item.href==='/tools'&&path.startsWith('/tools/')?'page':undefined}><item.icon size={21}/><span>{item.label}</span></Link>)}</nav>
  </div>;
