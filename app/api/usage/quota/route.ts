@@ -15,12 +15,16 @@ async function member(){
  const {data:{user},error}=await auth.auth.getUser();
  if(error||!user)return {user:null,plan:'Free' as UsagePlan} as const;
  const db=adminDb();
- const planIds=configuredPayPalPlanIds();
- if(!db||process.env.PAYPAL_ENV!=='live'||!planIds.length)
-  return {error:'Membership verification temporarily unavailable',status:503} as const;
+ if(!db)return {error:'Membership database unavailable',status:503} as const;
  const {data,error:lookupError}=await db.from('paypal_subscriptions')
-  .select('subscription_id,plan_id').eq('user_id',user.id).in('plan_id',planIds).eq('status','ACTIVE').limit(20);
+  .select('subscription_id,plan_id').eq('user_id',user.id).eq('status','ACTIVE').limit(20);
  if(lookupError)return {error:'Membership lookup unavailable',status:503} as const;
+ // A genuinely Free signed-in user must not depend on PayPal configuration or availability.
+ if(!data?.length)return {user,plan:'Free' as UsagePlan} as const;
+ const planIds=configuredPayPalPlanIds();
+ if(process.env.PAYPAL_ENV!=='live'||!planIds.length||
+    data.some(record=>!planIds.includes(record.plan_id)))
+  return {error:'Paid membership verification temporarily unavailable',status:503} as const;
  const tiers=new Set<PaidTier>();
  for(const row of data??[]){
   let subscription;
