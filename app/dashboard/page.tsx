@@ -92,7 +92,7 @@ export default function Dashboard(){
    <div className="member-hero-meta" aria-label="Membership summary">
     <span>Current plan</span><strong>{displayPlan}</strong>
     <span>{paid?(billingPeriod==='yearly'?'Annual subscription':billingPeriod==='monthly'?'Monthly subscription':'Verified subscription'):'Free tools available'}</span>
-    {benefits&&billingPeriod&&plan&&plan!=='Free'&&<b>{'
+    {benefits&&billingPeriod&&plan&&plan!=='Free'&&<b>${subscriptionPrices[plan][billingPeriod]}/{billingPeriod==='yearly'?'year':'month'}</b>}
    </div>
   </section>
   <div className="member-overview">
