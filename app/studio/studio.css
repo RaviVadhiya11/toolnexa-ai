@@ -46,3 +46,31 @@
 .studio-emoji{display:grid;place-items:center;font-size:27px;color:#60a5fa;border:1px solid #3b82f680;border-radius:14px;width:55px;height:55px}
 @media(max-width:1180px){.studio-grid{grid-template-columns:minmax(180px,245px) minmax(0,1fr)}.studio-export{grid-column:1/-1}}
 @media(max-width:720px){.studio-grid,.studio-home-grid{grid-template-columns:1fr}.studio-head{align-items:flex-start}.studio-panel{padding:16px}.studio-export{grid-column:auto}.studio-stage{min-height:300px}.studio-top-links a{font-size:12px}}
+
+/* Image upload is the primary Vector Studio workflow. */
+.vectorize-workspace{max-width:1510px;margin:0 auto 34px}
+.vectorize-header{margin-bottom:23px}
+.vectorize-header h1{font-size:clamp(24px,3vw,36px);font-weight:900;line-height:1.2;margin:2px 0 12px}
+.vectorize-header p{color:var(--muted);line-height:1.6;max-width:770px}
+.vectorize-grid{display:grid;grid-template-columns:minmax(205px,275px) minmax(0,1fr) minmax(215px,285px);gap:16px;align-items:stretch}
+.vectorize-settings label:not(.vectorize-upload-label),.vectorize-downloads label{display:block;font-weight:750;font-size:13px;margin:18px 0 8px}
+.vectorize-settings select,.vectorize-downloads select{display:block;width:100%;padding:11px 10px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text)}
+.vectorize-input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.vectorize-upload-label{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:28px 12px;border:2px dashed #3b82f6;border-radius:13px;cursor:pointer;background:#3b82f60f;color:var(--text);text-align:center;margin:8px 0 15px}
+.vectorize-upload-label>span{font-size:27px;color:#60a5fa}.vectorize-upload-label strong{font-size:16px}.vectorize-upload-label small{color:var(--muted);font-size:12px}
+.vectorize-upload-label:hover,.vectorize-input:focus-visible+.vectorize-upload-label{outline:2px solid #3b82f6;outline-offset:2px}
+.vectorize-file{font-size:12px;line-height:1.4;overflow-wrap:anywhere;color:var(--text)}
+.vectorize-settings h2:nth-of-type(2){margin-top:22px;margin-bottom:8px}
+.vectorize-settings label.vectorize-check{display:flex;align-items:flex-start;gap:9px;line-height:1.5;font-weight:650;cursor:pointer}
+.vectorize-check input{width:17px;height:17px;accent-color:#2563eb;flex-shrink:0}
+.vectorize-before-after{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:11px}
+.vectorize-preview{min-width:0}.vectorize-preview>strong{display:block;margin-bottom:11px;font-size:13px;color:var(--text)}
+.vectorize-art{display:flex;align-items:center;justify-content:center;min-height:230px;aspect-ratio:1;border:1px solid #b7c4d5;border-radius:13px;overflow:hidden;background-color:#fff;background-image:linear-gradient(45deg,#edf1f8 25%,transparent 25%),linear-gradient(-45deg,#edf1f8 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#edf1f8 75%),linear-gradient(-45deg,transparent 75%,#edf1f8 75%);background-position:0 0,0 10px,10px -10px,-10px 0;background-size:20px 20px}
+.vectorize-art img{width:100%;height:100%;max-height:560px;object-fit:contain}
+.vectorize-art p{padding:20px;text-align:center;color:#475569;font-size:13px}
+.vectorize-templates{margin:30px auto;max-width:1510px;border:1px solid var(--border);background:var(--panel);padding:16px;border-radius:15px}
+.vectorize-templates summary{cursor:pointer;color:var(--text);font-weight:750;padding:6px 4px}
+.vectorize-templates .studio-shell{margin-top:23px}
+@media(max-width:1220px){.vectorize-grid{grid-template-columns:minmax(190px,260px) minmax(0,1fr)}.vectorize-downloads{grid-column:1/-1}}
+@media(max-width:750px){.vectorize-grid{grid-template-columns:1fr}.vectorize-downloads{grid-column:auto}.vectorize-art{min-height:155px}.vectorize-before-after{gap:8px}.vectorize-preview>strong{font-size:12px}}
+@media(max-width:350px){.vectorize-before-after{grid-template-columns:1fr}}
