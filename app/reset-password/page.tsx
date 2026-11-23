@@ -18,7 +18,9 @@ export default function ResetPasswordPage(){
   let active=true;
   // Only a verified recovery callback should switch from requesting an email to updating a password.
   // An ordinary signed-in session must not silently turn this page into a password change form.
-  const verified=new URLSearchParams(window.location.search).get('verified')==='1';
+  const search=new URLSearchParams(window.location.search);
+  if(search.get('error')==='invalid-link')setMessage('This reset link is invalid, expired, or already used. Enter your email below to request a new link.');
+  const verified=search.get('verified')==='1';
   if(verified)void client.auth.getUser().then(({data,error})=>{
    if(!active)return;
    if(!error&&data.user)setRecovery(true);
@@ -43,7 +45,7 @@ export default function ResetPasswordPage(){
      redirectTo:window.location.origin+'/auth/callback?next=reset'
     });
     if(error)throw error;
-    setSuccess(true);setMessage('If this email has an account, you will receive a password-reset link. Check your inbox and spam folder.');
+    setSuccess(true);setMessage('If this email has an account, a new reset link will arrive. Use the newest email and open it in the same browser where you requested it. Check Spam if needed.');
    }
   }catch(error){setMessage(error instanceof Error?error.message:'Unable to complete password recovery.')}
   finally{setBusy(false)}
