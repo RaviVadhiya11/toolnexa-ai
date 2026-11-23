@@ -3,6 +3,7 @@ import {useEffect,useState} from 'react';
 import Link from 'next/link';
 import {ManageSubscription} from '@/components/manage-subscription';
 import {browserSupabase} from '@/lib/supabase/client';
+import {tools} from '@/lib/tools';
 
 type Plan='Free'|'Starter'|'Pro'|'Premium';
 const plans:Record<Exclude<Plan,'Free'>,{price:string;batch:number}>={
@@ -10,6 +11,7 @@ const plans:Record<Exclude<Plan,'Free'>,{price:string;batch:number}>={
  Pro:{price:'$5.99',batch:20},
  Premium:{price:'$9.99',batch:50}
 };
+const validToolSlugs=new Set(tools.map(tool=>tool.slug));
 function labelSlug(slug:string){return slug.replaceAll('-',' ')}
 
 export default function Dashboard(){
@@ -20,7 +22,7 @@ export default function Dashboard(){
  useEffect(()=>{
   try{
    const stored=JSON.parse(localStorage.getItem('toolnexa-recent')||'[]');
-   setRecent(Array.isArray(stored)?stored.filter((s):s is string=>typeof s==='string').slice(0,20):[]);
+   setRecent(Array.isArray(stored)?stored.filter((s):s is string=>typeof s==='string'&&validToolSlugs.has(s)).slice(0,20):[]);
   }catch{setRecent([])}
  },[]);
  useEffect(()=>{
@@ -111,7 +113,9 @@ export default function Dashboard(){
     {recent.length>0&&<button className="button outline mt-5" onClick={()=>{localStorage.removeItem('toolnexa-recent');setRecent([])}}>Clear local history</button>}
    </div>
   </section>
-  <ManageSubscription/>
+  {status==='checking'?<section className="panel mt-5" aria-label="Loading billing"><h2 className="font-bold text-xl">Manage Subscription</h2><p className="muted mt-3">Checking account status…</p></section>
+   :status==='ready'&&!signedIn?<section className="panel mt-5" aria-label="Sign in to manage subscriptions"><h2 className="font-bold text-xl">Manage Subscription</h2><p className="muted mt-3">Sign in to view your subscription, payment status, and cancellation options.</p><Link className="button mt-4" href="/login">Sign in to manage billing</Link></section>
+   :<ManageSubscription/>}
   <section className="member-footnote"><strong>AI Credits — Coming Soon</strong><p>AI credits are not sold or included in your current plan. Your active subscription covers the Batch Text Analyzer limits displayed above.</p></section>
  </div>;
 }
