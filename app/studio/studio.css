@@ -139,3 +139,26 @@
 .studio-upgrade-notice p{margin:5px 0 11px;color:var(--muted)}
 .studio-upgrade-notice .studio-upgrade{background:#6d28d9;color:#fff;text-align:center;display:flex;justify-content:center;align-items:center;width:100%;padding:12px;border-radius:10px;text-decoration:none;font-weight:800}
 .studio-upgrade-notice .studio-upgrade:hover{background:#7c3aed}
+
+
+/* Upscale preview first; show plan picker on gated download. */
+.studio-upscale-panel{position:relative}
+.studio-upscale-panel button.studio-hd{background:#2563eb}
+.studio-upscale-panel button.studio-hd:disabled{opacity:.5;cursor:not-allowed}
+.studio-upscale-panel .studio-upscale-preview{max-height:360px}
+.studio-paywall-overlay{position:fixed;inset:0;background:rgba(5,9,25,.85);z-index:2500;display:flex;justify-content:center;align-items:center;padding:16px;overflow-y:auto}
+.studio-paywall-dialog{position:relative;width:min(100%,760px);max-height:min(92vh,1000px);overflow-y:auto;overscroll-behavior:contain;background:var(--panel);color:var(--text);border:1px solid #7c3aedaa;border-radius:20px;padding:clamp(18px,3vw,30px);box-shadow:0 35px 100px #0009}
+.studio-paywall-dialog h2{font-size:clamp(20px,3vw,28px);margin:0 42px 10px 0;line-height:1.2}
+.studio-paywall-dialog>p{font-size:13px;line-height:1.65;color:var(--muted);margin:10px 0 16px}
+.studio-paywall-dialog .studio-paywall-close{position:absolute;top:12px;right:12px;width:37px;height:37px;min-height:37px;margin:0;padding:3px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:24px;line-height:1;border-radius:9px;cursor:pointer}
+.studio-paywall-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0 13px}
+.studio-paywall-plan{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:15px;border-radius:13px;border:1px solid var(--border);background:var(--bg);min-width:0}
+.studio-paywall-recommended{border-color:#8b5cf6;box-shadow:inset 0 0 0 1px #8b5cf655}
+.studio-paywall-plan strong{font-size:17px}
+.studio-paywall-plan span{font-size:14px;color:#a78bfa;font-weight:800}
+.studio-paywall-plan small{font-size:12px;color:var(--muted);line-height:1.55}
+.studio-paywall-plan a{margin-top:auto;text-decoration:none;display:flex;justify-content:center;align-items:center;background:#6d28d9;color:white;padding:10px 13px;border-radius:9px;font-size:13px;font-weight:850;width:100%}
+.studio-paywall-plan a:hover{background:#7c3aed}
+.studio-paywall-plan .studio-paywall-ineligible{margin-top:auto;color:var(--muted);font-style:italic}
+.studio-paywall-dialog .studio-paywall-retry{display:flex;justify-content:center;align-items:center;width:100%;border-radius:11px;border:1px solid #8b5cf6;background:transparent;color:var(--text);font-weight:750;padding:11px}
+@media(max-width:540px){.studio-paywall-overlay{padding:10px;align-items:flex-start}.studio-paywall-dialog{padding:18px 13px;margin:auto 0}.studio-paywall-grid{gap:9px}.studio-paywall-plan{padding:12px 9px}.studio-paywall-plan strong{font-size:15px}.studio-paywall-plan a{font-size:12px;padding:9px 7px}}

@@ -236,7 +236,7 @@ export function ImageToVector(){
     </select>
     {pro?<button type="button" disabled={!svg||working} onClick={()=>void downloadHd()}>Download Pro HD PNG</button>:
      <Link className="studio-upgrade" href="/pricing">Unlock HD with Pro →</Link>}
-    <StudioUpscalePanel getCanvas={()=>renderSvg(svg)} format="vector" disabled={!svg} sourceKey={svg}/>
+    <StudioUpscalePanel getCanvas={()=>renderSvg(svg)} format="vector" disabled={!svg} sourceKey={svg} usageSlug="studio-image-to-vector"/>
     <p className="studio-note">SVG is genuine vector at any zoom. Native AI / CDR / EPS / DXF / WMF / EMF export is not yet implemented; compatible editors can import SVG.</p>
    </div>
   </div>
