@@ -49,7 +49,7 @@ async function getLiveQuota(){
  const key=quotaKey(owner);
  const mode=result.mode as 'browser'|'account';
  const limit=dailyLimits[result.plan];
- if(result.plan==='Unlimited' && (mode!=='account'||result.limit!==null))throw Error('Unlimited account access must be server verified.');
+ if(result.plan==='Max' && (mode!=='account'||result.limit!==3000))throw Error('Max 3,000/day account access must be server verified.');
  const used=mode==='account'&&typeof result.used==='number'?result.used:readUsage(key);
  const next={plan:result.plan,used,limit,key,mode};
  setQuota(next);setQuotaError('');
@@ -138,7 +138,7 @@ case 'text-to-pdf':{
 case 'merge-pdf':{if(files.length<2)throw Error('Select at least 2 PDF files');if(files.length>15)throw Error('Select at most 15 PDF files');if(files.reduce((sum,f)=>sum+f.size,0)>125*1024*1024)throw Error('Combined PDFs exceed 125 MB. Merge smaller batches.');const pdf=await PDFDocument.create();for(const f of files){validFile(f,['application/pdf']);const src=await PDFDocument.load(await f.arrayBuffer());const pages=await pdf.copyPages(src,src.getPageIndices());pages.forEach(p=>pdf.addPage(p))}saveGenerated(new Blob([new Uint8Array(await pdf.save())],{type:'application/pdf'}),'toolnexa-merged.pdf');setDownloaded(true);output=`Downloaded merged PDF (${files.length} files)`;break}
 case 'split-pdf':{const file=validFile(files[0],['application/pdf']);const src=await PDFDocument.load(await file.arrayBuffer());const indexes=parsePageRanges(text,src.getPageCount());const pdf=await PDFDocument.create();const pages=await pdf.copyPages(src,indexes);pages.forEach(p=>pdf.addPage(p));saveGenerated(new Blob([new Uint8Array(await pdf.save())],{type:'application/pdf'}),'toolnexa-extracted.pdf');setDownloaded(true);output=`Downloaded PDF with ${indexes.length} selected pages`;break}
 }if(allowance.mode==='browser'){
- if(allowance.limit===null)throw Error('Unlimited runs require a verified signed-in account.');
+ if(allowance.limit===null)throw Error('No valid daily tool run allowance was returned.');
  const used=consumeUsage(allowance.key,allowance.limit);
  if(used===null)throw Error('Daily limit reached or browser storage is disabled. Subscribe or try again later.');
  setQuota({...allowance,used});
@@ -166,7 +166,7 @@ const fileAccept=slug==='merge-pdf'||slug==='split-pdf'?'application/pdf,.pdf':'
 return <section className="tool-workspace" aria-label={tool.title+' workspace'}>
  <div className="tool-workspace-heading">
   <div><p className="tool-workspace-kicker">SMART TOOL WORKSPACE</p><h2>Try {tool.title}</h2><p>Configure your input and generate a result in your browser.</p></div>
-  <span className="tool-workspace-free">{quota?(quota.limit===null?'Unlimited · no daily cap':quota.plan+' · '+Math.max(0,quota.limit-quota.used)+' left'):'Checking access…'}</span>
+  <span className="tool-workspace-free">{quota?(quota.limit===null?'Allowance unavailable':quota.plan+' · '+Math.max(0,quota.limit-quota.used)+' left'):'Checking access…'}</span>
  </div>
  <div className="tool-workspace-body">
   <div className="tool-editor">
@@ -189,9 +189,9 @@ return <section className="tool-workspace" aria-label={tool.title+' workspace'}>
    {['gst-calculator','percentage-calculator','profit-margin'].includes(slug)&&<div className="tool-field"><label htmlFor="tool-number-2">{slug==='gst-calculator'?'GST rate (%)':slug==='profit-margin'?'Selling price':'Percentage (%)'}</label><input id="tool-number-2" type="number" inputMode="decimal" className="field" value={num2} onChange={e=>setNum2(e.target.value)}/></div>}
    {slug==='password-generator'&&<label className="tool-checkbox"><input type="checkbox" checked={symbols} onChange={e=>setSymbols(e.target.checked)}/> Include symbols for stronger passwords</label>}
    <div className="tool-quota-panel" aria-live="polite">
-    <div className="tool-quota-top"><strong>{quota?quota.plan+' plan':'Checking your plan…'}</strong><span>{quota?(quota.limit===null?quota.used+' uses today · no daily cap':quota.used+' / '+quota.limit+' uses today'):'Verifying limits'}</span></div>
+    <div className="tool-quota-top"><strong>{quota?quota.plan+' plan':'Checking your plan…'}</strong><span>{quota?(quota.limit===null?'Allowance unavailable':quota.used+' / '+quota.limit+' uses today'):'Verifying limits'}</span></div>
     {quota&&quota.limit!==null&&<div className="tool-quota-track" role="progressbar" aria-label="Daily tool usage" aria-valuemin={0} aria-valuemax={quota.limit} aria-valuenow={quota.used}><span style={{width:Math.min(100,quota.used/quota.limit*100)+'%'}}/></div>}
-    <p>{quota?(quota.limit===null?'No fixed daily run cap · fair use allows up to 60 runs per minute; daily tally resets at 00:00 UTC':Math.max(0,quota.limit-quota.used)+' daily uses remaining · resets at 00:00 UTC'):'Daily limits are checked against your verified subscription.'}</p>
+    <p>{quota?(quota.limit===null?'Please refresh quota status.':Math.max(0,quota.limit-quota.used)+' daily uses remaining · resets at 00:00 UTC'):'Daily limits are checked against your verified subscription.'}</p>
     {quota&&<p className="tool-quota-notice">{quota.mode==='account'?'Synced across signed-in devices · a run is reserved before processing':'Stored in this browser · successful operations count toward the daily limit'}</p>}
     {quotaError&&<p role="alert" className="tool-quota-error">{quotaError}</p>}
     {quota&&quota.limit!==null&&quota.used>=quota.limit&&<div className="tool-quota-upgrade" role="status"><strong>Daily limit reached</strong><p>New operations are locked until the next daily reset or a higher plan is activated.</p><Link href="/pricing" className="button">View subscription plans →</Link></div>}

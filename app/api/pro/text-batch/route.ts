@@ -11,7 +11,7 @@ async function resolveTier(db:NonNullable<ReturnType<typeof adminDb>>,userId:str
   .eq('user_id',userId).in('plan_id',ids).eq('status','ACTIVE').limit(20);
  if(error)return {error:'Unable to verify membership',code:503} as const;
  if(!data?.length)return {error:'Active paid subscription required',code:403} as const;
- const tierOrder:PaidTier[]=['Unlimited','Premium','Pro','Starter'];
+ const tierOrder:PaidTier[]=['Max','Premium','Pro','Starter'];
  const active=new Set<PaidTier>();
  let unavailable=false;
  for(const record of data){

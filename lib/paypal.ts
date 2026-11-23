@@ -7,14 +7,14 @@ export const paypalTierSettings: Record<PaidTier,{planId:string;maxTexts:number}
  Starter:{planId:process.env.PAYPAL_PLAN_ID_STARTER || paypalPlanId,maxTexts:batchLimits.Starter},
  Pro:{planId:process.env.PAYPAL_PLAN_ID_PRO || '',maxTexts:batchLimits.Pro},
  Premium:{planId:process.env.PAYPAL_PLAN_ID_PREMIUM || '',maxTexts:batchLimits.Premium},
- Unlimited:{planId:process.env.PAYPAL_PLAN_ID_UNLIMITED || '',maxTexts:batchLimits.Unlimited}
+ Max:{planId:process.env.PAYPAL_PLAN_ID_MAX || '',maxTexts:batchLimits.Max}
 };
 // PayPal creates separate recurring billing plans for YEARLY and MONTHLY billing.
 export const paypalYearlyPlanIds:Record<PaidTier,string>={
  Starter:process.env.PAYPAL_PLAN_ID_STARTER_YEARLY || '',
  Pro:process.env.PAYPAL_PLAN_ID_PRO_YEARLY || '',
  Premium:process.env.PAYPAL_PLAN_ID_PREMIUM_YEARLY || '',
- Unlimited:process.env.PAYPAL_PLAN_ID_UNLIMITED_YEARLY || ''
+ Max:process.env.PAYPAL_PLAN_ID_MAX_YEARLY || ''
 };
 export function planForPayPalPlan(planId:string):{tier:PaidTier;billingPeriod:BillingPeriod}|null{
  if(!planId)return null;
@@ -34,7 +34,7 @@ export function configuredPayPalPlanIds():string[]{
  return ids.filter(id=>!!id&&planForPayPalPlan(id)!==null);
 }
 export function paypalPlanIdForCheckout(tier:PaidTier,billingPeriod:BillingPeriod):string{
- if(tier==='Unlimited' && (process.env.PAYPAL_UNLIMITED_CHECKOUT_ENABLED!=='true'||process.env.UNLIMITED_QUOTA_ENABLED!=='true'||process.env.USAGE_DB_QUOTAS_ENABLED!=='true'))return '';
+ if(tier==='Max' && (process.env.PAYPAL_MAX_CHECKOUT_ENABLED!=='true'||process.env.USAGE_DB_QUOTAS_ENABLED!=='true'))return '';
  if(billingPeriod==='yearly'&&process.env.PAYPAL_YEARLY_CHECKOUT_ENABLED!=='true')return '';
  const id=billingPeriod==='monthly'?paypalTierSettings[tier].planId:paypalYearlyPlanIds[tier];
  const match=planForPayPalPlan(id);
