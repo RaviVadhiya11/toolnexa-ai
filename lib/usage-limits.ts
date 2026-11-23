@@ -2,11 +2,11 @@
  * These are UX quotas, not server-enforced anti-abuse controls.
  * A browser-only tool cannot be made tamper-proof by localStorage.
  */
-export type UsagePlan='Free'|'Starter'|'Pro'|'Premium'|'Unlimited';
-// Unlimited has no daily run cap; server-side per-minute fair-use throttling still applies.
-export const dailyLimits:Record<UsagePlan,number|null>={Free:10,Starter:500,Pro:1000,Premium:1500,Unlimited:null};
-export const batchLimits={Starter:20,Pro:60,Premium:150,Unlimited:300} as const;
-export const planNames:UsagePlan[]=['Free','Starter','Pro','Premium','Unlimited'];
+export type UsagePlan='Free'|'Starter'|'Pro'|'Premium'|'Max';
+// Max is a capped, account-scoped top tier; every paid plan has a fixed UTC daily quota.
+export const dailyLimits:Record<UsagePlan,number|null>={Free:10,Starter:500,Pro:1000,Premium:1500,Max:3000};
+export const batchLimits={Starter:20,Pro:60,Premium:150,Max:300} as const;
+export const planNames:UsagePlan[]=['Free','Starter','Pro','Premium','Max'];
 export function isUsagePlan(value:unknown):value is UsagePlan{
  return typeof value==='string'&&planNames.some(plan=>plan===value);
 }
