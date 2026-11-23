@@ -3,7 +3,7 @@ import type {Metadata} from 'next';
 import {CircleHelp,ShieldCheck,FileText,Wallet,ExternalLink} from 'lucide-react';
 export const metadata:Metadata={title:'Help & Support',description:'Get help using ToolNexa AI free tools, logging in, and managing PayPal monthly or yearly subscriptions.',alternates:{canonical:'/support'}};
 const topics=[
- {icon:FileText,title:'PDF & image tools',text:'Use supported files (up to 25 MB per file). Password-protected PDFs are not supported. For failed downloads, try a current browser and check storage permissions.'},
+ {icon:FileText,title:'PDF & image tools',text:'Use supported files (up to 25 MB per file). Most editing tools cannot open an already encrypted PDF, but Protect PDF can create a password-protected AES-256 file. For failed downloads, try a current browser and check storage permissions.'},
  {icon:ShieldCheck,title:'Sign in and account',text:'If email confirmation is enabled, open the verification link in your inbox. Google login requires the configured Supabase provider.'},
  {icon:Wallet,title:'Subscriptions & billing',text:'The Dashboard shows server-verified membership and cancellation. If a cancellation is pending or checkout fails, confirm status in PayPal before trying again.'}
 ];

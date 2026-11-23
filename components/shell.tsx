@@ -4,9 +4,9 @@ import {usePathname,useRouter} from 'next/navigation';
 import {useEffect,useState} from 'react';
 import {AccountStatus} from '@/components/account-status';
 import {tools} from '@/lib/tools';
-import {ShieldCheck,Home,LayoutGrid,LayoutDashboard,Crown,Moon,Sun,Search,FileText,Image as ImageIcon,Code2,Briefcase,Type,Menu,X,Sparkles,ArrowUpRight,LifeBuoy,CreditCard} from 'lucide-react';
+import {ShieldCheck,Home,LayoutGrid,LayoutDashboard,Crown,Moon,Sun,Search,FileText,Image as ImageIcon,Code2,Briefcase,Type,Menu,X,Sparkles,ArrowUpRight,LifeBuoy,CreditCard,Clapperboard} from 'lucide-react';
 const nav=[{href:'/',label:'Home',icon:Home},{href:'/tools',label:'All Tools',icon:LayoutGrid},{href:'/dashboard',label:'Dashboard',icon:LayoutDashboard},{href:'/pricing',label:'Pricing',icon:Crown},{href:'/admin',label:'Admin',icon:ShieldCheck}];
-const groups=[{name:'Text',icon:Type},{name:'Image',icon:ImageIcon},{name:'PDF',icon:FileText},{name:'Developer',icon:Code2},{name:'Business',icon:Briefcase}] as const;
+const groups=[{name:'Text',icon:Type},{name:'Image',icon:ImageIcon},{name:'PDF',icon:FileText},{name:'Developer',icon:Code2},{name:'Business',icon:Briefcase},{name:'Creator',icon:Clapperboard}] as const;
 export function Shell({children}:{children:React.ReactNode}){
  const path=usePathname(),router=useRouter();
  const [dark,setDark]=useState(true),[q,setQ]=useState(''),[menuOpen,setMenuOpen]=useState(false);
@@ -66,7 +66,7 @@ export function Shell({children}:{children:React.ReactNode}){
      <section className="editorial-footer-about" aria-labelledby="footer-about-title">
       <Link href="/" className="brand premium-brand editorial-footer-brand"><span className="brand-icon"><Sparkles size={23}/></span><span>ToolNexa <em>AI</em></span></Link>
       <h2 id="footer-about-title">ABOUT TOOLNEXA AI</h2>
-      <p>All your everyday PDF, image, text, developer and business tools in one smart workspace.</p>
+      <p>All your everyday PDF, image, text, developer, business and creator tools in one smart workspace.</p>
       <p className="editorial-footer-caption">56 practical utility tools. Optional premium batch text analysis.</p>
       <a href="https://github.com/RaviVadhiya11/toolnexa-ai/issues" className="editorial-footer-contact" target="_blank" rel="noopener noreferrer"><span className="editorial-footer-contact-icon"><Briefcase size={17}/></span>Report a technical issue <ArrowUpRight size={17}/></a>
      </section>
