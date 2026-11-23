@@ -20,5 +20,5 @@ export default function Pricing(){
    yearly:paypalYearlyPlanIds
   }} enabled={checkoutEnabled}
   yearlyEnabled={process.env.PAYPAL_YEARLY_CHECKOUT_ENABLED==='true'}
-  unlimitedEnabled={process.env.PAYPAL_MAX_CHECKOUT_ENABLED==='true'&&process.env.USAGE_DB_QUOTAS_ENABLED==='true'}/>;
+  maxEnabled={process.env.PAYPAL_MAX_CHECKOUT_ENABLED==='true'&&process.env.USAGE_DB_QUOTAS_ENABLED==='true'}/>;
 }
