@@ -15,7 +15,7 @@ Production site: https://toolnexa-ai.vercel.app
 - Server-verified PayPal membership, signed webhooks, hosted subscription fallback, customer subscription overview and immediate cancellation request.
 - SEO metadata, sitemap, robots, accessible error screens, security headers and public support/policy pages.
 
-The Unlimited plan is a coming-soon preview only; no PayPal plan or unlimited entitlement is currently offered. Unlimited plans should have fair-use and cost controls before launch.
+The Unlimited plan is a coming-soon preview only. Planned regular price: **$19.99/month**, with an introductory launch offer of **$14.99/month** (not available for purchase yet). No PayPal plan or unlimited entitlement is currently offered. Unlimited plans need defined fair-use and cost controls, verified subscription billing, and appropriate entitlement enforcement before launch.
 
 ## Run locally
 

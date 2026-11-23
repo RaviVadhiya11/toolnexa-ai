@@ -38,7 +38,7 @@ export function PremiumPricing({clientId,plans,enabled}:{clientId:string;plans:R
     </article>
    })}
   </div>
-  <div className="unlimited-plan-preview" aria-label="Unlimited plan preview"><div><span className="tier-tag">COMING SOON</span><h2>Unlimited Plan</h2><p>Need more than 1,500 daily tool runs? A future higher-capacity plan can include fair-use safeguards and verified billing. Price and benefits will be announced before checkout is enabled.</p></div><span className="unlimited-coming-soon">Not available yet</span></div>
+  <div className="unlimited-plan-preview" aria-label="Unlimited plan preview"><div><span className="tier-tag">COMING SOON · PLANNED LAUNCH OFFER</span><h2>Unlimited Plan</h2><p className="tier-price">$14.99<span> / month at launch</span></p><p className="muted text-sm">Planned regular price: $19.99/month. Launch offer is not active yet.</p><p>For workflows beyond 1,500 daily runs. Fair-use safeguards, features and verified recurring billing will be finalized before launch. This plan cannot be purchased yet.</p></div><span className="unlimited-coming-soon">Not available yet</span></div>
   <div id="subscription-checkout" className="subscribe-panel" aria-live="polite">
    {selected?<>
     <h2 className="text-xl font-extrabold">{selected} subscription — {tiers.find(x=>x.name===selected)?.price}/month</h2>
