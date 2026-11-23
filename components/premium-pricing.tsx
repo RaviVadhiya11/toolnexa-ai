@@ -1,28 +1,28 @@
 'use client';
 import {useState} from 'react';
 import {PayPalSubscribe} from '@/components/paypal-subscribe';
-import {billingPeriods,paidTiers,subscriptionPrices,unlimitedPreviewPrices,type BillingPeriod,type PaidTier} from '@/lib/subscription-pricing';
+import {billingPeriods,paidTiers,subscriptionPrices,type BillingPeriod,type PaidTier} from '@/lib/subscription-pricing';
 
 const tiers:{name:PaidTier;tagline:string;features:string[]}[]=[
  {name:'Starter',tagline:'For everyday productivity',features:['56 utility tools','20 texts per batch request','20,000 characters per text','500 tool runs per day']},
  {name:'Pro',tagline:'For creators and professionals',features:['56 utility tools','60 texts per batch request','20,000 characters per text','1,000 tool runs per day']},
- {name:'Premium',tagline:'For higher-volume workflows',features:['56 utility tools','150 texts per batch request','20,000 characters per text','1,500 tool runs per day']}
+ {name:'Premium',tagline:'For higher-volume workflows',features:['56 utility tools','150 texts per batch request','20,000 characters per text','1,500 tool runs per day']},
+ {name:'Max',tagline:'High-capacity creator and business toolkit',features:['56 utility tools','300 texts per batch request','20,000 characters per text','3,000 tool runs per day','Gemini AI preview: 3 generations/day (shared free allowance)']}
 ];
 
 type PlanIds=Record<BillingPeriod,Record<PaidTier,string>>;
-export function PremiumPricing({clientId,plans,enabled,yearlyEnabled,unlimitedEnabled}:{
- clientId:string;plans:PlanIds;enabled:boolean;yearlyEnabled:boolean;unlimitedEnabled:boolean
+export function PremiumPricing({clientId,plans,enabled,yearlyEnabled,maxEnabled}:{
+ clientId:string;plans:PlanIds;enabled:boolean;yearlyEnabled:boolean;maxEnabled:boolean
 }){
  const [billingPeriod,setBillingPeriod]=useState<BillingPeriod>('monthly');
  const [selected,setSelected]=useState<PaidTier|null>(null);
  const planId=selected?plans[billingPeriod][selected]:'';
  const allIds=billingPeriods.flatMap(period=>paidTiers.map(tier=>plans[period][tier])).filter(Boolean);
- const isReady=(tier:PaidTier)=>enabled&&(billingPeriod==='monthly'||yearlyEnabled)&&(tier!=='Unlimited'||unlimitedEnabled)&&
+ const isReady=(tier:PaidTier)=>enabled&&(billingPeriod==='monthly'||yearlyEnabled)&&(tier!=='Max'||maxEnabled)&&
   !!plans[billingPeriod][tier]&&allIds.filter(id=>id===plans[billingPeriod][tier]).length===1;
  const available=!!selected&&isReady(selected);
  const periodLabel=billingPeriod==='monthly'?'month':'year';
  const selectedPrice=selected?subscriptionPrices[selected][billingPeriod]:null;
- const unlimitedPrice=unlimitedPreviewPrices[billingPeriod];
  return <section aria-label="Monthly and yearly subscription pricing">
   <header className="pricing-intro">
    <span className="tier-tag">TOOLNEXA AI PREMIUM</span>
@@ -61,13 +61,6 @@ export function PremiumPricing({clientId,plans,enabled,yearlyEnabled,unlimitedEn
     </article>;
    })}
   </div>
-  <div className="unlimited-plan-preview" aria-label="Unlimited plan preview">
-   <div><span className="tier-tag">{isReady('Unlimited')?'LAUNCH OFFER · FAIR USE':'COMING SOON · PLANNED LAUNCH OFFER'}</span><h2>Unlimited Plan</h2>
-    <p className="tier-price">${unlimitedPrice.launch}<span> / {periodLabel} at launch</span></p>
-    <p className="muted text-sm">Planned future regular price: ${unlimitedPrice.regular}/{periodLabel}. {billingPeriod==='yearly'?'Annual price is charged upfront and renews every 12 months.':'Monthly recurring billing.'} {isReady('Unlimited')?'Your PayPal subscription will renew at the price approved at checkout.':'The launch offer cannot be purchased until setup is completed.'}</p>
-    <p>No fixed daily cap on the 56 browser tools, subject to a server-side fair-use limit of 60 runs per minute. Includes up to 300 texts per Batch Text Analyzer request (20,000 characters each). AI credits are not included. Signed-in account and verified PayPal subscription required.</p>
-   </div><div><button type="button" className="tier-cta" onClick={()=>{setSelected('Unlimited');document.getElementById('subscription-checkout')?.scrollIntoView({behavior:'smooth',block:'center'})}}>{isReady('Unlimited')?'Choose Unlimited':'View Unlimited plan'}</button>{!isReady('Unlimited')&&<span className="unlimited-coming-soon">Not available yet</span>}</div>
-  </div>
   <div id="subscription-checkout" className="subscribe-panel" aria-live="polite">
    {selected?<>
     <h2 className="text-xl font-extrabold">{selected} subscription — ${selectedPrice}/{periodLabel}</h2>
@@ -75,10 +68,10 @@ export function PremiumPricing({clientId,plans,enabled,yearlyEnabled,unlimitedEn
     {available?<PayPalSubscribe key={selected+'-'+billingPeriod} clientId={clientId} planId={planId} tier={selected} billingPeriod={billingPeriod}/>:<p className="muted mt-5" role="status">Checkout for this selection is not active. The matching PayPal Live {billingPeriod} plan must be configured and verified first; no payment can be taken here yet.</p>}
    </>:<>
     <h2 className="text-xl font-extrabold">Select a plan to continue</h2>
-    <p className="muted mt-2">Choose Starter, Pro, Premium, or Unlimited above to see account and checkout options.</p>
+    <p className="muted mt-2">Choose Starter, Pro, Premium, or Max above to see account and checkout options.</p>
    </>}
   </div>
   <div className="pricing-trust"><span>✓ Secure PayPal checkout when enabled</span><span>✓ Monthly or annual recurring billing</span><span>✓ Cancel through PayPal</span></div>
-  <p className="small-note mt-6 text-center">Free usage: 10 successful tool runs per day across all 56 tools on this browser. Starter: 500, Pro: 1,000, Premium: 1,500 daily runs; Unlimited: no daily cap subject to 60 runs/minute fair use. Allowances reset at 00:00 UTC. Paid Batch Text Analyzer sizes: Starter 20, Pro 60, Premium 150, Unlimited 300 texts per request. Guests have a per-browser counter. Signed-in usage can sync across devices after server-side account quotas are enabled. Local-only processing cannot be fully abuse-proof.</p>
+  <p className="small-note mt-6 text-center">Free usage: 10 successful tool runs per day across all 56 tools on this browser. Starter: 500, Pro: 1,000, Premium: 1,500 daily runs; Max: 3,000 daily runs. Allowances reset at 00:00 UTC. Paid Batch Text Analyzer sizes: Starter 20, Pro 60, Premium 150, Max 300 texts per request. Guests have a per-browser counter. Signed-in usage can sync across devices after server-side account quotas are enabled. Gemini AI preview is separately capped at 3 per signed-in user and 30 site-wide daily, not a paid AI entitlement. Local-only processing cannot be fully abuse-proof.</p>
  </section>;
 }
