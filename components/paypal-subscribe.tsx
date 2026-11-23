@@ -172,7 +172,7 @@ export function PayPalSubscribe({clientId,planId,tier,billingPeriod}:{clientId:s
   {sdkError&&<div className="mt-3">
    <button type="button" className="button w-full" disabled={redirecting}
     onClick={()=>void hostedCheckout()}>{redirecting?'Opening PayPal…':'Continue securely on PayPal'}</button>
-   <p className="muted text-sm mt-2">You will review and approve the {billingPeriod==='yearly'?'annual':'monthly'} subscription on PayPal before it can be activated.</p>
+   <p className="muted text-sm mt-2">You will review and approve the monthly subscription on PayPal before it can be activated.</p>
    <button type="button" className="button outline mt-3" disabled={redirecting}
     onClick={()=>{setMessage('');setRetry(n=>n+1)}}>Retry PayPal checkout button</button>
   </div>}
