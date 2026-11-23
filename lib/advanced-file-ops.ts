@@ -70,7 +70,7 @@ export async function processAdvancedPdf(slug:string,file:File,primary:string,se
   const mode=option==='view'?'view':'update';
   if(mode==='view'){
    const fields=['Title: '+(doc.getTitle()||'—'),'Author: '+(doc.getAuthor()||'—'),'Subject: '+(doc.getSubject()||'—'),'Keywords: '+(doc.getKeywords()||'—'),'Pages: '+pages.length];
-   return {blob:pdfBlob(await doc.save()),name:'toolnexa-metadata.pdf',message:fields.join('\n')};
+   return {blob:new Blob(),name:'',message:fields.join('\n')};
   }
   if(!primary.trim()&&!secondary.trim())throw Error('Enter a title and/or author.');
   if(primary.trim())doc.setTitle(short(primary.trim()));
