@@ -4,9 +4,9 @@ import {PayPalSubscribe} from '@/components/paypal-subscribe';
 
 type Tier='Starter'|'Pro'|'Premium';
 const tiers:{name:Tier;price:string;tagline:string;features:string[]}[]=[
- {name:'Starter',price:'$3.99',tagline:'For everyday productivity',features:['20 utility tools','20 texts per batch request','20,000 characters per text','150 tool runs per day','Monthly recurring access']},
- {name:'Pro',price:'$5.99',tagline:'For creators and professionals',features:['20 utility tools','60 texts per batch request','20,000 characters per text','500 tool runs per day','Monthly recurring access']},
- {name:'Premium',price:'$9.99',tagline:'For higher-volume workflows',features:['20 utility tools','150 texts per batch request','20,000 characters per text','2,000 tool runs per day','Monthly recurring access']}
+ {name:'Starter',price:'$3.99',tagline:'For everyday productivity',features:['20 utility tools','20 texts per batch request','20,000 characters per text','500 tool runs per day','Monthly recurring access']},
+ {name:'Pro',price:'$5.99',tagline:'For creators and professionals',features:['20 utility tools','60 texts per batch request','20,000 characters per text','1,000 tool runs per day','Monthly recurring access']},
+ {name:'Premium',price:'$9.99',tagline:'For higher-volume workflows',features:['20 utility tools','150 texts per batch request','20,000 characters per text','1,500 tool runs per day','Monthly recurring access']}
 ];
 
 export function PremiumPricing({clientId,plans,enabled}:{clientId:string;plans:Record<Tier,string>;enabled:boolean}){
@@ -38,6 +38,7 @@ export function PremiumPricing({clientId,plans,enabled}:{clientId:string;plans:R
     </article>
    })}
   </div>
+  <div className="unlimited-plan-preview" aria-label="Unlimited plan preview"><div><span className="tier-tag">COMING SOON</span><h2>Unlimited Plan</h2><p>Need more than 1,500 daily tool runs? A future higher-capacity plan can include fair-use safeguards and verified billing. Price and benefits will be announced before checkout is enabled.</p></div><span className="unlimited-coming-soon">Not available yet</span></div>
   <div id="subscription-checkout" className="subscribe-panel" aria-live="polite">
    {selected?<>
     <h2 className="text-xl font-extrabold">{selected} subscription — {tiers.find(x=>x.name===selected)?.price}/month</h2>
@@ -49,6 +50,6 @@ export function PremiumPricing({clientId,plans,enabled}:{clientId:string;plans:R
    </>}
   </div>
   <div className="pricing-trust"><span>✓ Secure checkout with PayPal</span><span>✓ Monthly recurring billing</span><span>✓ Cancel through PayPal</span></div>
-  <p className="small-note mt-6 text-center">Free usage: 10 successful tool runs per day across all 20 tools on this browser. Starter: 150, Pro: 500, Premium: 2,000 daily runs. Allowances reset at 00:00 UTC. Current paid feature: Batch Text Analyzer. Paid Batch Text Analyzer sizes: Starter 20, Pro 60, Premium 150 texts per request. Daily utility usage is tracked in this browser; it is not an account-wide server-enforced quota.</p>
+  <p className="small-note mt-6 text-center">Free usage: 10 successful tool runs per day across all 20 tools on this browser. Starter: 500, Pro: 1,000, Premium: 1,500 daily runs. Allowances reset at 00:00 UTC. Current paid feature: Batch Text Analyzer. Paid Batch Text Analyzer sizes: Starter 20, Pro 60, Premium 150 texts per request. Daily utility usage is tracked in this browser; it is not an account-wide server-enforced quota.</p>
  </section>;
 }
