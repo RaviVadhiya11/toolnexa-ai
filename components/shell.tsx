@@ -42,7 +42,7 @@ export function Shell({children}:{children:React.ReactNode}){
    <div className="premium-sidebar-upgrade">
     <span className="premium-upgrade-icon"><Crown size={20}/></span>
     <strong>ToolNexa Pro</strong>
-    <p>More power for batch text analysis. Plans from $3.99/month.</p>
+    <p>HD vector and image downloads from Pro, plus higher batch limits. Plans from $3.99/month.</p>
     <Link href="/pricing" className="premium-sidebar-cta">Explore plans <ArrowUpRight size={17}/></Link>
    </div>
   </aside>
