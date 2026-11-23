@@ -52,3 +52,24 @@ test('pricing reflects Starter 2x, Pro 4K, Premium and Max 8K',()=>{
  assert.match(price,/4K upscale export/);
  assert.equal((price.match(/4K and 8K upscale export/g)||[]).length,2);
 });
+
+test('4K is selected by default and upscale download stays visible but disabled until success',()=>{
+ const ui=read('components/studio-upscale-panel.tsx');
+ assert.match(ui,/useState<UpscaleResolution>\('4k'\)/);
+ assert.match(ui,/disabled=\{!resultReady\}/);
+ assert.match(ui,/const resultReady=result!==null&&!working/);
+ assert.match(ui,/Download Upscaled \{resolution\.toUpperCase\(\)\}/);
+ assert.match(ui,/resultUrl&&<div className="studio-upscale-preview"/);
+ assert.match(ui,/Upscale complete/);
+ assert.match(ui,/sourceKey/);
+});
+test('Free plan sees actionable Pro upgrade for 4K instead of an enabled upscale action',()=>{
+ const ui=read('components/studio-upscale-panel.tsx');
+ assert.match(ui,/disabled=\{working\|\|disabled\|\|!entitled\}/);
+ assert.match(ui,/!entitled\?<div className="studio-upgrade-notice">/);
+ assert.match(ui,/resolution==='4k'\?'4K upscaling and downloads require Pro, Premium or Max/);
+ assert.match(ui,/Upgrade to '\+requiredTier\+' for '\+resolution\.toUpperCase\(\)/);
+ assert.match(ui,/href="\/pricing"/);
+ const base=read('lib/studio-upscale.ts');
+ assert.match(base,/if\(plan==='Free'\)return false/);
+});
