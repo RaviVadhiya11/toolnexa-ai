@@ -9,12 +9,15 @@ export async function GET(){
   const auth=await serverSupabase();
   const {data:{user},error:authError}=auth?await auth.auth.getUser():{data:{user:null},error:null};
   if(authError||!user)return NextResponse.json({plan:'Free',authenticated:false,userId:null},{headers});
-  const db=adminDb();const ids=configuredPayPalPlanIds();
-  if(!db||!ids.length||process.env.PAYPAL_ENV!=='live')return NextResponse.json({error:'Membership service unavailable'},{status:503,headers});
+  const db=adminDb();
+  if(!db)return NextResponse.json({error:'Membership database unavailable'},{status:503,headers});
   const {data,error}=await db.from('paypal_subscriptions').select('subscription_id,plan_id')
-   .eq('user_id',user.id).in('plan_id',ids).eq('status','ACTIVE').limit(20);
+   .eq('user_id',user.id).eq('status','ACTIVE').limit(20);
   if(error)return NextResponse.json({error:'Membership lookup failed'},{status:503,headers});
-  if(!data?.length)return NextResponse.json({plan:'Free',authenticated:true,userId:user.id},{headers});
+  if(!data?.length)return NextResponse.json({plan:'Free',billingPeriod:null,authenticated:true,userId:user.id},{headers});
+  const ids=configuredPayPalPlanIds();
+  if(!ids.length||process.env.PAYPAL_ENV!=='live'||data.some(row=>!ids.includes(row.plan_id)))
+   return NextResponse.json({error:'Paid membership verification unavailable'},{status:503,headers});
   const active=new Map<PaidTier,BillingPeriod>();
   for(const record of data){
    let subscription;
