@@ -16,7 +16,14 @@ export default function ResetPasswordPage(){
   const client=browserSupabase();
   if(!client)return;
   let active=true;
-  void client.auth.getUser().then(({data})=>{if(active&&data.user)setRecovery(true)});
+  // Only a verified recovery callback should switch from requesting an email to updating a password.
+  // An ordinary signed-in session must not silently turn this page into a password change form.
+  const verified=new URLSearchParams(window.location.search).get('verified')==='1';
+  if(verified)void client.auth.getUser().then(({data,error})=>{
+   if(!active)return;
+   if(!error&&data.user)setRecovery(true);
+   else setMessage('Recovery link is invalid or has expired. Request a new password reset email.');
+  });
   return()=>{active=false};
  },[]);
  async function submit(event:React.FormEvent){
@@ -29,7 +36,8 @@ export default function ResetPasswordPage(){
   try{
    if(recovery){
     const {error}=await client.auth.updateUser({password});if(error)throw error;
-    setSuccess(true);setMessage('Password updated. You can now continue to your Dashboard.');
+    setSuccess(true);setMessage('Password updated successfully. You can now sign in with your new password.');
+    await client.auth.signOut();
    }else{
     const {error}=await client.auth.resetPasswordForEmail(email.trim(),{
      redirectTo:window.location.origin+'/auth/callback?next=reset'
@@ -49,6 +57,6 @@ export default function ResetPasswordPage(){
    <button type="submit" className="button w-full" disabled={busy}>{busy?'Processing…':recovery?'Save new password':'Send reset link'}</button>
   </form>}
   {message&&<p role={success?'status':'alert'} className="small-note mt-4">{message}</p>}
-  <p className="text-sm muted mt-6"><Link href={success&&recovery?'/dashboard':'/login'} style={{color:'var(--accent)'}}>{success&&recovery?'Open Dashboard':'Back to Sign in'}</Link></p>
+  <p className="text-sm muted mt-6"><Link href="/login" style={{color:'var(--accent)'}}>Back to Sign in</Link></p>
  </div></section>;
 }
