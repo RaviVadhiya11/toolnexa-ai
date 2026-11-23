@@ -27,7 +27,8 @@ export async function GET(){
     .update({status:subscription.status,updated_at:new Date().toISOString()})
     .eq('subscription_id',record.subscription_id).eq('user_id',user.id).eq('plan_id',record.plan_id);
   }
-  const plan=active.has('Premium')?'Premium':active.has('Pro')?'Pro':active.has('Starter')?'Starter':'Free';
+  const plan=active.has('Unlimited')?'Unlimited':active.has('Premium')?'Premium':active.has('Pro')?'Pro':active.has('Starter')?'Starter':'Free';
+  if(plan==='Unlimited'&&(process.env.USAGE_DB_QUOTAS_ENABLED!=='true'||process.env.UNLIMITED_QUOTA_ENABLED!=='true'))return NextResponse.json({error:'Unlimited usage service is not ready'},{status:503,headers});
   return NextResponse.json({plan,billingPeriod:plan==='Free'?null:active.get(plan as PaidTier)??null,authenticated:true,userId:user.id},{headers});
  }catch{return NextResponse.json({error:'Membership service unavailable'},{status:503,headers})}
 }
