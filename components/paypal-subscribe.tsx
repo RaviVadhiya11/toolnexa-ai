@@ -1,6 +1,7 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import type {FormEvent} from 'react';
+import type {PaidTier,BillingPeriod} from '@/lib/subscription-pricing';
 import {browserSupabase} from '@/lib/supabase/client';
 
 declare global {
@@ -64,7 +65,7 @@ function SubscriptionAuth(){
  </div>
 }
 
-export function PayPalSubscribe({clientId,planId,tier}:{clientId:string;planId:string;tier:'Starter'|'Pro'|'Premium'}){
+export function PayPalSubscribe({clientId,planId,tier,billingPeriod}:{clientId:string;planId:string;tier:PaidTier;billingPeriod:BillingPeriod}){
  const root=useRef<HTMLDivElement>(null);
  const [userId,setUserId]=useState<string|null>(null);
  const [checking,setChecking]=useState(true);
@@ -113,7 +114,7 @@ export function PayPalSubscribe({clientId,planId,tier}:{clientId:string;planId:s
        });
        if(!response.ok)throw Error();
        const result=await response.json();
-       if(!cancelled)setMessage(result.status==='ACTIVE'?'Subscription verified. Your Pro access is active.':'PayPal approved your subscription. Pro access will start once PayPal activates it.');
+       if(!cancelled)setMessage(result.status==='ACTIVE'?'Subscription verified. Your '+tier+' access is active.':'PayPal approved your subscription. '+tier+' access will start once PayPal activates it.');
       }catch{
        if(!cancelled)setMessage('PayPal approval received. Verification pending; contact support if this persists.');
       }
@@ -144,7 +145,7 @@ export function PayPalSubscribe({clientId,planId,tier}:{clientId:string;planId:s
   try{
    const response=await fetch('/api/paypal/start',{
     method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({tier})
+    body:JSON.stringify({tier,billingPeriod})
    });
    const data=await response.json();
    if(!response.ok||typeof data.approvalUrl!=='string')
@@ -166,7 +167,7 @@ export function PayPalSubscribe({clientId,planId,tier}:{clientId:string;planId:s
   {sdkError&&<div className="mt-3">
    <button type="button" className="button w-full" disabled={redirecting}
     onClick={()=>void hostedCheckout()}>{redirecting?'Opening PayPal…':'Continue securely on PayPal'}</button>
-   <p className="muted text-sm mt-2">You will review and approve the monthly subscription on PayPal before it can be activated.</p>
+   <p className="muted text-sm mt-2">You will review and approve the {billingPeriod==='yearly'?'annual':'monthly'} subscription on PayPal before it can be activated.</p>
    <button type="button" className="button outline mt-3" disabled={redirecting}
     onClick={()=>{setMessage('');setRetry(n=>n+1)}}>Retry PayPal checkout button</button>
   </div>}
