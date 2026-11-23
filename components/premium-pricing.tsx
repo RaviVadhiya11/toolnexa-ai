@@ -50,6 +50,6 @@ export function PremiumPricing({clientId,plans,enabled}:{clientId:string;plans:R
    </>}
   </div>
   <div className="pricing-trust"><span>✓ Secure checkout with PayPal</span><span>✓ Monthly recurring billing</span><span>✓ Cancel through PayPal</span></div>
-  <p className="small-note mt-6 text-center">Free usage: 10 successful tool runs per day across all 20 tools on this browser. Starter: 500, Pro: 1,000, Premium: 1,500 daily runs. Allowances reset at 00:00 UTC. Current paid feature: Batch Text Analyzer. Paid Batch Text Analyzer sizes: Starter 20, Pro 60, Premium 150 texts per request. Daily utility usage is tracked in this browser; it is not an account-wide server-enforced quota.</p>
+  <p className="small-note mt-6 text-center">Free usage: 10 successful tool runs per day across all 20 tools on this browser. Starter: 500, Pro: 1,000, Premium: 1,500 daily runs. Allowances reset at 00:00 UTC. Current paid feature: Batch Text Analyzer. Paid Batch Text Analyzer sizes: Starter 20, Pro 60, Premium 150 texts per request. Guests have a per-browser counter. Signed-in usage can sync across devices after server-side account quotas are enabled. Local-only processing cannot be fully abuse-proof.</p>
  </section>;
 }
