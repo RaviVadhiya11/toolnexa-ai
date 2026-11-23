@@ -562,3 +562,15 @@ body{background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,syst
 .support-contact>svg{flex-shrink:0}
 .support-contact .button{display:inline-flex;align-items:center;gap:8px;margin-top:18px;text-decoration:none}
 @media(max-width:670px){.support-grid{grid-template-columns:1fr}.support-card{padding:20px}.support-contact{flex-direction:column;gap:4px}.legal-table>div{grid-template-columns:1fr;gap:3px}.legal-hero{border-radius:18px;padding:24px 20px}.legal-content{padding:21px}.legal-content h2{font-size:17px}.premium-footer-links{gap:11px 15px;padding:0 7px}}
+
+/* Fix production phone screenshot: legal/footer links must never run together. */
+.premium-main .premium-footer{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px;line-height:1.6;padding:24px 12px 12px;min-width:0}
+.premium-main .premium-footer-links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px 12px;width:100%;max-width:650px;margin:0;padding:0;list-style:none}
+.premium-main .premium-footer-links a{display:flex;min-width:0;min-height:42px;align-items:center;justify-content:center;padding:9px 8px;border:1px solid var(--border);border-radius:11px;color:var(--muted);background:var(--panel);text-decoration:none;text-align:center;font-size:12px;font-weight:720;line-height:1.4;overflow-wrap:break-word;transition:color .2s,border-color .2s,background .2s}
+.premium-main .premium-footer-links a:hover,.premium-main .premium-footer-links a:focus-visible{color:var(--accent);border-color:var(--accent);background:#7045e21a}
+@media(max-width:670px){
+ .premium-main .premium-footer{margin-top:32px;margin-bottom:13px;padding:22px 0 10px;gap:12px}
+ .premium-main .premium-footer-links{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .premium-main .premium-footer-links a{font-size:12px;min-height:46px;padding:10px 8px}
+}
+@media(max-width:330px){.premium-main .premium-footer-links{grid-template-columns:1fr}}
