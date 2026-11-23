@@ -6,7 +6,7 @@ const script=new URL('../scripts/paypal-live-audit.mjs',import.meta.url);
 const source=readFileSync(script,'utf8');
 function run(env){
  return spawnSync(process.execPath,[script.pathname],{
-  env:{...process.env,PAYPAL_LIVE_AUDIT_ENABLED:'false',...env},
+  env:{...process.env,PAYPAL_LIVE_AUDIT_ENABLED:'false',PAYPAL_CHECKOUT_ENABLED:'false',...env},
   encoding:'utf8',timeout:15000
  });
 }
