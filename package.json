@@ -17,6 +17,10 @@
     "react-dom": "^19.1.0",
     "lucide-react": "^0.468.0",
     "pdf-lib": "^1.17.1",
+    "@cantoo/pdf-lib": "2.11.1",
+    "prettier": "3.6.2",
+    "terser": "5.51.4",
+    "sql-formatter": "15.10.0",
     "qrcode": "^1.5.4",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.49.1"
