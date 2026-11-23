@@ -29,12 +29,12 @@ test('PDF rotation changes requested pages only',async()=>{
 test('PDF page order can be changed',async()=>{
  const data=await processAdvancedPdf('reorder-pdf',await fixture(),'3,1,2','','');
  assert.equal((await getDoc(data)).getPageCount(),3);
- await assert.rejects(()=>processAdvancedPdf('reorder-pdf',await fixture(),'1,1,2','',''));
+ await assert.rejects(async()=>processAdvancedPdf('reorder-pdf',await fixture(),'1,1,2','',''));
 });
 test('PDF delete preserves other pages',async()=>{
  const data=await processAdvancedPdf('delete-pdf-pages',await fixture(),'2','','');
  assert.equal((await getDoc(data)).getPageCount(),2);
- await assert.rejects(()=>processAdvancedPdf('delete-pdf-pages',await fixture(),'1,2,3','',''));
+ await assert.rejects(async()=>processAdvancedPdf('delete-pdf-pages',await fixture(),'1,2,3','',''));
 });
 test('PDF watermark and page numbering produce loadable PDFs',async()=>{
  for(const name of ['pdf-watermark','pdf-page-numbers']){
@@ -64,5 +64,5 @@ test('PDF password tool really encrypts rather than just labelling output',async
  const unlocked=await SecurePDF.load(data,{password:'password123'});
  assert.equal(unlocked.getPageCount(),3);
  await assert.rejects(()=>SecurePDF.load(data,{password:'wrongPassword'}));
- await assert.rejects(()=>processAdvancedPdf('protect-pdf',file,'short','short',''));
+ await assert.rejects(async()=>processAdvancedPdf('protect-pdf',file,'short','short',''));
 });
