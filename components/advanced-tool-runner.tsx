@@ -122,7 +122,7 @@ export function AdvancedToolRunner({tool}:{tool:Tool}){
   if(!response.ok)throw Error(data.error||'Unable to check your usage allowance');
   if(!isUsagePlan(data.plan)||!['account','browser'].includes(String(data.mode)))throw Error('Invalid account quota response.');
   const limit=dailyLimits[data.plan],mode=data.mode as Q['mode'],key=quotaKey(typeof data.userId==='string'?data.userId:null);
-  if(data.plan==='Unlimited'&&(mode!=='account'||data.limit!==null))throw Error('Unlimited must be verified server-side.');
+  if(data.plan==='Max'&&(mode!=='account'||data.limit!==3000))throw Error('Max 3,000/day allowance must be verified server-side.');
   const next={plan:data.plan,mode,limit,key,used:mode==='account'&&typeof data.used==='number'?data.used:readUsage(key)};
   setQuota(next);setQuotaError('');return next;
  }
@@ -301,7 +301,7 @@ export function AdvancedToolRunner({tool}:{tool:Tool}){
     <div className="tool-quota-panel" aria-live="polite">
      <div className="tool-quota-top"><strong>{quota?quota.plan+' plan':'Verifying plan…'}</strong><span>{quota?(quota.limit===null?quota.used+' today · no daily cap':quota.used+' / '+quota.limit+' today'):'Please wait'}</span></div>
      {quota&&quota.limit!==null&&<div className="tool-quota-track" role="progressbar" aria-label="Daily tool usage" aria-valuemin={0} aria-valuemax={quota.limit} aria-valuenow={quota.used}><span style={{width:Math.min(100,quota.used/quota.limit*100)+'%'}}/></div>}
-     <p className="small-note">{quota?.limit===null?'Unlimited · fair-use 60 runs per 60-second account window':'Daily limits reset at 00:00 UTC.'} {quota?.mode==='account'?'Synced across devices.':'Guest usage stays in this browser.'}</p>
+     <p className="small-note">Daily limits reset at 00:00 UTC. {quota?.mode==='account'?'Synced across devices.':'Guest usage stays in this browser.'}</p>
      {quotaError&&<p className="tool-quota-error" role="alert">{quotaError}</p>}
      {full&&<div className="tool-quota-upgrade"><strong>Daily limit reached</strong><p>Upgrade your subscription or come back after the daily reset.</p><Link className="button" href="/pricing">View plans</Link></div>}
     </div>
