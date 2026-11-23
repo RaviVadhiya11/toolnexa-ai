@@ -78,7 +78,6 @@ const PRIMARY_HINT:Record<string,[string,string]>={
  'quotation-maker':['Your business name','My Business'],
  'resume-builder':['Full name','Alex Kumar'],
  'youtube-thumbnail-downloader':['YouTube URL or video ID','https://youtu.be/jNQXAC9IVRw'],
- 'ai-title-hashtag-generator':['Video / post topic','Tips to make better travel videos'],
 };
 const SECOND_HINT:Record<string,[string,string]>={
  'protect-pdf':['Confirm password','Repeat password'],
@@ -152,6 +151,7 @@ export function AdvancedToolRunner({tool}:{tool:Tool}){
    let output='',generated:GeneratedFile|null=null;
    if(pdf)generated=await processAdvancedPdf(slug,file!,primary,secondary,option);
    else if(image&&slug==='image-to-base64'){
+    if(!/^image\/(png|jpeg|webp|gif|bmp)$/.test(file!.type))throw Error('Choose a supported image file.');
     if(file!.size>2*1024*1024)throw Error('Maximum 2 MB image for Base64 conversion.');
     const b64=await new Promise<string>((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result));reader.onerror=()=>reject(Error('Image read failed.'));reader.readAsDataURL(file!)});
     output=b64;
