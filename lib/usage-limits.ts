@@ -4,7 +4,7 @@
  */
 export type UsagePlan='Free'|'Starter'|'Pro'|'Premium'|'Max';
 // Max is a capped, account-scoped top tier; every paid plan has a fixed UTC daily quota.
-export const dailyLimits:Record<UsagePlan,number|null>={Free:10,Starter:500,Pro:1000,Premium:1500,Max:3000};
+export const dailyLimits:Record<UsagePlan,number>={Free:10,Starter:500,Pro:1000,Premium:1500,Max:3000};
 export const batchLimits={Starter:20,Pro:60,Premium:150,Max:300} as const;
 export const planNames:UsagePlan[]=['Free','Starter','Pro','Premium','Max'];
 export function isUsagePlan(value:unknown):value is UsagePlan{
