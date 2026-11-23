@@ -91,7 +91,7 @@ if(!isEnabled){
      emit(label,false,e instanceof Error?e.message.slice(0,60):'Request failed');
     }
    }
-   if(!config.webhookId||!/^WH-[A-Z0-9]+$/i.test(config.webhookId)){
+   if(!config.webhookId||!/^[A-Z0-9-]{8,80}$/i.test(config.webhookId)){
     emit('Webhook',false,'Webhook ID missing or malformed');
    }else{
     try{
