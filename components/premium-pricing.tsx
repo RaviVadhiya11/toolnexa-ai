@@ -4,9 +4,9 @@ import {PayPalSubscribe} from '@/components/paypal-subscribe';
 
 type Tier='Starter'|'Pro'|'Premium';
 const tiers:{name:Tier;price:string;tagline:string;features:string[]}[]=[
- {name:'Starter',price:'$3.99',tagline:'For everyday productivity',features:['All 20 free utility tools','Batch text analysis: 20 texts per request','Up to 20,000 characters per text','Daily utility tool allowance: 150 runs','Daily utility tool allowance: 500 runs','Daily utility tool allowance: 2,000 runs','Monthly recurring access']},
- {name:'Pro',price:'$5.99',tagline:'For creators and professionals',features:['All 20 free utility tools','Batch text analysis: 60 texts per request','Up to 20,000 characters per text','Monthly recurring access']},
- {name:'Premium',price:'$9.99',tagline:'For higher-volume workflows',features:['All 20 free utility tools','Batch text analysis: 150 texts per request','Up to 20,000 characters per text','Monthly recurring access']}
+ {name:'Starter',price:'$3.99',tagline:'For everyday productivity',features:['20 utility tools','20 texts per batch request','20,000 characters per text','150 tool runs per day','Monthly recurring access']},
+ {name:'Pro',price:'$5.99',tagline:'For creators and professionals',features:['20 utility tools','60 texts per batch request','20,000 characters per text','500 tool runs per day','Monthly recurring access']},
+ {name:'Premium',price:'$9.99',tagline:'For higher-volume workflows',features:['20 utility tools','150 texts per batch request','20,000 characters per text','2,000 tool runs per day','Monthly recurring access']}
 ];
 
 export function PremiumPricing({clientId,plans,enabled}:{clientId:string;plans:Record<Tier,string>;enabled:boolean}){
