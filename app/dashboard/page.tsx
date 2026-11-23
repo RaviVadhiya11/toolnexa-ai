@@ -5,12 +5,13 @@ import {ManageSubscription} from '@/components/manage-subscription';
 import {browserSupabase} from '@/lib/supabase/client';
 import {tools} from '@/lib/tools';
 import {dailyLimits,quotaKey,readUsage} from '@/lib/usage-limits';
+import {subscriptionPrices,type BillingPeriod} from '@/lib/subscription-pricing';
 
 type Plan='Free'|'Starter'|'Pro'|'Premium';
-const plans:Record<Exclude<Plan,'Free'>,{price:string;batch:number}>={
- Starter:{price:'$3.99',batch:20},
- Pro:{price:'$5.99',batch:60},
- Premium:{price:'$9.99',batch:150}
+const plans:Record<Exclude<Plan,'Free'>,{batch:number}>={
+ Starter:{batch:20},
+ Pro:{batch:60},
+ Premium:{batch:150}
 };
 const validToolSlugs=new Set(tools.map(tool=>tool.slug));
 function labelSlug(slug:string){return slug.replaceAll('-',' ')}
@@ -18,6 +19,7 @@ function labelSlug(slug:string){return slug.replaceAll('-',' ')}
 export default function Dashboard(){
  const [recent,setRecent]=useState<string[]>([]);
  const [plan,setPlan]=useState<Plan|null>(null);
+ const [billingPeriod,setBillingPeriod]=useState<BillingPeriod|null>(null);
  const [status,setStatus]=useState<'checking'|'ready'|'error'>('checking');
  const [signedIn,setSignedIn]=useState(false);
  const [dailyUsed,setDailyUsed]=useState(0);
@@ -37,6 +39,7 @@ export default function Dashboard(){
     if(!active)return;
     if(!response.ok||!['Free','Starter','Pro','Premium'].includes(data.plan))throw Error('Status unavailable');
     setPlan(data.plan as Plan);
+    setBillingPeriod(data.billingPeriod==='monthly'||data.billingPeriod==='yearly'?data.billingPeriod:null);
     setSignedIn(data.authenticated===true);
     const owner=typeof data.userId==='string'?data.userId:null;
     try{
@@ -47,12 +50,12 @@ export default function Dashboard(){
      else setDailyUsed(readUsage(quotaKey(owner)));
     }catch{setDailyUsed(readUsage(quotaKey(owner)))}
     setStatus('ready');
-   }catch{if(active){setStatus('error');setPlan(null)}}
+   }catch{if(active){setStatus('error');setPlan(null);setBillingPeriod(null)}}
   };
   void refresh();
   const client=browserSupabase();
   const subscription=client?.auth.onAuthStateChange(()=>{
-   setStatus('checking');setPlan(null);void refresh();
+   setStatus('checking');setPlan(null);setBillingPeriod(null);void refresh();
   }).data.subscription;
   const onFocus=()=>void refresh();
   window.addEventListener('focus',onFocus);
@@ -88,8 +91,48 @@ export default function Dashboard(){
    </div>
    <div className="member-hero-meta" aria-label="Membership summary">
     <span>Current plan</span><strong>{displayPlan}</strong>
-    <span>{paid?'Monthly subscription':'Free tools available'}</span>
-    {benefits&&<b>{benefits.price}/month</b>}
+    <span>{paid?(billingPeriod==='yearly'?'Annual subscription':billingPeriod==='monthly'?'Monthly subscription':'Verified subscription'):'Free tools available'}</span>
+    {benefits&&billingPeriod&&plan&&plan!=='Free'&&<b>{'
+   </div>
+  </section>
+  <div className="member-overview">
+   <div className="member-metric"><span>Current plan</span><strong>{displayPlan}</strong><small>{paid?'Verified paid access':status==='error'?'Please refresh later':'Your membership'}</small></div>
+   <div className="member-metric"><span>Daily tool uses left</span><strong>{status==='ready'?Math.max(0,dailyLimits[plan??'Free']-dailyUsed):'—'}</strong><small>{status==='ready'?dailyUsed+' / '+dailyLimits[plan??'Free']+' used today · '+plan+' plan':'Verifying allowance'}</small></div>
+   <div className="member-metric"><span>Recent tools</span><strong>{recent.length}</strong><small>Saved on this device</small></div>
+  </div>
+  <section className="member-section" aria-label="Premium tools">
+   <div className="member-section-title"><div><h2>Premium tools</h2><p className="muted">Available features depend on your active subscription.</p></div><Link href="/pricing">Compare plans →</Link></div>
+   <div className="member-feature-grid">
+    <article className="member-feature-card">
+     <div className="member-feature-icon">✦</div>
+     <h3>Batch Text Analyzer</h3>
+     <p>Analyze words, characters, sentences and reading time across multiple texts in one request.</p>
+     <div className="member-plan-limits">
+      {(['Starter','Pro','Premium'] as const).map(t=><span key={t}>{t}: {plans[t].batch} texts</span>)}
+     </div>
+     <Link href={paid?'/pro/text-batch':'/pricing'} className="button mt-4">{paid?'Launch tool':'Choose a plan'}</Link>
+    </article>
+    <article className="member-feature-card member-feature-muted">
+     <div className="member-feature-icon">◇</div>
+     <h3>More premium tools</h3>
+     <p>Additional premium features are planned and are not part of current subscriptions.</p>
+     <span className="member-soon">Coming later</span>
+    </article>
+   </div>
+  </section>
+  <section className="member-section">
+   <div className="member-section-title"><div><h2>Recent activity</h2><p className="muted">Only tools opened on this device are listed.</p></div></div>
+   <div className="panel">{recent.length?recent.map((slug,i)=><p key={slug+i} className="mt-3"><Link style={{color:'var(--accent)',textTransform:'capitalize'}} href={'/tools/'+encodeURIComponent(slug)}>{labelSlug(slug)}</Link></p>):<p className="muted">No recent tools yet. Explore our free tools to get started.</p>}
+    {recent.length>0&&<button className="button outline mt-5" onClick={()=>{localStorage.removeItem('toolnexa-recent');setRecent([])}}>Clear local history</button>}
+   </div>
+  </section>
+  {status==='checking'?<section className="panel mt-5" aria-label="Loading billing"><h2 className="font-bold text-xl">Manage Subscription</h2><p className="muted mt-3">Checking account status…</p></section>
+   :status==='ready'&&!signedIn?<section className="panel mt-5" aria-label="Sign in to manage subscriptions"><h2 className="font-bold text-xl">Manage Subscription</h2><p className="muted mt-3">Sign in to view your subscription, payment status, and cancellation options.</p><Link className="button mt-4" href="/login">Sign in to manage billing</Link></section>
+   :<ManageSubscription/>}
+  <section className="member-footnote"><strong>AI Credits — Coming Soon</strong><p>AI credits are not sold or included in your current plan. Your active subscription covers the Batch Text Analyzer limits displayed above.</p></section>
+ </div>;
+}
++subscriptionPrices[plan][billingPeriod]}/{billingPeriod==='yearly'?'year':'month'}</b>}
    </div>
   </section>
   <div className="member-overview">
