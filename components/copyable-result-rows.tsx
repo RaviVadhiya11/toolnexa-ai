@@ -24,6 +24,6 @@ export function CopyableResultRows({text,slug}:{text:string;slug:string}){
    <button type="button" className="social-copy-btn" aria-label={'Copy item '+(index+1)}
     onClick={()=>void copy(item.copyValue,index)}>{copied===index?'Copied!':'Copy'}</button>
   </div>)}</div>
-  <p role="status" aria-live="polite" className="social-copy-feedback">{error||copied!==null?'':null}{error||(copied!==null?'Copied to clipboard.':'')}</p>
+  <p role="status" aria-live="polite" className="social-copy-feedback">{error||(copied!==null?'Copied to clipboard.':'')}</p>
  </section>;
 }
