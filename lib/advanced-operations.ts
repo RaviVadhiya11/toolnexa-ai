@@ -75,10 +75,18 @@ function dateUTC(value:string):Date{
 export function ageReport(birth:string,asOf:string):string{
  const b=dateUTC(birth),t=dateUTC(asOf);
  if(b>t)throw Error('Birth date must not be in the future.');
- let y=t.getUTCFullYear()-b.getUTCFullYear(),m=t.getUTCMonth()-b.getUTCMonth(),d=t.getUTCDate()-b.getUTCDate();
- if(d<0){m--;d+=new Date(Date.UTC(t.getUTCFullYear(),t.getUTCMonth(),0)).getUTCDate()}
- if(m<0){y--;m+=12}
- return y+' years, '+m+' months, '+d+' days\nTotal days: '+Math.round((t.getTime()-b.getTime())/86400000).toLocaleString('en-IN');
+ const shifted=(years:number,months:number):Date=>{
+  const baseMonth=b.getUTCMonth()+months,year=b.getUTCFullYear()+years+Math.floor(baseMonth/12);
+  const month=((baseMonth%12)+12)%12;
+  const last=new Date(Date.UTC(year,month+1,0)).getUTCDate();
+  return new Date(Date.UTC(year,month,Math.min(last,b.getUTCDate())));
+ };
+ let years=t.getUTCFullYear()-b.getUTCFullYear();
+ if(shifted(years,0)>t)years--;
+ let months=0;
+ while(months<11&&shifted(years,months+1)<=t)months++;
+ const days=Math.round((t.getTime()-shifted(years,months).getTime())/86400000);
+ return years+' years, '+months+' months, '+days+' days\nTotal days: '+Math.round((t.getTime()-b.getTime())/86400000).toLocaleString('en-IN');
 }
 export function dateDifferenceReport(a:string,b:string):string{
  const ms=Math.abs(dateUTC(a).getTime()-dateUTC(b).getTime()),days=ms/86400000;
