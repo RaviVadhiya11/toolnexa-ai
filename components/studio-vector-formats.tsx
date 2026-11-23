@@ -1,6 +1,8 @@
 'use client';
 import {useEffect,useState} from 'react';
 import Link from 'next/link';
+import {reserveStudioUsage,StudioQuotaNotice} from '@/components/studio-quota';
+import {StudioUpscalePanel} from '@/components/studio-upscale-panel';
 import {cleanSVG,exportVector} from '@/lib/studio-vector-convert';
 import {downloadFile} from '@/lib/studio-suite-client';
 type Mode='convert'|'edit';
@@ -55,6 +57,7 @@ export function StudioVectorFormats({mode}:{mode:Mode}){
   if(!xml)return;
   setBusy(true);setStatus('Creating genuine '+format.toUpperCase()+' vector file…');
   try{
+   await reserveStudioUsage(mode==='edit'?'studio-svg-editor':'studio-convert');
    if(mode==='edit'){
     const doc=new DOMParser().parseFromString(xml,'image/svg+xml');
     doc.documentElement.setAttribute('width',String(Math.round(800*size/100)));
@@ -64,6 +67,22 @@ export function StudioVectorFormats({mode}:{mode:Mode}){
    setStatus(format==='dxf'?'DXF outlines downloaded (fills omitted for CAD use).':'Vector file downloaded. No embedded raster image.');
   }catch(e){setStatus(e instanceof Error?e.message:'Conversion failed')}
   finally{setBusy(false)}
+ }
+ async function previewCanvas(){
+  if(!xml)throw Error('Upload an SVG file first');
+  const safe=cleanSVG(xml),url=URL.createObjectURL(new Blob([safe],{type:'image/svg+xml'}));
+  try{
+   const image=new Image();
+   await new Promise<void>((resolve,reject)=>{image.onload=()=>resolve();image.onerror=()=>reject(Error('SVG cannot be rasterized'));image.src=url});
+   const doc=new DOMParser().parseFromString(safe,'image/svg+xml');
+   const view=doc.documentElement.getAttribute('viewBox')?.trim().split(/[\s,]+/).map(Number)||[];
+   const aspect=view.length===4&&view[2]>0&&view[3]>0?view[2]/view[3]:image.naturalWidth/image.naturalHeight;
+   const width=aspect>=1?800:Math.max(1,Math.round(800*aspect));
+   const height=aspect>=1?Math.max(1,Math.round(800/aspect)):800;
+   const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+   const ctx=canvas.getContext('2d');if(!ctx)throw Error('Canvas unavailable');
+   ctx.drawImage(image,0,0,width,height);return canvas;
+  }finally{URL.revokeObjectURL(url)}
  }
  return <section className="suite-workspace">
   <header className="suite-head"><span className="studio-eyebrow">TOOLNEXA · VECTOR WORKSPACE</span>
@@ -97,13 +116,14 @@ export function StudioVectorFormats({mode}:{mode:Mode}){
     <p role="status" className="studio-message">{status}</p>
    </div>
    <div className="studio-panel suite-advanced">
-    <h2>Supported exports</h2><div className="suite-format-row"><strong>SVG</strong><span>Scalable editable paths</span></div>
+    <h2>Supported exports</h2><StudioQuotaNotice/><div className="suite-format-row"><strong>SVG</strong><span>Scalable editable paths</span></div>
     <div className="suite-format-row"><strong>PDF</strong><span>Vector page</span></div>
     <div className="suite-format-row"><strong>EPS</strong><span>Illustrator-compatible PostScript</span></div>
     <div className="suite-format-row"><strong>DXF</strong><span>CAD outline polylines</span></div>
     <h2>Advanced formats</h2>
     <p className="studio-note">Native Adobe Illustrator .AI, CorelDRAW .CDR, WMF and EMF require verified proprietary/format-specific converters. These file types are **not** produced here. You can import the genuine SVG or EPS into compatible desktop editors.</p>
     <Link className="studio-upgrade" href="/studio/image-to-vector">Turn PNG/JPG into SVG →</Link>
+    <StudioUpscalePanel getCanvas={previewCanvas} format="vector" disabled={!xml}/>
    </div>
   </div>
  </section>
