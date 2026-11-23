@@ -12,11 +12,18 @@ Production site: https://toolnexa-ai.vercel.app
 - Shared daily runs: Free 10, Starter 500, Pro 1,000, Premium 1,500; resets at 00:00 UTC. Guests use a per-browser counter. Authenticated accounts can share an atomic Supabase counter across browsers/devices after the SQL migration and environment flag are applied. Server-verifies PayPal plan and account identity; local execution remains browser-based, so browser tampering can still bypass the UI. Paid-account reservations count on a run attempt, including operations which later fail; guest usage only counts successful runs.
 - Search, category filters, helpful tool landing pages and local recent-tool history.
 - Sign up/sign in with Supabase Auth, Google OAuth where configured, email confirmation and email password reset.
-- Paid Starter ($3.99/month or $39.99/year, 20 texts per batch), Pro ($5.99/month or $59.99/year, 60 texts), Premium ($9.99/month or $99.99/year, 150 texts) and Max ($14.99/month or $149.99/year, 300 texts). Annual prices are billed upfront every 12 months and save about 16% versus monthly billing. Paid batch analyzer limit is 20,000 characters per text. **Other premium tools and AI credits are not included.**
+- Paid Starter ($3.99/month or $39.99/year, 20 texts per batch), Pro ($5.99/month or $59.99/year, 60 texts), Premium ($9.99/month or $99.99/year, 150 texts) and Max ($14.99/month or $149.99/year, 300 texts). Annual prices are billed upfront every 12 months and save about 16% versus monthly billing. Paid batch analyzer limit is 20,000 characters per text. **Pro, Premium and Max also unlock HD 2×/4× PNG exports in Vector Studio and Image Enhancer; this is not generative AI enhancement. No paid AI credits are included.**
 - Server-verified PayPal membership, signed webhooks, hosted subscription fallback, customer subscription overview and immediate cancellation request.
 - SEO metadata, sitemap, robots, accessible error screens, security headers and public support/policy pages.
 
 Max is the highest **capped** tier: **$14.99/month or $149.99/year**, with **3,000 daily tool runs** (UTC reset) and up to **300 texts per Batch Text Analyzer request**. It replaces the former planned Unlimited offer. No current plan includes unlimited AI generations, unlimited tool runs, or paid AI credits. The Gemini signed-in preview remains independently limited to 3 generations per day per account and 30 per day site-wide.
+
+## Vector Studio and Image Enhancer
+
+- `/studio/vector`: browser-created editable SVG paths and standard PNG output, with HD PNG downloads reserved for verified Pro/Premium/Max members.
+- `/studio/enhance`: browser-only brightness/contrast/saturation tools; HD PNG upscaling uses a protected server endpoint and bilinear scaling, **not** generative AI restoration or detail hallucination.
+- Pro HD exports check the current PayPal ACTIVE subscription on the server, enforce the shared account daily quota atomically and reject unauthenticated or Starter requests. Inputs are limited to 700,000 pixels before 2×/4× resizing; up to 12 megapixels output.
+- These two dedicated Studio pages are outside the existing 60 utility catalogue. Native AI, CDR, EPS, DXF and WMF/EMF conversion is not available yet; do not advertise those as supported exports.
 
 ## Run locally
 
