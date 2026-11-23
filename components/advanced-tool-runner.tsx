@@ -348,7 +348,7 @@ export function AdvancedToolRunner({tool}:{tool:Tool}){
       {socialOutput.tip&&<p className="small-note social-result-tip">{socialOutput.tip}</p>}
      </div>:<pre className={'tool-output-content '+(failed?'tool-output-error':'')} style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere',maxHeight:460,overflow:'auto'}} role={failed?'alert':'status'}>{outputIsLong?result.slice(0,40000)+'\n…Output preview truncated. Use download if applicable.':result}</pre>):
       <div className="tool-empty-result"><span aria-hidden="true">✦</span><p>Configure your input and run the tool to see results.</p></div>}
-    {(copyError||copiedItem&&socialOutput)&&<p className="social-copy-feedback" role="status" aria-live="polite">{copyError||'Copied to clipboard.'}</p>}
+    {(copyError!==''||Boolean(copiedItem&&socialOutput))&&<p className="social-copy-feedback" role="status" aria-live="polite">{copyError||'Copied to clipboard.'}</p>}
     {thumbnail&&<img src={thumbnail} alt="Available YouTube video thumbnail preview" width={460} height={260} style={{maxWidth:'100%',height:'auto',borderRadius:12,marginTop:16}}/>}
     {last&&<div className="tool-output-actions"><button type="button" className="button outline" onClick={()=>download(last.blob,last.name)}>Download again</button>
       <span className="small-note">{last.name} · {(last.blob.size/1024/1024).toFixed(2)} MB</span></div>}
