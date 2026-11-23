@@ -6,7 +6,7 @@ export async function GET(req:NextRequest){
  const base=req.nextUrl.origin;
  // Allow only a known internal destination; never redirect to an arbitrary URL.
  const next=req.nextUrl.searchParams.get('next');
- const destination=next==='pricing'?'/pricing':next==='reset'?'/reset-password':'/dashboard';
+ const destination=next==='pricing'?'/pricing':next==='reset'?'/reset-password?verified=1':'/dashboard';
  const supabase=await serverSupabase();
  if(code&&supabase){
   const {error}=await supabase.auth.exchangeCodeForSession(code);

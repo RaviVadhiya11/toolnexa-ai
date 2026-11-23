@@ -643,3 +643,11 @@ body{background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,syst
  .premium-main .editorial-contact-button:last-child{grid-column:1/-1}
 }
 @media(max-width:350px){.premium-main .editorial-contact-actions{grid-template-columns:1fr}.premium-main .editorial-contact-button:last-child{grid-column:auto}}
+
+/* Mobile support CTA polish: keep Report an Issue compact and readable. */
+@media(max-width:670px){
+ .premium-main .editorial-contact-actions{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+ .premium-main .editorial-contact-actions .editorial-contact-button{gap:6px;padding:9px 6px;min-width:0;line-height:1.3}
+ .premium-main .editorial-contact-actions .editorial-contact-button svg{flex-shrink:0;width:15px;height:15px}
+ .premium-main .editorial-contact-actions .editorial-contact-button:nth-child(2){font-size:10px;letter-spacing:-.2px}
+}
