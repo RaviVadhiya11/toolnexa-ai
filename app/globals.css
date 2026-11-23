@@ -621,3 +621,25 @@ body{background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,syst
  .premium-main .editorial-footer-bottom p{font-size:11px}
 }
 @media(max-width:360px){.premium-main .editorial-footer-main{padding:27px 18px;gap:24px 9px}.premium-main .editorial-footer-column a{font-size:11px}.premium-main .editorial-footer-legal{gap:6px 12px}}
+
+/* Dedicated contact panel inspired by reference, without fictional email or social profiles. */
+.premium-main .editorial-footer-contact-section{display:flex;align-items:center;justify-content:space-between;gap:24px 34px;flex-wrap:wrap;background:linear-gradient(115deg,#211b40,#171b32 70%);border-top:1px solid #4b3a73;border-bottom:1px solid #4b3a73;padding:25px clamp(24px,4vw,52px)}
+.premium-main .editorial-contact-copy{display:flex;align-items:center;gap:15px;min-width:0;flex:1 1 240px}
+.premium-main .editorial-contact-badge{display:grid;place-items:center;border-radius:13px;min-width:44px;width:44px;height:44px;background:#7750db3b;color:#d5b6ff;border:1px solid #8458cc88}
+.premium-main .editorial-contact-copy h2{font-size:13px;font-weight:850;letter-spacing:1.2px;color:#f3ebff;margin-bottom:5px}
+.premium-main .editorial-contact-copy p{font-size:12px;line-height:1.6;color:#bac0d9}
+.premium-main .editorial-contact-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+.premium-main .editorial-contact-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 13px;min-height:45px;white-space:nowrap;text-decoration:none;color:#ece4ff;background:#4432716b;border:1px solid #8865c184;border-radius:12px;font-size:12px;font-weight:750}
+.premium-main .editorial-contact-button:hover{background:#6945a183;border-color:#ba98f9;color:#fff}
+.light .premium-main .editorial-footer-contact-section{background:#efebfa;border-color:#dbd4ea}
+.light .premium-main .editorial-contact-copy h2{color:#35285b}
+.light .premium-main .editorial-contact-copy p{color:#606681}
+.light .premium-main .editorial-contact-button{background:#fff;color:#4e4273;border-color:#cfc2e6}
+@media(max-width:670px){
+ .premium-main .editorial-footer-contact-section{padding:24px 20px;gap:19px}
+ .premium-main .editorial-contact-copy{align-items:flex-start}
+ .premium-main .editorial-contact-actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .premium-main .editorial-contact-button{white-space:normal;text-align:center;padding:11px 8px;font-size:11px;min-height:48px}
+ .premium-main .editorial-contact-button:last-child{grid-column:1/-1}
+}
+@media(max-width:350px){.premium-main .editorial-contact-actions{grid-template-columns:1fr}.premium-main .editorial-contact-button:last-child{grid-column:auto}}
