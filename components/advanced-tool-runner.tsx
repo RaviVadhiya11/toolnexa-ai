@@ -3,7 +3,7 @@ import {useEffect,useState} from 'react';
 import Link from 'next/link';
 import type {Tool} from '@/lib/tools';
 import {dailyLimits,isUsagePlan,quotaKey,readUsage,consumeUsage,type UsagePlan} from '@/lib/usage-limits';
-import {ageReport,colorConvert,cssMinify,csvToJson,dateDifferenceReport,emiReport,jwtReport,parseYoutubeId,regexReport,socialSuggestions,textDiff,textSort,timestampReport} from '@/lib/advanced-operations';
+import {ageReport,colorConvert,csvToJson,dateDifferenceReport,emiReport,jwtReport,parseYoutubeId,regexReport,socialSuggestions,textDiff,textSort,timestampReport} from '@/lib/advanced-operations';
 import {processAdvancedPdf,type GeneratedFile} from '@/lib/advanced-file-ops';
 import {processAdvancedImage} from '@/lib/advanced-image-ops';
 import {generateBusinessPdf} from '@/lib/advanced-document-ops';
@@ -163,7 +163,11 @@ export function AdvancedToolRunner({tool}:{tool:Tool}){
      const [{format},html]=await Promise.all([import('prettier/standalone'),import('prettier/plugins/html')]);
      output=await format(text,{parser:'html',plugins:[html],tabWidth:2,printWidth:100});break;
     }
-    case 'css-minifier':output=cssMinify(text);break;
+    case 'css-minifier':{
+     if(!text.trim())throw Error('Enter CSS source.');
+     const {minify}=await import('csso');
+     output=minify(text,{restructure:false}).css;break;
+    }
     case 'javascript-minifier':{
      if(!text.trim())throw Error('Enter JavaScript code.');
      if(text.length>250000)throw Error('Maximum 250,000 JavaScript characters.');
