@@ -4,10 +4,10 @@ import {PayPalSubscribe} from '@/components/paypal-subscribe';
 import {billingPeriods,paidTiers,subscriptionPrices,type BillingPeriod,type PaidTier} from '@/lib/subscription-pricing';
 
 const tiers:{name:PaidTier;tagline:string;features:string[]}[]=[
- {name:'Starter',tagline:'For everyday productivity',features:['60 utility tools','20 texts per batch request','20,000 characters per text','500 tool runs per day']},
- {name:'Pro',tagline:'For creators and professionals',features:['60 utility tools','60 texts per batch request','20,000 characters per text','1,000 tool runs per day','Pro HD vector PNG downloads','HD image JPEG upscaling (2×/4×)','HD transparent background PNG exports']},
- {name:'Premium',tagline:'For higher-volume workflows',features:['60 utility tools','150 texts per batch request','20,000 characters per text','1,500 tool runs per day','Pro HD vector PNG downloads','HD image JPEG upscaling (2×/4×)','HD transparent background PNG exports']},
- {name:'Max',tagline:'High-capacity creator and business toolkit',features:['60 utility tools','300 texts per batch request','20,000 characters per text','3,000 tool runs per day','Pro HD vector PNG downloads','HD image JPEG upscaling (2×/4×)','HD transparent background PNG exports','Gemini AI preview: 3 generations/day (shared free allowance)']}
+ {name:'Starter',tagline:'For everyday productivity',features:['60 utility tools','20 texts per batch request','20,000 characters per text','500 tool runs per day','2× image upscale']},
+ {name:'Pro',tagline:'For creators and professionals',features:['60 utility tools','60 texts per batch request','20,000 characters per text','1,000 tool runs per day','Pro HD vector PNG downloads','HD image JPEG upscaling (2×/4×)','HD transparent background PNG exports','4K upscale export']},
+ {name:'Premium',tagline:'For higher-volume workflows',features:['60 utility tools','150 texts per batch request','20,000 characters per text','1,500 tool runs per day','Pro HD vector PNG downloads','HD image JPEG upscaling (2×/4×)','HD transparent background PNG exports','4K and 8K upscale export']},
+ {name:'Max',tagline:'High-capacity creator and business toolkit',features:['60 utility tools','300 texts per batch request','20,000 characters per text','3,000 tool runs per day','Pro HD vector PNG downloads','HD image JPEG upscaling (2×/4×)','HD transparent background PNG exports','4K and 8K upscale export','Gemini AI preview: 3 generations/day (shared free allowance)']}
 ];
 
 type PlanIds=Record<BillingPeriod,Record<PaidTier,string>>;
@@ -27,7 +27,7 @@ export function PremiumPricing({clientId,plans,enabled,yearlyEnabled,maxEnabled}
   <header className="pricing-intro">
    <span className="tier-tag">TOOLNEXA AI PREMIUM</span>
    <h1>Simple plans. More possibilities.</h1>
-   <p>Choose monthly or yearly recurring access. Yearly billing is paid upfront for 12 months and saves approximately 16% compared with paying monthly. All 60 tools share the same daily allowance in either billing period.</p>
+   <p>Choose monthly or yearly recurring access. Yearly billing is paid upfront for 12 months and saves approximately 16% compared with paying monthly. All 60 utility tools and 8 Studio tools share the same daily allowance in either billing period.</p>
   </header>
   <div className="flex flex-wrap justify-center items-center gap-3 mt-6 mb-6" role="group" aria-label="Choose billing period">
    {billingPeriods.map(period=><button type="button" key={period}
