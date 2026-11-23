@@ -4,7 +4,7 @@ import {usePathname,useRouter} from 'next/navigation';
 import {useEffect,useState} from 'react';
 import {AccountStatus} from '@/components/account-status';
 import {tools} from '@/lib/tools';
-import {ShieldCheck,Home,LayoutGrid,LayoutDashboard,Crown,Moon,Sun,Search,FileText,Image as ImageIcon,Code2,Briefcase,Type,Menu,X,Sparkles,ArrowUpRight} from 'lucide-react';
+import {ShieldCheck,Home,LayoutGrid,LayoutDashboard,Crown,Moon,Sun,Search,FileText,Image as ImageIcon,Code2,Briefcase,Type,Menu,X,Sparkles,ArrowUpRight,LifeBuoy,CreditCard} from 'lucide-react';
 const nav=[{href:'/',label:'Home',icon:Home},{href:'/tools',label:'All Tools',icon:LayoutGrid},{href:'/dashboard',label:'Dashboard',icon:LayoutDashboard},{href:'/pricing',label:'Pricing',icon:Crown},{href:'/admin',label:'Admin',icon:ShieldCheck}];
 const groups=[{name:'Text',icon:Type},{name:'Image',icon:ImageIcon},{name:'PDF',icon:FileText},{name:'Developer',icon:Code2},{name:'Business',icon:Briefcase}] as const;
 export function Shell({children}:{children:React.ReactNode}){
@@ -83,6 +83,17 @@ export function Shell({children}:{children:React.ReactNode}){
       <Link href="/support">Help &amp; Support</Link>
      </nav>
     </div>
+    <section className="editorial-footer-contact-section" aria-labelledby="footer-contact-heading">
+      <div className="editorial-contact-copy">
+       <span className="editorial-contact-badge"><LifeBuoy size={19}/></span>
+       <div><h2 id="footer-contact-heading">CONTACT US &amp; SUPPORT</h2><p>Need help with tools or your subscription? Find the right support option below.</p></div>
+      </div>
+      <div className="editorial-contact-actions">
+       <Link href="/support" className="editorial-contact-button"><LifeBuoy size={17}/> Help Center</Link>
+       <a href="https://github.com/RaviVadhiya11/toolnexa-ai/issues" target="_blank" rel="noopener noreferrer" className="editorial-contact-button"><Briefcase size={17}/> Report an Issue <ArrowUpRight size={15}/></a>
+       <Link href="/billing" className="editorial-contact-button"><CreditCard size={17}/> Billing Help</Link>
+      </div>
+     </section>
     <div className="editorial-footer-bottom">
      <nav className="editorial-footer-legal" aria-label="Legal and help links">
       <Link href="/privacy">Privacy Policy</Link>
