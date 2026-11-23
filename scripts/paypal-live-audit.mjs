@@ -128,8 +128,26 @@ if(!isEnabled){
      }
     }
    }
+   // Recover from a missing/wrong configured Webhook ID using read-only
+   // merchant listing; never register a new webhook without merchant review.
+   const inspectWebhookList=async()=>{
+    try{
+     const list=await request('/v1/notifications/webhooks',headers);
+     const needed=['BILLING.SUBSCRIPTION.ACTIVATED','BILLING.SUBSCRIPTION.CANCELLED','BILLING.SUBSCRIPTION.SUSPENDED'];
+     const candidates=(Array.isArray(list.webhooks)?list.webhooks:[]).filter(h=>{
+      if(typeof h.id!=='string'||typeof h.url!=='string'||h.url.replace(/\\/+$/,'')!=='https://toolnexa-ai.vercel.app/api/paypal/webhook')return false;
+      const events=new Set((Array.isArray(h.event_types)?h.event_types:[]).map(v=>v.name));
+      return needed.every(name=>events.has(name)||events.has('*'));
+     });
+     if(candidates.length===1)console.log('PAYPAL_LIVE_AUDIT_WEBHOOK_CANDIDATE verified_live_webhook_id='+candidates[0].id);
+     else console.log('PAYPAL_LIVE_AUDIT_WEBHOOK_CANDIDATE matching_webhooks='+candidates.length);
+    }catch{
+     console.log('PAYPAL_LIVE_AUDIT_WEBHOOK_CANDIDATE lookup_unavailable');
+    }
+   };
    if(!config.webhookId||typeof config.webhookId!=='string'||config.webhookId.trim().length<3||config.webhookId.length>128){
     emit('Webhook',false,'Webhook ID missing or improperly configured');
+    await inspectWebhookList();
    }else{
     try{
      // PayPal is authoritative for webhook IDs. Do not guess an ID pattern:
@@ -143,8 +161,10 @@ if(!isEnabled){
      emit('Webhook',urlOk&&eventOk,
       urlOk&&eventOk?'Target URL and subscription events present':
       'Webhook URL or essential subscription event types differ');
+     if(!urlOk||!eventOk)await inspectWebhookList();
     }catch(e){
      emit('Webhook',false,e instanceof Error?e.message.slice(0,60):'Request failed');
+     await inspectWebhookList();
     }
    }
   }
