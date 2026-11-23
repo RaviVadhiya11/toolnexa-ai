@@ -38,3 +38,16 @@ test('live audit is read only, price-verifies eight billing plans and inspects w
  const pkg=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8'));
  assert.match(pkg.scripts.prebuild,/scripts\/paypal-live-audit\.mjs/);
 });
+
+
+test('payment-enabled release fails closed if audit is disabled or merchant fails verification',()=>{
+ const noAudit=run({PAYPAL_LIVE_AUDIT_ENABLED:'false',PAYPAL_CHECKOUT_ENABLED:'true'});
+ assert.notEqual(noAudit.status,0);
+ assert.match(noAudit.stderr,/refusing checkout-enabled release/);
+ const auditFailure=run({
+  PAYPAL_LIVE_AUDIT_ENABLED:'true',PAYPAL_CHECKOUT_ENABLED:'true',
+  PAYPAL_ENV:'sandbox',PAYPAL_CLIENT_ID:'',PAYPAL_CLIENT_SECRET:''
+ });
+ assert.notEqual(auditFailure.status,0);
+ assert.match(auditFailure.stderr,/checkout-enabled release blocked/);
+});
