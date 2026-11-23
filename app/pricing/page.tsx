@@ -1,5 +1,5 @@
 import type {Metadata} from 'next';
-export const metadata:Metadata={title:'Premium Plans & Pricing',description:'Compare ToolNexa AI monthly and yearly Starter, Pro, Premium and Unlimited subscriptions, fair-use policies and pricing.',alternates:{canonical:'/pricing'}};
+export const metadata:Metadata={title:'Premium Plans & Pricing',description:'Compare ToolNexa AI monthly and yearly Starter, Pro, Premium and Max subscriptions, fair-use policies and pricing.',alternates:{canonical:'/pricing'}};
 import {PremiumPricing} from '@/components/premium-pricing';
 import {paypalTierSettings,paypalYearlyPlanIds} from '@/lib/paypal';
 
@@ -15,10 +15,10 @@ export default function Pricing(){
     Starter:paypalTierSettings.Starter.planId,
     Pro:paypalTierSettings.Pro.planId,
     Premium:paypalTierSettings.Premium.planId,
-    Unlimited:paypalTierSettings.Unlimited.planId
+    Max:paypalTierSettings.Max.planId
    },
    yearly:paypalYearlyPlanIds
   }} enabled={checkoutEnabled}
   yearlyEnabled={process.env.PAYPAL_YEARLY_CHECKOUT_ENABLED==='true'}
-  unlimitedEnabled={process.env.PAYPAL_UNLIMITED_CHECKOUT_ENABLED==='true'&&process.env.UNLIMITED_QUOTA_ENABLED==='true'&&process.env.USAGE_DB_QUOTAS_ENABLED==='true'}/>;
+  unlimitedEnabled={process.env.PAYPAL_MAX_CHECKOUT_ENABLED==='true'&&process.env.USAGE_DB_QUOTAS_ENABLED==='true'}/>;
 }
