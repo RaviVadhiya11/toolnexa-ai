@@ -65,8 +65,8 @@ export async function POST(request:NextRequest){
  try{body=await request.json()}catch{return reply('Invalid JSON',400)}
  const value=body&&typeof body==='object'?body as Record<string,unknown>:null;
  const width=value?.width,height=value?.height,scale=value?.scale,data=value?.pixels,kind=value?.kind;
- if(!Number.isSafeInteger(width)||!Number.isSafeInteger(height)||typeof width!=='number'||
-  typeof height!=='number'||width<1||height<1||width>1024||height>1024||
+ if(typeof width!=='number'||typeof height!=='number'||
+  !Number.isSafeInteger(width)||!Number.isSafeInteger(height)||width<1||height<1||width>1024||height>1024||
   width*height>700000||(scale!==2&&scale!==4)||
   width*height*scale*scale>12000000||!['image','vector'].includes(String(kind))||
   typeof data!=='string'||data.length>3900000||!/^[-A-Za-z0-9+/]*={0,2}$/.test(data))
