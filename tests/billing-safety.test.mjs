@@ -59,7 +59,7 @@ test('Max has a real capped quota and server-verified daily usage RPC',()=>{
  const migration=source('supabase/migrations/20261123_account_usage.sql');
  assert.match(migration,/p_limit integer/);
  assert.match(migration,/where public.daily_tool_usage.used < p_limit/);
- assert.match(migration,/grant execute on function public.consume_daily_tool_usage\\(uuid,integer\\) to service_role/i);
+ assert.match(migration,/grant execute on function public[.]consume_daily_tool_usage[(]uuid,integer[)] to service_role/i);
 });
 
 test('website is noindex by default until an explicit public launch',()=>{
