@@ -123,7 +123,7 @@ export function StudioVectorFormats({mode}:{mode:Mode}){
     <h2>Advanced formats</h2>
     <p className="studio-note">Native Adobe Illustrator .AI, CorelDRAW .CDR, WMF and EMF require verified proprietary/format-specific converters. These file types are **not** produced here. You can import the genuine SVG or EPS into compatible desktop editors.</p>
     <Link className="studio-upgrade" href="/studio/image-to-vector">Turn PNG/JPG into SVG →</Link>
-    <StudioUpscalePanel getCanvas={previewCanvas} format="vector" disabled={!xml}/>
+    <StudioUpscalePanel getCanvas={previewCanvas} format="vector" disabled={!xml} sourceKey={xml}/>
    </div>
   </div>
  </section>
