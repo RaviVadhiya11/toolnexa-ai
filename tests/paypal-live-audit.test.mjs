@@ -53,12 +53,14 @@ test('payment-enabled release fails closed if audit is disabled or merchant fail
 });
 
 test('auditor can identify a uniquely matching PayPal plan when a copied ID returns 404',()=>{
- assert.match(source,/v1\\/billing\\/plans\\?page_size=20/);
- assert.match(source,/page<=5/);
- assert.match(source,/expectedName='ToolNexa AI '/);
- assert.match(source,/matching_plans=/);
- assert.match(source,/verified_live_plan_id=/);
- assert.match(source,/Number\\(c\\?\\.pricing_scheme\\?\\.fixed_price\\?\\.value\\)===Number\\(price\\)/);
- assert.match(source,/v1\\/notifications\\/webhooks/);
+ for(const snippet of [
+  '/v1/billing/plans?page_size=20&page=',
+  'page<=5',
+  "expectedName='ToolNexa AI '",
+  'matching_plans=',
+  'verified_live_plan_id=',
+  'Number(c?.pricing_scheme?.fixed_price?.value)===Number(price)',
+  '/v1/notifications/webhooks/'
+ ])assert.ok(source.includes(snippet),'Audit must contain '+snippet);
  assert.doesNotMatch(source,/\/v1\/billing\/subscriptions['"]\s*,\s*\{/);
 });
