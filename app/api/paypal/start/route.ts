@@ -73,8 +73,8 @@ export async function POST(request:NextRequest){
    const expectedPrice=Number(subscriptionPrices[tier].yearly);
    const actualPrice=Number(cycle?.pricing_scheme?.fixed_price?.value);
    if(details.status!=='ACTIVE'||cycles.length!==1||cycle?.tenure_type!=='REGULAR'||
-      cycle.total_cycles!==0||cycle.frequency?.interval_unit!=='YEAR'||
-      cycle.frequency.interval_count!==1||cycle.pricing_scheme?.fixed_price?.currency_code!=='USD'||
+      cycle?.total_cycles!==0||cycle?.frequency?.interval_unit!=='YEAR'||
+      cycle?.frequency?.interval_count!==1||cycle?.pricing_scheme?.fixed_price?.currency_code!=='USD'||
       !Number.isFinite(actualPrice)||actualPrice!==expectedPrice)
     return NextResponse.json({error:'Annual PayPal plan amount or renewal frequency does not match the published price. Checkout is disabled for safety.'},{status:503,headers:noStore});
   }
