@@ -4,9 +4,9 @@ import {PayPalSubscribe} from '@/components/paypal-subscribe';
 import {billingPeriods,paidTiers,subscriptionPrices,unlimitedPreviewPrices,type BillingPeriod,type PaidTier} from '@/lib/subscription-pricing';
 
 const tiers:{name:PaidTier;tagline:string;features:string[]}[]=[
- {name:'Starter',tagline:'For everyday productivity',features:['20 utility tools','20 texts per batch request','20,000 characters per text','500 tool runs per day']},
- {name:'Pro',tagline:'For creators and professionals',features:['20 utility tools','60 texts per batch request','20,000 characters per text','1,000 tool runs per day']},
- {name:'Premium',tagline:'For higher-volume workflows',features:['20 utility tools','150 texts per batch request','20,000 characters per text','1,500 tool runs per day']}
+ {name:'Starter',tagline:'For everyday productivity',features:['56 utility tools','20 texts per batch request','20,000 characters per text','500 tool runs per day']},
+ {name:'Pro',tagline:'For creators and professionals',features:['56 utility tools','60 texts per batch request','20,000 characters per text','1,000 tool runs per day']},
+ {name:'Premium',tagline:'For higher-volume workflows',features:['56 utility tools','150 texts per batch request','20,000 characters per text','1,500 tool runs per day']}
 ];
 
 type PlanIds=Record<BillingPeriod,Record<PaidTier,string>>;
@@ -27,7 +27,7 @@ export function PremiumPricing({clientId,plans,enabled,yearlyEnabled,unlimitedEn
   <header className="pricing-intro">
    <span className="tier-tag">TOOLNEXA AI PREMIUM</span>
    <h1>Simple plans. More possibilities.</h1>
-   <p>Choose monthly or yearly recurring access. Yearly billing is paid upfront for 12 months and saves approximately 16% compared with paying monthly. All 20 tools share the same daily allowance in either billing period.</p>
+   <p>Choose monthly or yearly recurring access. Yearly billing is paid upfront for 12 months and saves approximately 16% compared with paying monthly. All 56 tools share the same daily allowance in either billing period.</p>
   </header>
   <div className="flex flex-wrap justify-center items-center gap-3 mt-6 mb-6" role="group" aria-label="Choose billing period">
    {billingPeriods.map(period=><button type="button" key={period}
@@ -65,7 +65,7 @@ export function PremiumPricing({clientId,plans,enabled,yearlyEnabled,unlimitedEn
    <div><span className="tier-tag">{isReady('Unlimited')?'LAUNCH OFFER · FAIR USE':'COMING SOON · PLANNED LAUNCH OFFER'}</span><h2>Unlimited Plan</h2>
     <p className="tier-price">${unlimitedPrice.launch}<span> / {periodLabel} at launch</span></p>
     <p className="muted text-sm">Planned future regular price: ${unlimitedPrice.regular}/{periodLabel}. {billingPeriod==='yearly'?'Annual price is charged upfront and renews every 12 months.':'Monthly recurring billing.'} {isReady('Unlimited')?'Your PayPal subscription will renew at the price approved at checkout.':'The launch offer cannot be purchased until setup is completed.'}</p>
-    <p>No fixed daily cap on the 20 browser tools, subject to a server-side fair-use limit of 60 runs per minute. Includes up to 300 texts per Batch Text Analyzer request (20,000 characters each). AI credits are not included. Signed-in account and verified PayPal subscription required.</p>
+    <p>No fixed daily cap on the 56 browser tools, subject to a server-side fair-use limit of 60 runs per minute. Includes up to 300 texts per Batch Text Analyzer request (20,000 characters each). AI credits are not included. Signed-in account and verified PayPal subscription required.</p>
    </div><div><button type="button" className="tier-cta" onClick={()=>{setSelected('Unlimited');document.getElementById('subscription-checkout')?.scrollIntoView({behavior:'smooth',block:'center'})}}>{isReady('Unlimited')?'Choose Unlimited':'View Unlimited plan'}</button>{!isReady('Unlimited')&&<span className="unlimited-coming-soon">Not available yet</span>}</div>
   </div>
   <div id="subscription-checkout" className="subscribe-panel" aria-live="polite">
@@ -79,6 +79,6 @@ export function PremiumPricing({clientId,plans,enabled,yearlyEnabled,unlimitedEn
    </>}
   </div>
   <div className="pricing-trust"><span>✓ Secure PayPal checkout when enabled</span><span>✓ Monthly or annual recurring billing</span><span>✓ Cancel through PayPal</span></div>
-  <p className="small-note mt-6 text-center">Free usage: 10 successful tool runs per day across all 20 tools on this browser. Starter: 500, Pro: 1,000, Premium: 1,500 daily runs; Unlimited: no daily cap subject to 60 runs/minute fair use. Allowances reset at 00:00 UTC. Paid Batch Text Analyzer sizes: Starter 20, Pro 60, Premium 150, Unlimited 300 texts per request. Guests have a per-browser counter. Signed-in usage can sync across devices after server-side account quotas are enabled. Local-only processing cannot be fully abuse-proof.</p>
+  <p className="small-note mt-6 text-center">Free usage: 10 successful tool runs per day across all 56 tools on this browser. Starter: 500, Pro: 1,000, Premium: 1,500 daily runs; Unlimited: no daily cap subject to 60 runs/minute fair use. Allowances reset at 00:00 UTC. Paid Batch Text Analyzer sizes: Starter 20, Pro 60, Premium 150, Unlimited 300 texts per request. Guests have a per-browser counter. Signed-in usage can sync across devices after server-side account quotas are enabled. Local-only processing cannot be fully abuse-proof.</p>
  </section>;
 }

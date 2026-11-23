@@ -1,4 +1,4 @@
-export type Category='Text'|'Developer'|'Business'|'Image'|'PDF';
+export type Category='Text'|'Developer'|'Business'|'Image'|'PDF'|'Creator';
 export type Tool={slug:string;title:string;category:Category;icon:string;description:string};
 export const tools:Tool[]=[
 {slug:"word-counter",title:"Word Counter",category:"Text" as Category,icon:"🔤",description:"Count words, characters and lines"},
@@ -21,5 +21,41 @@ export const tools:Tool[]=[
 {slug:"text-to-pdf",title:"Text to PDF",category:"PDF" as Category,icon:"📑",description:"Create a PDF from text"},
 {slug:"merge-pdf",title:"Merge PDF",category:"PDF" as Category,icon:"📚",description:"Combine multiple PDFs into one"},
 {slug:"split-pdf",title:"Split PDF",category:"PDF" as Category,icon:"✂️",description:"Extract selected pages from a PDF"},
+{slug:"pdf-compressor",title:"PDF Optimizer",category:"PDF" as Category,icon:"📦",description:"Reduce structural PDF overhead; results depend on source files"},
+{slug:"rotate-pdf",title:"Rotate PDF",category:"PDF" as Category,icon:"🔄",description:"Rotate selected PDF pages by 90, 180 or 270 degrees"},
+{slug:"pdf-watermark",title:"PDF Watermark",category:"PDF" as Category,icon:"💧",description:"Add a text watermark to every PDF page"},
+{slug:"pdf-page-numbers",title:"Add PDF Page Numbers",category:"PDF" as Category,icon:"🔢",description:"Number pages in an existing PDF document"},
+{slug:"reorder-pdf",title:"Reorder PDF Pages",category:"PDF" as Category,icon:"↕️",description:"Rearrange pages using a custom page order"},
+{slug:"delete-pdf-pages",title:"Delete PDF Pages",category:"PDF" as Category,icon:"🗑️",description:"Remove specific pages from a PDF"},
+{slug:"protect-pdf",title:"Protect PDF",category:"PDF" as Category,icon:"🔒",description:"Apply real AES-256 password encryption in your browser"},
+{slug:"pdf-metadata",title:"PDF Metadata Editor",category:"PDF" as Category,icon:"🏷️",description:"View and update PDF title, author and subject"},
+{slug:"image-compressor",title:"Image Compressor",category:"Image" as Category,icon:"🗜️",description:"Compress JPEG or WebP images with quality controls"},
+{slug:"image-cropper",title:"Image Cropper",category:"Image" as Category,icon:"✂️",description:"Crop image dimensions and position precisely"},
+{slug:"background-remover",title:"Background Color Remover",category:"Image" as Category,icon:"🪄",description:"Remove a solid background color with adjustable tolerance"},
+{slug:"image-watermark",title:"Image Watermark",category:"Image" as Category,icon:"©️",description:"Overlay your own text watermark on an image"},
+{slug:"image-to-base64",title:"Image to Base64",category:"Image" as Category,icon:"🧬",description:"Convert image files to data URLs"},
+{slug:"color-picker",title:"Image Color Picker",category:"Image" as Category,icon:"🎯",description:"Pick HEX and RGB color from any uploaded image"},
+{slug:"passport-photo-maker",title:"Passport Photo Maker",category:"Image" as Category,icon:"🪪",description:"Create a print-ready passport photo sheet with manual crop"},
+{slug:"html-formatter",title:"HTML Formatter",category:"Developer" as Category,icon:"🧱",description:"Indent and format HTML source"},
+{slug:"css-minifier",title:"CSS Minifier",category:"Developer" as Category,icon:"🧹",description:"Minify CSS while preserving quoted strings"},
+{slug:"javascript-minifier",title:"JavaScript Minifier",category:"Developer" as Category,icon:"⚡",description:"Minify JavaScript using a real parser"},
+{slug:"regex-tester",title:"Regex Tester",category:"Developer" as Category,icon:"🧪",description:"Test regular expressions, flags and matches"},
+{slug:"jwt-decoder",title:"JWT Decoder",category:"Developer" as Category,icon:"🔓",description:"Inspect JWT header and payload without claiming signature verification"},
+{slug:"sql-formatter",title:"SQL Formatter",category:"Developer" as Category,icon:"🗃️",description:"Format SQL using a structured dialect-aware formatter"},
+{slug:"hex-rgb-converter",title:"HEX / RGB Converter",category:"Developer" as Category,icon:"🌈",description:"Convert color values between HEX and RGB"},
+{slug:"timestamp-converter",title:"Timestamp Converter",category:"Developer" as Category,icon:"🕒",description:"Convert ISO dates and Unix timestamps"},
+{slug:"invoice-generator",title:"Invoice Generator",category:"Business" as Category,icon:"🧾",description:"Create a downloadable invoice PDF with itemized totals"},
+{slug:"quotation-maker",title:"Quotation Maker",category:"Business" as Category,icon:"📋",description:"Create a downloadable professional quotation PDF"},
+{slug:"emi-calculator",title:"EMI Calculator",category:"Business" as Category,icon:"🏦",description:"Calculate monthly loan EMI and repayment totals"},
+{slug:"age-calculator",title:"Age Calculator",category:"Business" as Category,icon:"🎂",description:"Calculate exact age in years, months and days"},
+{slug:"date-difference",title:"Date Difference Calculator",category:"Business" as Category,icon:"📅",description:"Calculate days and weeks between dates"},
+{slug:"resume-builder",title:"Resume Builder",category:"Business" as Category,icon:"👔",description:"Build and download a clean resume PDF"},
+{slug:"text-compare",title:"Text Compare",category:"Text" as Category,icon:"🔍",description:"Compare two blocks of text line by line"},
+{slug:"youtube-thumbnail-downloader",title:"YouTube Thumbnail Downloader",category:"Creator" as Category,icon:"▶️",description:"View and download available public video thumbnails"},
+{slug:"aspect-ratio-resizer",title:"Reel & Video Aspect Resizer",category:"Creator" as Category,icon:"📱",description:"Resize or crop to 9:16, 16:9, square and other ratios"},
+{slug:"ai-title-hashtag-generator",title:"AI Title & Hashtag Generator",category:"Creator" as Category,icon:"✨",description:"Generate social titles and relevant hashtags; offline smart mode available"},
+{slug:"csv-to-json",title:"CSV to JSON",category:"Developer" as Category,icon:"📊",description:"Convert quoted CSV records into JSON"},
+{slug:"image-flipper",title:"Image Flipper",category:"Image" as Category,icon:"🪞",description:"Flip or rotate an image and download it"},
+{slug:"text-sorter",title:"Text Sorter",category:"Text" as Category,icon:"🔠",description:"Sort and deduplicate text lines"},
 ];
-export const categories:('All'|Category)[]=['All','Text','Developer','Business','Image','PDF'];
+export const categories:('All'|Category)[]=['All','Text','Developer','Business','Image','PDF','Creator'];

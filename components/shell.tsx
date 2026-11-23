@@ -21,7 +21,7 @@ export function Shell({children}:{children:React.ReactNode}){
  function findTools(e:React.FormEvent<HTMLFormElement>){e.preventDefault();router.push('/tools?q='+encodeURIComponent(q.trim()))}
  const toolsIndex=path==='/tools';
  const searchBox=<form className="shell-search-form" onSubmit={findTools} role="search">
-  <input className="search" placeholder="Search 20 smart tools…" aria-label="Search tools" value={q} onChange={e=>setQ(e.target.value)}/>
+  <input className="search" placeholder="Search 56 smart tools…" aria-label="Search tools" value={q} onChange={e=>setQ(e.target.value)}/>
   <button className="button outline shell-search-button" type="submit" aria-label="Search tools"><Search size={19}/></button>
  </form>;
  return <div className="shell premium-shell">
@@ -67,7 +67,7 @@ export function Shell({children}:{children:React.ReactNode}){
       <Link href="/" className="brand premium-brand editorial-footer-brand"><span className="brand-icon"><Sparkles size={23}/></span><span>ToolNexa <em>AI</em></span></Link>
       <h2 id="footer-about-title">ABOUT TOOLNEXA AI</h2>
       <p>All your everyday PDF, image, text, developer and business tools in one smart workspace.</p>
-      <p className="editorial-footer-caption">20 browser-based free tools. Optional premium batch text analysis.</p>
+      <p className="editorial-footer-caption">56 practical utility tools. Optional premium batch text analysis.</p>
       <a href="https://github.com/RaviVadhiya11/toolnexa-ai/issues" className="editorial-footer-contact" target="_blank" rel="noopener noreferrer"><span className="editorial-footer-contact-icon"><Briefcase size={17}/></span>Report a technical issue <ArrowUpRight size={17}/></a>
      </section>
      <nav className="editorial-footer-column" aria-labelledby="footer-categories-title">
