@@ -51,3 +51,14 @@ test('payment-enabled release fails closed if audit is disabled or merchant fail
  assert.notEqual(auditFailure.status,0);
  assert.match(auditFailure.stderr,/checkout-enabled release blocked/);
 });
+
+test('auditor can identify a uniquely matching PayPal plan when a copied ID returns 404',()=>{
+ assert.match(source,/v1\\/billing\\/plans\\?page_size=20/);
+ assert.match(source,/page<=5/);
+ assert.match(source,/expectedName='ToolNexa AI '/);
+ assert.match(source,/matching_plans=/);
+ assert.match(source,/verified_live_plan_id=/);
+ assert.match(source,/Number\\(c\\?\\.pricing_scheme\\?\\.fixed_price\\?\\.value\\)===Number\\(price\\)/);
+ assert.match(source,/v1\\/notifications\\/webhooks/);
+ assert.doesNotMatch(source,/\/v1\/billing\/subscriptions['"]\s*,\s*\{/);
+});
