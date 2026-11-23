@@ -7,9 +7,9 @@ export default function Home(){return <div className="premium-home">
   <div className="premium-home-hero-copy">
    <span className="premium-home-pill"><Sparkles size={15}/> 56 FREE ONLINE TOOLS</span>
    <h1>Explore Powerful <span>Smart Tools</span></h1>
-   <p>Everything you need for PDF, images, text, development and everyday business tasks. All in one beautifully simple workspace.</p>
+   <p>Everything you need for PDF, images, social media, text, development and everyday business tasks. All in one beautifully simple workspace.</p>
    <div className="premium-home-hero-actions"><Link href="/tools" className="button">Explore all tools <ArrowRight size={17}/></Link><Link href="/pricing" className="button outline">Compare plans</Link></div>
-   <div className="premium-home-points"><span><ShieldCheck size={16}/> Browser-first tools</span><span><Zap size={16}/> Quick workflows</span><span><Layers3 size={16}/> 5 categories</span></div>
+   <div className="premium-home-points"><span><ShieldCheck size={16}/> Browser-first tools</span><span><Zap size={16}/> Quick workflows</span><span><Layers3 size={16}/> 6 categories</span></div>
   </div>
   <div className="premium-home-hero-art" aria-hidden="true"><div className="premium-orbit orbit-one"/><div className="premium-orbit orbit-two"/><div className="premium-floating-tile tile-main"><Layers3 size={69}/></div><div className="premium-floating-tile tile-left"><FileText size={30}/></div><div className="premium-floating-tile tile-right"><ImageIcon size={30}/></div><div className="premium-floating-tile tile-bottom"><Code2 size={30}/></div></div>
  </section>
