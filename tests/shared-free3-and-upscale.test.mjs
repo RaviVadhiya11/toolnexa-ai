@@ -35,12 +35,18 @@ test('all 8 Studio workflows visibly support upscaling',()=>{
  assert.match(math,/4320/);
  assert.match(math,/33500000/);
 });
-test('upscale requires live PayPal access plus daily account quota on server',()=>{
+test('upscale preview uses shared daily quota, full download requires live PayPal',()=>{
+ const ui=read('components/studio-upscale-panel.tsx');
+ const quota=read('components/studio-quota.tsx');
  const api=read('app/api/studio/upscale-authorize/route.ts');
+ assert.match(ui,/await reserveStudioUsage\(usageSlug\)/);
+ assert.match(quota,/consumeUsage\(/);
+ assert.match(quota,/\/api\/usage\/quota/);
+ assert.match(api,/body\?\.purpose!=='download'/);
  assert.match(api,/verifyStudioMember\(\)/);
- assert.match(api,/consume_daily_tool_usage/);
- assert.match(api,/8K requires Premium or Max/);
- assert.match(api,/4× \/ 4K require Pro or higher/);
+ assert.match(api,/8K download requires Premium or Max/);
+ assert.match(api,/4× \/ 4K download requires Pro, Premium or Max/);
+ assert.doesNotMatch(api,/consume_daily_tool_usage/,'Download entitlement must not double-charge');
  const auth=read('lib/studio-membership.ts');
  assert.match(auth,/paypalSubscription\(row\.subscription_id\)/);
  assert.match(auth,/sub\.status==='ACTIVE'/);
@@ -53,23 +59,31 @@ test('pricing reflects Starter 2x, Pro 4K, Premium and Max 8K',()=>{
  assert.equal((price.match(/4K and 8K upscale export/g)||[]).length,2);
 });
 
-test('4K is selected by default and upscale download stays visible but disabled until success',()=>{
+test('4K default allows Free upscale preview and disables download before completion',()=>{
  const ui=read('components/studio-upscale-panel.tsx');
  assert.match(ui,/useState<UpscaleResolution>\('4k'\)/);
- assert.match(ui,/disabled=\{!resultReady\}/);
+ assert.match(ui,/disabled=\{working\|\|disabled\}/);
+ assert.doesNotMatch(ui,/disabled=\{working\|\|disabled\|\|!entitled\}/);
+ assert.match(ui,/disabled=\{!resultReady\|\|checkingDownload\}/);
  assert.match(ui,/const resultReady=result!==null&&!working/);
- assert.match(ui,/Download Upscaled \{resolution\.toUpperCase\(\)\}/);
- assert.match(ui,/resultUrl&&<div className="studio-upscale-preview"/);
- assert.match(ui,/Upscale complete/);
+ assert.match(ui,/await reserveStudioUsage\(usageSlug\)/);
+ assert.match(ui,/setResult\(blob\)/);
+ assert.match(ui,/previewCtx\.fillText\('TOOLNEXA · PREVIEW ONLY'/);
  assert.match(ui,/sourceKey/);
 });
-test('Free plan sees actionable Pro upgrade for 4K instead of an enabled upscale action',()=>{
+test('Download click verifies paid plan; Free and Starter 4K users see plan popup and no file',()=>{
  const ui=read('components/studio-upscale-panel.tsx');
- assert.match(ui,/disabled=\{working\|\|disabled\|\|!entitled\}/);
- assert.match(ui,/!entitled\?<div className="studio-upgrade-notice">/);
- assert.match(ui,/resolution==='4k'\?'4K upscaling and downloads require Pro, Premium or Max/);
- assert.match(ui,/Upgrade to '\+requiredTier\+' for '\+resolution\.toUpperCase\(\)/);
- assert.match(ui,/href="\/pricing"/);
+ assert.match(ui,/onClick=\{\(\)=>void download\(\)\}/);
+ assert.match(ui,/fetch\('\/api\/studio\/upscale-authorize'/);
+ assert.match(ui,/purpose:'download'/);
+ assert.match(ui,/response\.status===401\|\|response\.status===403/);
+ assert.match(ui,/setShowPlans\(true\)/);
+ assert.match(ui,/role="dialog" aria-modal="true"/);
+ assert.match(ui,/href="\/pricing" target="_blank"/);
+ assert.match(ui,/downloadFile\(result/);
+ const trigger=ui.indexOf("if(!response.ok||data.authorized!==true)");
+ const delivered=ui.indexOf("downloadFile(result");
+ assert.ok(trigger>=0&&delivered>trigger,'Download must come only after authorization succeeds');
  const base=read('lib/studio-upscale.ts');
  assert.match(base,/if\(plan==='Free'\)return false/);
 });
