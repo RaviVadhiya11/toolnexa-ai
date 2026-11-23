@@ -4,12 +4,13 @@ import Link from 'next/link';
 import {ManageSubscription} from '@/components/manage-subscription';
 import {browserSupabase} from '@/lib/supabase/client';
 import {tools} from '@/lib/tools';
+import {dailyLimits,quotaKey,readUsage} from '@/lib/usage-limits';
 
 type Plan='Free'|'Starter'|'Pro'|'Premium';
 const plans:Record<Exclude<Plan,'Free'>,{price:string;batch:number}>={
- Starter:{price:'$3.99',batch:5},
- Pro:{price:'$5.99',batch:20},
- Premium:{price:'$9.99',batch:50}
+ Starter:{price:'$3.99',batch:20},
+ Pro:{price:'$5.99',batch:60},
+ Premium:{price:'$9.99',batch:150}
 };
 const validToolSlugs=new Set(tools.map(tool=>tool.slug));
 function labelSlug(slug:string){return slug.replaceAll('-',' ')}
@@ -19,6 +20,7 @@ export default function Dashboard(){
  const [plan,setPlan]=useState<Plan|null>(null);
  const [status,setStatus]=useState<'checking'|'ready'|'error'>('checking');
  const [signedIn,setSignedIn]=useState(false);
+ const [dailyUsed,setDailyUsed]=useState(0);
  useEffect(()=>{
   try{
    const stored=JSON.parse(localStorage.getItem('toolnexa-recent')||'[]');
@@ -36,6 +38,8 @@ export default function Dashboard(){
     if(!response.ok||!['Free','Starter','Pro','Premium'].includes(data.plan))throw Error('Status unavailable');
     setPlan(data.plan as Plan);
     setSignedIn(data.authenticated===true);
+    const owner=typeof data.userId==='string'?data.userId:null;
+    setQuotaOwner(owner);setDailyUsed(readUsage(quotaKey(owner)));
     setStatus('ready');
    }catch{if(active){setStatus('error');setPlan(null)}}
   };
@@ -84,7 +88,7 @@ export default function Dashboard(){
   </section>
   <div className="member-overview">
    <div className="member-metric"><span>Current plan</span><strong>{displayPlan}</strong><small>{paid?'Verified paid access':status==='error'?'Please refresh later':'Your membership'}</small></div>
-   <div className="member-metric"><span>Available free tools</span><strong>20</strong><small>Accessible without payment</small></div>
+   <div className="member-metric"><span>Daily tool uses left</span><strong>{status==='ready'?Math.max(0,dailyLimits[plan??'Free']-dailyUsed):'—'}</strong><small>{status==='ready'?dailyUsed+' / '+dailyLimits[plan??'Free']+' used today · '+plan+' plan':'Verifying allowance'}</small></div>
    <div className="member-metric"><span>Recent tools</span><strong>{recent.length}</strong><small>Saved on this device</small></div>
   </div>
   <section className="member-section" aria-label="Premium tools">
