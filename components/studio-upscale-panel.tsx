@@ -49,7 +49,7 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
  useEffect(()=>()=>{if(resultUrl)URL.revokeObjectURL(resultUrl)},[resultUrl]);
  useEffect(()=>{
   generation.current+=1;
-  setResult(null);setResultUrl('');setResultSize('');setMessage('');setShowPlans(false);
+  setWorking(false);setResult(null);setResultUrl('');setResultSize('');setMessage('');setShowPlans(false);
  },[resolution,sourceKey]);
  useEffect(()=>{
   if(!showPlans)return;
@@ -173,11 +173,12 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
      {plans.map(item=><div className={'studio-paywall-plan '+(item.name===requiredTier?'studio-paywall-recommended':'')} key={item.name}>
       <strong>{item.name}</strong><span>{item.quality}</span>
       <small>{item.description}</small>
-      <Link href="/pricing" target="_blank" rel="noopener noreferrer"
-       aria-label={'View '+item.name+' subscription pricing in a new tab'}>View {item.name} Plan</Link>
+      {canUpscale(item.name,resolution)?<Link href="/pricing" target="_blank" rel="noopener noreferrer"
+       aria-label={'View '+item.name+' subscription pricing in a new tab'}>View {item.name} Plan</Link>:
+       <small className="studio-paywall-ineligible">Not eligible for {resolution.toUpperCase()} download</small>}
      </div>)}
     </div>
-    <p className="studio-note">Pricing opens in a new tab so this preview stays here. After PayPal subscription activation, return to this tab and click Download again. The server will verify your plan.</p>
+    <p className="studio-note">Pricing opens in a new tab so your preview remains here. Keep this tab open. After PayPal subscription activation, return and click Download again. The server will verify your plan.</p>
     <button type="button" className="studio-paywall-retry" onClick={()=>{setShowPlans(false);void download()}}>I've subscribed — check and download</button>
    </div>
   </div>}
