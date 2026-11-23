@@ -46,5 +46,5 @@ test('pricing accurately describes Pro-plus exports and no generative AI enhance
  const pkg=JSON.parse(read('package.json'));
  assert.ok(pkg.dependencies.sharp,'Image processing dependency required');
  const privacy=read('app/privacy/page.tsx');
- assert.match(privacy,/pixel data from your current artwork is sent to our server/);
+ assert.match(privacy,/pixel data from your current artwork is sent to Vercel/);
 });
