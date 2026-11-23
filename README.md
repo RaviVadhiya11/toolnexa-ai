@@ -12,7 +12,7 @@ Production site: https://toolnexa-ai.vercel.app
 - Shared daily runs: Free 10, Starter 500, Pro 1,000, Premium 1,500; resets at 00:00 UTC. Guests use a per-browser counter. Authenticated accounts can share an atomic Supabase counter across browsers/devices after the SQL migration and environment flag are applied. Server-verifies PayPal plan and account identity; local execution remains browser-based, so browser tampering can still bypass the UI. Paid-account reservations count on a run attempt, including operations which later fail; guest usage only counts successful runs.
 - Search, category filters, helpful tool landing pages and local recent-tool history.
 - Sign up/sign in with Supabase Auth, Google OAuth where configured, email confirmation and email password reset.
-- Paid Starter ($3.99/month or $39.99/year, 20 texts per batch), Pro ($5.99/month or $59.99/year, 60 texts), Premium ($9.99/month or $99.99/year, 150 texts) and Max ($14.99/month or $149.99/year, 300 texts). Annual prices are billed upfront every 12 months and save about 16% versus monthly billing. Paid batch analyzer limit is 20,000 characters per text. **Pro, Premium and Max also unlock HD 2×/4× PNG exports in Vector Studio and Image Enhancer; this is not generative AI enhancement. No paid AI credits are included.**
+- Paid Starter ($3.99/month or $39.99/year, 20 texts per batch), Pro ($5.99/month or $59.99/year, 60 texts), Premium ($9.99/month or $99.99/year, 150 texts) and Max ($14.99/month or $149.99/year, 300 texts). Annual prices are billed upfront every 12 months and save about 16% versus monthly billing. Paid batch analyzer limit is 20,000 characters per text. **Pro, Premium and Max also unlock HD 2×/4× PNG exports in Image & Vector Studio Suite; this is not generative AI enhancement. No paid AI credits are included.**
 - Server-verified PayPal membership, signed webhooks, hosted subscription fallback, customer subscription overview and immediate cancellation request.
 - SEO metadata, sitemap, robots, accessible error screens, security headers and public support/policy pages.
 
@@ -23,7 +23,7 @@ Max is the highest **capped** tier: **$14.99/month or $149.99/year**, with **3,0
 - `/studio/vector`: upload JPG/PNG/WebP (up to 10 MB), trace image colors into actual SVG paths using ImageTracer.js, preview raster vs vector, and export editable SVG and standard PNG in the browser. Pro HD PNG is server-verified. An optional SVG preset-logo designer remains available. Complex photos trace into stylized vector art and are not pixel-identical.
 - `/studio/enhance`: browser-only brightness/contrast/saturation tools; HD JPEG upscaling uses a protected server endpoint and Lanczos resampling, **not** generative AI restoration or detail hallucination.
 - Pro HD exports check the current PayPal ACTIVE subscription on the server, enforce the shared account daily quota atomically and reject unauthenticated or Starter requests. Inputs are limited to 700,000 pixels before 2×/4× resizing; up to 12 megapixels output. Vercel's response-size limit may require a smaller export for dense artwork.
-- These two dedicated Studio pages are outside the existing 60 utility catalogue. Native AI, CDR, EPS, DXF and WMF/EMF conversion is not available yet; do not advertise those as supported exports.
+- These eight dedicated Studio pages are outside the existing 60 utility catalogue. SVG, vector PDF, EPS and outline DXF are implemented; native AI, CDR, WMF and EMF still require specialist converters.
 
 ## Run locally
 
@@ -92,3 +92,29 @@ Signed-in Free users can use the account-backed Free quota without needing PayPa
 - [Privacy](https://toolnexa-ai.vercel.app/privacy)
 - [Terms](https://toolnexa-ai.vercel.app/terms)
 - [Billing and cancellation](https://toolnexa-ai.vercel.app/billing)
+
+
+## Eight-tool Image & Vector Suite (November 2026)
+
+Routes: /studio/vector, /studio/image-to-vector, /studio/convert, /studio/svg-editor,
+/studio/enhance, /studio/background-remove, /studio/retouch, /studio/restore.
+The original 60 utility tools remain untouched; these 8 dedicated Studio workflows
+live outside that static catalogue.
+
+- Vector conversion: sanitized local SVG -> editable SVG, vector PDF via svg2pdf.js,
+  EPS PostScript geometry, or DXF CAD polylines (outlines only). Flatten SVG
+  transforms before EPS/DXF; advanced SVG constructs may be unsupported.
+- Background remover: on-device Apache-2.0 U²-Netp ONNX model via ONNX Runtime Web;
+  first run downloads 4.6MB model from Hugging Face and WASM assets from jsDelivr.
+  Solid-background mode works without the AI model.
+- Retouch: selection brush and neighborhood pixel inpainting for small objects.
+  Not generative removal of people, crowds or complex scenes.
+- Photo Restore: median denoise, sharpen and tonal grading. Not generative
+  photo recreation or semantic black-and-white colourization.
+- Standard photo exports run entirely in the browser. Pro/Premium/Max 2x/4x
+  HD exports (PNG for vector/alpha images; JPEG for photos) are server-verified
+  against current PayPal subscriptions and consume paid daily run quota.
+- Native .AI, .CDR, .WMF and .EMF writing is **not implemented**; never fake these
+  formats by renaming SVG/EPS. They require tested third-party conversion.
+- AI model availability depends on user browser/CORS/network; the local fallback
+  is documented in the tool UI.

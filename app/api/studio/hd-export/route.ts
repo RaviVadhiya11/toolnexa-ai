@@ -21,7 +21,7 @@ export async function POST(request:NextRequest){
  if(typeof width!=='number'||typeof height!=='number'||
   !Number.isSafeInteger(width)||!Number.isSafeInteger(height)||width<1||height<1||width>1024||height>1024||
   width*height>700000||(scale!==2&&scale!==4)||
-  width*height*scale*scale>12000000||!['image','vector'].includes(String(kind))||
+  width*height*scale*scale>12000000||!['image','vector','cutout'].includes(String(kind))||
   typeof data!=='string'||data.length>3900000||!/^[A-Za-z0-9+/]*={0,2}$/.test(data))
   return reply('Invalid dimensions, format or export resolution',400);
  const pixels=Buffer.from(data,'base64');
@@ -41,7 +41,7 @@ export async function POST(request:NextRequest){
   const resize=()=>sharp(pixels,{raw:{width,height,channels:4}})
    .resize({width:width*scale,height:height*scale,kernel:'lanczos3',fit:'fill'})
    .sharpen({sigma:0.65});
-  if(kind==='vector'){
+  if(kind==='vector'||kind==='cutout'){
    output=await resize().png({compressionLevel:9}).toBuffer();
   }else{
    format='image/jpeg';
@@ -54,7 +54,7 @@ export async function POST(request:NextRequest){
   }
  }catch{return reply('HD rendering failed. Try a smaller image',500)}
  if(output.length>3900000)return reply('Output is too large. Choose 2x or a simpler image',413);
- const filename=kind==='vector'?'toolnexa-vector-hd.png':'toolnexa-enhanced-hd.jpg';
+ const filename=kind==='vector'?'toolnexa-vector-hd.png':kind==='cutout'?'toolnexa-transparent-hd.png':'toolnexa-enhanced-hd.jpg';
  return new NextResponse(new Uint8Array(output),{
   status:200,headers:{...headers,'Content-Type':format,
    'Content-Disposition':'attachment; filename="'+filename+'"'}
