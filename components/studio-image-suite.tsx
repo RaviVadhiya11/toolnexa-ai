@@ -209,7 +209,7 @@ export function StudioImageSuite({mode}:{mode:Mode}){
     <select id="suite-hd-scale" value={scale} onChange={e=>setScale(Number(e.target.value) as 2|4)}><option value={2}>2× HD</option><option value={4}>4× HD</option></select>
     {pro?<button type="button" disabled={!resultUrl||working} onClick={()=>void hd()}>Download Pro HD</button>:
       <Link href="/pricing" className="studio-upgrade">Unlock Pro HD Export →</Link>}
-    <StudioUpscalePanel getCanvas={async()=>{if(!resultRef.current)throw Error('Process your image first');return resultRef.current}} format={mode==='background'?'cutout':'photo'} disabled={!resultUrl} sourceKey={resultUrl}/>
+    <StudioUpscalePanel getCanvas={async()=>{if(!resultRef.current)throw Error('Process your image first');return resultRef.current}} format={mode==='background'?'cutout':'photo'} disabled={!resultUrl} sourceKey={resultUrl} usageSlug={mode==='background'?'studio-background':mode==='retouch'?'studio-retouch':'studio-restore'}/>
     <p className="studio-note">AI cutout may have imperfect edges. Retouching works best on small marks, and resizing does not reconstruct missing photograph detail.</p>
    </div>
   </div>
