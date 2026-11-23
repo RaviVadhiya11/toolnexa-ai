@@ -109,6 +109,6 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
       resolution==='4x'?'4× upscaling requires Pro or higher.':'2× upscaling requires Starter or higher.'}</p>
     <Link className="studio-upgrade" href="/pricing">{upgradeText} →</Link>
    </div>:<p className="studio-note">Your {plan} plan allows {resolution.toUpperCase()} upscaling.</p>}
-  <p className="studio-message" role="status">{message||'Select an image and click Upscale Image to generate a downloadable result.'}</p>}
+  <p className="studio-message" role="status">{message||'Select an image and click Upscale Image to generate a downloadable result.'}</p>
  </div>;
 }
