@@ -53,7 +53,7 @@ export const tools:Tool[]=[
 {slug:"text-compare",title:"Text Compare",category:"Text" as Category,icon:"🔍",description:"Compare two blocks of text line by line"},
 {slug:"youtube-thumbnail-downloader",title:"YouTube Thumbnail Downloader",category:"Creator" as Category,icon:"▶️",description:"View and download available public video thumbnails"},
 {slug:"aspect-ratio-resizer",title:"Reel & Video Aspect Resizer",category:"Creator" as Category,icon:"📱",description:"Resize or crop to 9:16, 16:9, square and other ratios"},
-{slug:"ai-title-hashtag-generator",title:"AI Title & Hashtag Generator",category:"Creator" as Category,icon:"✨",description:"Generate social titles and relevant hashtags; offline smart mode available"},
+{slug:"ai-title-hashtag-generator",title:"AI Title & Hashtag Generator",category:"Creator" as Category,icon:"✨",description:"Generate titles, hashtags, captions and descriptions with Gemini AI or offline smart mode"},
 {slug:"csv-to-json",title:"CSV to JSON",category:"Developer" as Category,icon:"📊",description:"Convert quoted CSV records into JSON"},
 {slug:"image-flipper",title:"Image Flipper",category:"Image" as Category,icon:"🪞",description:"Flip or rotate an image and download it"},
 {slug:"text-sorter",title:"Text Sorter",category:"Text" as Category,icon:"🔠",description:"Sort and deduplicate text lines"},
