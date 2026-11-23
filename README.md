@@ -1,13 +1,13 @@
 # ToolNexa AI
 
-ToolNexa AI is a responsive web application built with Next.js 15, React 19, TypeScript, Supabase Auth, PayPal subscriptions, pdf-lib, and qrcode. It has 20 free browser-based tools plus a paid Batch Text Analyzer.
+ToolNexa AI is a responsive web application built with Next.js 15, React 19, TypeScript, Supabase Auth, PayPal subscriptions, pdf-lib, and qrcode. It has 56 utility tools plus a paid Batch Text Analyzer.
 
 Production site: https://toolnexa-ai.vercel.app
 
 ## Features
 
 - Design 6 dark-navy and purple responsive interface, optional light theme, desktop sidebar and mobile navigation.
-- 20 browser-side utilities across Text, Developer, Business, Image and PDF.
+- 56 utilities across Text, Developer, Business, Image, PDF and Creator. New tools include verified browser-local PDF AES-256 encryption, Creator aspect resizing and public YouTube thumbnails. The title/hashtag generator currently uses transparent offline suggestions, not a remote generative AI model.
 - Shared daily runs: Free 10, Starter 500, Pro 1,000, Premium 1,500; resets at 00:00 UTC. Guests use a per-browser counter. Authenticated accounts can share an atomic Supabase counter across browsers/devices after the SQL migration and environment flag are applied. Server-verifies PayPal plan and account identity; local execution remains browser-based, so browser tampering can still bypass the UI. Paid-account reservations count on a run attempt, including operations which later fail; guest usage only counts successful runs.
 - Search, category filters, helpful tool landing pages and local recent-tool history.
 - Sign up/sign in with Supabase Auth, Google OAuth where configured, email confirmation and email password reset.
