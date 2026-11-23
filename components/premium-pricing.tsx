@@ -4,9 +4,9 @@ import {PayPalSubscribe} from '@/components/paypal-subscribe';
 
 type Tier='Starter'|'Pro'|'Premium';
 const tiers:{name:Tier;price:string;tagline:string;features:string[]}[]=[
- {name:'Starter',price:'$3.99',tagline:'For everyday productivity',features:['All 20 free utility tools','Batch text analysis: 5 texts per request','Up to 20,000 characters per text','Monthly recurring access']},
- {name:'Pro',price:'$5.99',tagline:'For creators and professionals',features:['All 20 free utility tools','Batch text analysis: 20 texts per request','Up to 20,000 characters per text','Monthly recurring access']},
- {name:'Premium',price:'$9.99',tagline:'For higher-volume workflows',features:['All 20 free utility tools','Batch text analysis: 50 texts per request','Up to 20,000 characters per text','Monthly recurring access']}
+ {name:'Starter',price:'$3.99',tagline:'For everyday productivity',features:['All 20 free utility tools','Batch text analysis: 20 texts per request','Up to 20,000 characters per text','Daily utility tool allowance: 150 runs','Daily utility tool allowance: 500 runs','Daily utility tool allowance: 2,000 runs','Monthly recurring access']},
+ {name:'Pro',price:'$5.99',tagline:'For creators and professionals',features:['All 20 free utility tools','Batch text analysis: 60 texts per request','Up to 20,000 characters per text','Monthly recurring access']},
+ {name:'Premium',price:'$9.99',tagline:'For higher-volume workflows',features:['All 20 free utility tools','Batch text analysis: 150 texts per request','Up to 20,000 characters per text','Monthly recurring access']}
 ];
 
 export function PremiumPricing({clientId,plans,enabled}:{clientId:string;plans:Record<Tier,string>;enabled:boolean}){
@@ -18,7 +18,7 @@ export function PremiumPricing({clientId,plans,enabled}:{clientId:string;plans:R
   <header className="pricing-intro">
    <span className="tier-tag">TOOLNEXA AI PREMIUM</span>
    <h1>Simple plans. More possibilities.</h1>
-   <p>Choose the right monthly plan for your workflow. Start small or work with bigger batches whenever you need.</p>
+   <p>Choose the right monthly plan for your workflow. All 20 tools have a shared daily usage allowance. Subscribe for larger daily limits and bigger text batches.</p>
   </header>
   <div className="tier-grid">
    {tiers.map(tier=>{
@@ -49,6 +49,6 @@ export function PremiumPricing({clientId,plans,enabled}:{clientId:string;plans:R
    </>}
   </div>
   <div className="pricing-trust"><span>✓ Secure checkout with PayPal</span><span>✓ Monthly recurring billing</span><span>✓ Cancel through PayPal</span></div>
-  <p className="small-note mt-6 text-center">Current paid feature: Batch Text Analyzer. Other premium tools and team features are not included yet. Plans have different per-request batch sizes; monthly usage quotas are not part of these plans.</p>
+  <p className="small-note mt-6 text-center">Free usage: 10 successful tool runs per day across all 20 tools on this browser. Starter: 150, Pro: 500, Premium: 2,000 daily runs. Allowances reset at 00:00 UTC. Current paid feature: Batch Text Analyzer. Paid Batch Text Analyzer sizes: Starter 20, Pro 60, Premium 150 texts per request. Daily utility usage is tracked in this browser; it is not an account-wide server-enforced quota.</p>
  </section>;
 }
