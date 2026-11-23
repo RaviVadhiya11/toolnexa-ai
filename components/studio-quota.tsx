@@ -1,14 +1,10 @@
 'use client';
 import {useEffect,useState} from 'react';
 import Link from 'next/link';
+import type {StudioRunSlug} from '@/lib/studio-run-slugs';
 import {quotaKey,readUsage,consumeUsage,dailyLimits,isUsagePlan,type UsagePlan} from '@/lib/usage-limits';
 
 // A single shared daily balance covers the existing 60 tools and all eight Studio workflows.
-export const studioRunSlugs=[
- 'studio-vector','studio-image-to-vector','studio-convert','studio-svg-editor',
- 'studio-enhance','studio-background','studio-retouch','studio-restore'
-] as const;
-export type StudioRunSlug=typeof studioRunSlugs[number];
 type Quota={plan:UsagePlan;limit:number;used:number;mode:'browser'|'account';userId:string|null};
 export async function currentStudioQuota():Promise<Quota>{
  const res=await fetch('/api/usage/quota',{cache:'no-store'});
