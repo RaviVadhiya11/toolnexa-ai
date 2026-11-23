@@ -95,11 +95,13 @@ if(!isEnabled){
      emit(label,false,e instanceof Error?e.message.slice(0,60):'Request failed');
     }
    }
-   if(!config.webhookId||!/^[A-Z0-9-]{8,80}$/i.test(config.webhookId)){
-    emit('Webhook',false,'Webhook ID missing or malformed');
+   if(!config.webhookId||typeof config.webhookId!=='string'||config.webhookId.trim().length<3||config.webhookId.length>128){
+    emit('Webhook',false,'Webhook ID missing or improperly configured');
    }else{
     try{
-     const hook=await request('/v1/notifications/webhooks/'+encodeURIComponent(config.webhookId),headers);
+     // PayPal is authoritative for webhook IDs. Do not guess an ID pattern:
+     // real merchant webhook identifiers may use several formats.
+     const hook=await request('/v1/notifications/webhooks/'+encodeURIComponent(config.webhookId.trim()),headers);
      const urlOk=typeof hook.url==='string'&&
       hook.url.replace(/\/+$/,'')==='https://toolnexa-ai.vercel.app/api/paypal/webhook';
      const events=new Set((Array.isArray(hook.event_types)?hook.event_types:[]).map(x=>x.name));
