@@ -8,11 +8,13 @@ import {processAdvancedPdf,type GeneratedFile} from '@/lib/advanced-file-ops';
 import {processAdvancedImage} from '@/lib/advanced-image-ops';
 import {generateBusinessPdf} from '@/lib/advanced-document-ops';
 import {parseSocialOutput} from '@/lib/social-output';
+import {jsonToCsv,buildUtmUrl,makeSeoMetaTags,fileChecksum,hashVerification} from '@/lib/creator-operations';
+import {CopyableResultRows} from '@/components/copyable-result-rows';
 
 const PDF_TOOLS=new Set(['pdf-compressor','rotate-pdf','pdf-watermark','pdf-page-numbers','reorder-pdf','delete-pdf-pages','protect-pdf','pdf-metadata']);
 const IMAGE_TOOLS=new Set(['image-compressor','image-cropper','background-remover','image-watermark','image-to-base64','color-picker','passport-photo-maker','aspect-ratio-resizer','image-flipper']);
 const DOC_TOOLS=new Set(['invoice-generator','quotation-maker','resume-builder']);
-const TEXTAREA_TOOLS=new Set(['html-formatter','css-minifier','javascript-minifier','regex-tester','jwt-decoder','sql-formatter','csv-to-json','text-sorter','text-compare','ai-title-hashtag-generator','invoice-generator','quotation-maker','resume-builder']);
+const TEXTAREA_TOOLS=new Set(['html-formatter','css-minifier','javascript-minifier','regex-tester','jwt-decoder','sql-formatter','csv-to-json','text-sorter','text-compare','ai-title-hashtag-generator','invoice-generator','quotation-maker','resume-builder','json-to-csv','utm-campaign-builder','seo-meta-generator']);
 const BINARY_TOOLS=new Set([...PDF_TOOLS,...IMAGE_TOOLS,...DOC_TOOLS,'youtube-thumbnail-downloader']);
 type Q={plan:UsagePlan;used:number;limit:number|null;mode:'browser'|'account';key:string};
 function download(blob:Blob,name:string){
@@ -33,7 +35,8 @@ const SELECTS:Record<string,[string,string][]>={
  'image-flipper':[['horizontal','Flip horizontal'],['vertical','Flip vertical'],['rotate180','Rotate 180°']],
  'aspect-ratio-resizer':[['9:16','9:16 — Shorts / Reels'],['16:9','16:9 — YouTube landscape'],['1:1','1:1 — Square'],['4:5','4:5 — Instagram portrait']],
  'ai-title-hashtag-generator':[['YouTube','YouTube'],['Instagram','Instagram'],['TikTok','TikTok'],['LinkedIn','LinkedIn']],
- 'text-sorter':[['unique','Sort + remove duplicates'],['keep','Sort and keep duplicate lines']]
+ 'text-sorter':[['unique','Sort + remove duplicates'],['keep','Sort and keep duplicate lines']],
+ 'sha-file-checker':[['SHA-256','SHA-256'],['SHA-512','SHA-512']]
 };
 const HELP:Record<string,string>={
  'pdf-compressor':'Optimizes PDF structure losslessly, without reducing image resolution. It may not make already optimized PDFs smaller.',
@@ -53,7 +56,11 @@ const HELP:Record<string,string>={
  'youtube-thumbnail-downloader':'Uses only public YouTube video thumbnail images; maximum available resolution varies by video. Download only when permitted.',
  'ai-title-hashtag-generator':'Gemini AI requires sign-in and a configured API key. Free preview: up to 3 AI generations per signed-in account per UTC day, subject to a 30/day site-wide cap. Offline Smart Mode works without AI or Google requests.',
  'jwt-decoder':'Decodes JWT segments without verifying cryptographic signatures. Never paste real bearer tokens from production accounts.',
- 'regex-tester':'Use short patterns and small test text. Complex regexes may freeze a browser; avoid untrusted catastrophic patterns.'
+ 'regex-tester':'Use short patterns and small test text. Complex regexes may freeze a browser; avoid untrusted catastrophic patterns.',
+ 'json-to-csv':'Paste a JSON array of objects (max 5,000). Nested object keys become dot-separated columns. Exported CSV protects text cells from spreadsheet formula injection.',
+ 'sha-file-checker':'Hash and optionally verify a 25 MB or smaller local file with SHA-256 or SHA-512. The file stays on your device; cryptographic digests use Web Crypto.',
+ 'utm-campaign-builder':'Enter your complete HTTP(S) destination URL and source, medium and campaign. Existing non-UTM parameters and URL fragments are preserved.',
+ 'seo-meta-generator':'Produce properly HTML-escaped title, description, canonical, Open Graph and Twitter tags. Preview descriptions for length before publishing.'
 };
 const PRIMARY_HINT:Record<string,[string,string]>={
  'rotate-pdf':['Pages to rotate (optional)','1,3,5'],
@@ -79,6 +86,9 @@ const PRIMARY_HINT:Record<string,[string,string]>={
  'quotation-maker':['Your business name','My Business'],
  'resume-builder':['Full name','Alex Kumar'],
  'youtube-thumbnail-downloader':['YouTube URL or video ID','https://youtu.be/jNQXAC9IVRw'],
+ 'sha-file-checker':['Expected checksum (optional)','Paste 64/128 hexadecimal characters'],
+ 'utm-campaign-builder':['Campaign source (utm_source)','newsletter'],
+ 'seo-meta-generator':['Canonical website URL','https://example.com/page'],
 };
 const SECOND_HINT:Record<string,[string,string]>={
  'protect-pdf':['Confirm password','Repeat password'],
@@ -92,21 +102,29 @@ const SECOND_HINT:Record<string,[string,string]>={
  'date-difference':['End date','2026-11-23'],
  'invoice-generator':['Customer / recipient','Client name'],
  'quotation-maker':['Customer / recipient','Client name'],
- 'resume-builder':['Profession / role','Software Developer']
+ 'resume-builder':['Profession / role','Software Developer'],
+ 'utm-campaign-builder':['Campaign medium (utm_medium)','email'],
+ 'seo-meta-generator':['Page title','My Page | Example']
 };
 function defaultText(slug:string){
  if(slug==='invoice-generator'||slug==='quotation-maker')return 'Website development | 1 | 12000\nHosting setup | 1 | 1800';
  if(slug==='resume-builder')return 'Email: alex@example.com\nPhone: +91 90000 00000\nSummary: Detail-oriented professional with experience delivering useful digital products.\nSkills: Communication, web development, project planning\nExperience: Built and maintained production websites.\nEducation: Bachelor degree';
  if(slug==='ai-title-hashtag-generator')return 'How to create engaging educational videos';
+ if(slug==='json-to-csv')return '[\n  {"name":"Ada","role":"Developer","active":true},\n  {"name":"Bea","role":"Designer","active":false}\n]';
+ if(slug==='utm-campaign-builder')return 'https://example.com/product?ref=homepage';
+ if(slug==='seo-meta-generator')return 'A clear overview of this page, its benefits and the information visitors will find here.';
  return '';
 }
 export function AdvancedToolRunner({tool}:{tool:Tool}){
  const slug=tool.slug,pdf=PDF_TOOLS.has(slug),image=IMAGE_TOOLS.has(slug),doc=DOC_TOOLS.has(slug);
- const fileNeeded=pdf||image;
+ const hashFile=slug==='sha-file-checker';
+ const fileNeeded=pdf||image||hashFile;
  const [primary,setPrimary]=useState(slug==='age-calculator'?'2000-01-01':slug==='date-difference'?'2026-01-01':'');
  const [secondary,setSecondary]=useState(slug==='age-calculator'?dateToday():slug==='date-difference'?dateToday():'');
  const [text,setText]=useState(defaultText(slug));
- const [third,setThird]=useState('12');
+ const [third,setThird]=useState(slug==='utm-campaign-builder'||slug==='seo-meta-generator'?'':'12');
+ const [utmTerm,setUtmTerm]=useState('');
+ const [utmContent,setUtmContent]=useState('');
  const [option,setOption]=useState(SELECTS[slug]?.[0][0]||'');
  const [aiMode,setAiMode]=useState<'gemini'|'offline'>('gemini');
  const [file,setFile]=useState<File|null>(null);
@@ -196,6 +214,17 @@ export function AdvancedToolRunner({tool}:{tool:Tool}){
     case 'date-difference':output=dateDifferenceReport(primary,secondary);break;
     case 'text-compare':output=textDiff(text,secondary);break;
     case 'csv-to-json':output=csvToJson(text);break;
+    case 'json-to-csv':output=jsonToCsv(text);break;
+    case 'utm-campaign-builder':output=buildUtmUrl(text,primary,secondary,third,utmTerm,utmContent);break;
+    case 'seo-meta-generator':output=makeSeoMetaTags(primary,secondary,text,third);break;
+    case 'sha-file-checker':{
+     if(!file)throw Error('Choose a file to hash.');
+     const algorithm=option==='SHA-512'?'SHA-512':'SHA-256';
+     const digest=await fileChecksum(file,algorithm);
+     const verify=hashVerification(digest,primary);
+     output=algorithm+': '+digest+'\nFile size: '+file.size.toLocaleString('en-IN')+' bytes\nVerification: '+verify;
+     break;
+    }
     case 'text-sorter':output=textSort(text,option!=='keep');break;
     case 'ai-title-hashtag-generator':{
      if(aiMode==='offline'){output=socialSuggestions(text,option,'professional');break;}
@@ -275,8 +304,8 @@ export function AdvancedToolRunner({tool}:{tool:Tool}){
    <div className="tool-editor">
     <div className="tool-editor-header"><p className="tool-workspace-kicker">ADVANCED WORKSPACE</p><h2>{tool.title}</h2><p>{tool.description}.</p></div>
     {HELP[slug]&&<p className="small-note mb-5">{HELP[slug]}</p>}
-    {fileNeeded&&<div className="tool-field"><label htmlFor="advanced-file">Choose {pdf?'a PDF':'an image'}</label>
-     <input id="advanced-file" className="field tool-file-input" type="file" accept={pdf?".pdf,application/pdf":"image/png,image/jpeg,image/webp,image/gif,image/bmp"}
+    {fileNeeded&&<div className="tool-field"><label htmlFor="advanced-file">Choose {pdf?'a PDF':hashFile?'a file':'an image'}</label>
+     <input id="advanced-file" className="field tool-file-input" type="file" accept={hashFile?undefined:pdf?".pdf,application/pdf":"image/png,image/jpeg,image/webp,image/gif,image/bmp"}
       onChange={e=>setFile(e.target.files?.[0]||null)}/>
      <p className="small-note">{file?file.name+' · '+Math.round(file.size/1024)+' KB':'Files stay in your browser for processing (25 MB maximum).'}</p>
     </div>}
@@ -290,7 +319,7 @@ export function AdvancedToolRunner({tool}:{tool:Tool}){
       <select id="advanced-resize-mode" className="field" value={secondary||'cover'} onChange={e=>setSecondary(e.target.value)}>
        <option value="cover">Cover · crop edges</option><option value="contain">Contain · white padding</option>
       </select></div>}
-    {SELECTS[slug]&&<div className="tool-field"><label htmlFor="advanced-option">{slug==='aspect-ratio-resizer'?'Aspect ratio':slug==='ai-title-hashtag-generator'?'Platform':'Mode'}</label>
+    {SELECTS[slug]&&<div className="tool-field"><label htmlFor="advanced-option">{slug==='aspect-ratio-resizer'?'Aspect ratio':slug==='ai-title-hashtag-generator'?'Platform':slug==='sha-file-checker'?'Hash algorithm':'Mode'}</label>
       <select id="advanced-option" className="field" value={option} onChange={e=>setOption(e.target.value)}>{SELECTS[slug].map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>
     </div>}
     {slug==='ai-title-hashtag-generator'&&<div className="tool-field">
@@ -301,9 +330,22 @@ export function AdvancedToolRunner({tool}:{tool:Tool}){
       </select>
       <p className="small-note">{aiMode==='gemini'?'The entered topic is sent securely from the website server to Google Gemini. An AI key and daily allowance are required.':'No text is sent to Google in Offline Smart Mode.'}</p>
     </div>}
-    {TEXTAREA_TOOLS.has(slug)&&<div className="tool-field"><label htmlFor="advanced-text">{slug==='regex-tester'?'Sample text to test':slug==='text-compare'?'Original text (left)':doc?'Content / line items':slug==='ai-title-hashtag-generator'?'Topic to generate for':'Source text'}</label>
+    {TEXTAREA_TOOLS.has(slug)&&<div className="tool-field"><label htmlFor="advanced-text">{slug==='regex-tester'?'Sample text to test':slug==='text-compare'?'Original text (left)':doc?'Content / line items':slug==='ai-title-hashtag-generator'?'Topic to generate for':slug==='utm-campaign-builder'?'Destination URL':slug==='seo-meta-generator'?'Meta description':slug==='json-to-csv'?'JSON records':'Source text'}</label>
       <textarea id="advanced-text" rows={doc?8:7} className="field tool-textarea" value={text} onChange={e=>setText(e.target.value)} placeholder="Enter or paste your content…"/>
       <p className="small-note">{text.length.toLocaleString()} characters · {slug==='ai-title-hashtag-generator'&&aiMode==='gemini'?'topic sent to Google Gemini on generation':'processed locally'}</p>
+    </div>}
+    {slug==='utm-campaign-builder'&&<div className="tool-field">
+      <label htmlFor="advanced-utm-campaign">Campaign name (utm_campaign)</label>
+      <input id="advanced-utm-campaign" className="field" value={third} placeholder="november_launch" onChange={e=>setThird(e.target.value)}/>
+      <label htmlFor="advanced-utm-term" className="mt-3 block">Campaign keyword (optional)</label>
+      <input id="advanced-utm-term" className="field" value={utmTerm} placeholder="marketing" onChange={e=>setUtmTerm(e.target.value)}/>
+      <label htmlFor="advanced-utm-content" className="mt-3 block">Content variant (optional)</label>
+      <input id="advanced-utm-content" className="field" value={utmContent} placeholder="button_a" onChange={e=>setUtmContent(e.target.value)}/>
+    </div>}
+    {slug==='seo-meta-generator'&&<div className="tool-field">
+      <label htmlFor="advanced-seo-image">Open Graph image URL (optional)</label>
+      <input id="advanced-seo-image" className="field" value={third} placeholder="https://example.com/preview.jpg" onChange={e=>setThird(e.target.value)}/>
+      <p className="small-note">Title: {secondary.trim().length} characters (about 60 recommended). Description: {text.trim().length} characters (about 160 recommended).</p>
     </div>}
     {slug==='text-compare'&&<div className="tool-field"><label htmlFor="advanced-right">Updated text (right)</label>
      <textarea id="advanced-right" className="field tool-textarea" rows={7} value={secondary} onChange={e=>setSecondary(e.target.value)}/></div>}
@@ -352,8 +394,9 @@ export function AdvancedToolRunner({tool}:{tool:Tool}){
     {thumbnail&&<img src={thumbnail} alt="Available YouTube video thumbnail preview" width={460} height={260} style={{maxWidth:'100%',height:'auto',borderRadius:12,marginTop:16}}/>}
     {last&&<div className="tool-output-actions"><button type="button" className="button outline" onClick={()=>download(last.blob,last.name)}>Download again</button>
       <span className="small-note">{last.name} · {(last.blob.size/1024/1024).toFixed(2)} MB</span></div>}
+    {result&&!failed&&!last&&!socialOutput&&<CopyableResultRows text={result} slug={slug}/>}
     {result&&!failed&&!last&&<div className="tool-output-actions"><button type="button" className="button outline" onClick={()=>void copyPart(result,'full')}>{copiedItem==='full'?'Copied!':socialOutput?'Copy full result':'Copy result'}</button>
-      <button type="button" className="button outline" onClick={()=>download(new Blob([result],{type:'text/plain;charset=utf-8'}),'toolnexa-result.txt')}>Download text</button></div>}
+      <button type="button" className="button outline" onClick={()=>download(new Blob([result],{type:'text/plain;charset=utf-8'}),slug==='json-to-csv'?'toolnexa-data.csv':slug==='seo-meta-generator'?'toolnexa-seo-tags.html':'toolnexa-result.txt')}>Download text</button></div>}
     <p className="tool-local-note">{slug==='ai-title-hashtag-generator'&&aiMode==='gemini'?'AI text generation uses Google Gemini on the server; topic text is shared with Google.':BINARY_TOOLS.has(slug)?'Your document or image is processed in the browser.':'Privacy first · Browser-only processing'}</p>
    </aside>
   </div>
