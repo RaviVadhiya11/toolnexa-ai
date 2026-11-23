@@ -574,3 +574,50 @@ body{background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,syst
  .premium-main .premium-footer-links a{font-size:12px;min-height:46px;padding:10px 8px}
 }
 @media(max-width:330px){.premium-main .premium-footer-links{grid-template-columns:1fr}}
+
+/* Editorial multi-column footer, inspired by user-provided reference (original ToolNexa branding). */
+.premium-main .editorial-footer{display:block;width:100%;max-width:none;background:#121626;border:1px solid #34324b;border-radius:22px;overflow:hidden;margin:46px 0 12px;padding:0;text-align:left;line-height:1.65}
+.premium-main .editorial-footer-main{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr);gap:clamp(25px,3vw,60px);padding:clamp(28px,4vw,52px)}
+.premium-main .editorial-footer-brand{display:inline-flex;align-items:center;font-size:24px;margin-bottom:24px;color:#fff}
+.premium-main .editorial-footer-brand .brand-icon{width:43px;height:43px;min-width:43px}
+.premium-main .editorial-footer-main h2{color:#f0effa;letter-spacing:1.5px;font-size:12px;font-weight:850;margin-bottom:16px}
+.premium-main .editorial-footer-about p{color:#ccd0e4;line-height:1.8;font-size:14px;margin:0 0 12px}
+.premium-main .editorial-footer-about .editorial-footer-caption{color:#9ca7c1;font-size:12px}
+.premium-main .editorial-footer-contact{margin-top:20px;display:inline-flex;align-items:center;gap:9px;color:#cbadff;text-decoration:none;font-size:13px;font-weight:800;min-height:44px}
+.premium-main .editorial-footer-contact:hover{color:#ead7ff}
+.premium-main .editorial-footer-contact-icon{display:grid;place-items:center;width:35px;height:35px;border:1px solid #7453ad;background:#5e40b22b;border-radius:10px}
+.premium-main .editorial-footer-column{display:flex;flex-direction:column;gap:8px;align-items:flex-start;min-width:0}
+.premium-main .editorial-footer-column a{display:inline-flex;align-items:center;gap:10px;color:#c2c7db;text-decoration:none;min-height:36px;line-height:1.35;font-size:14px;font-weight:550;overflow-wrap:anywhere}
+.premium-main .editorial-footer-column a svg{color:#a98bdc;flex-shrink:0}
+.premium-main .editorial-footer-column a:hover{color:#e4caff}
+.premium-main .editorial-footer-bottom{background:#0b0d18;border-top:1px solid #32344a;padding:23px 28px 25px;display:flex;flex-direction:column;align-items:center;gap:17px;text-align:center}
+.premium-main .editorial-footer-legal{display:flex;gap:9px 30px;align-items:center;justify-content:center;flex-wrap:wrap;max-width:850px}
+.premium-main .editorial-footer-legal a{color:#c2c3d2;text-decoration:none;font-size:13px;line-height:1.5;padding:7px 0}
+.premium-main .editorial-footer-legal a:hover{color:#d7b6ff}
+.premium-main .editorial-footer-bottom p{color:#8a91a9;font-size:12px}
+.light .premium-main .editorial-footer{background:#f7f6fc;border-color:var(--border)}
+.light .premium-main .editorial-footer-brand,.light .premium-main .editorial-footer-main h2{color:#252a43}
+.light .premium-main .editorial-footer-about p,.light .premium-main .editorial-footer-column a{color:#4b526a}
+.light .premium-main .editorial-footer-about .editorial-footer-caption{color:#70788f}
+.light .premium-main .editorial-footer-bottom{background:#eeecf7;border-color:#dad6e8}
+.light .premium-main .editorial-footer-legal a{color:#46415f}
+.light .premium-main .editorial-footer-bottom p{color:#697088}
+@media(max-width:900px){.premium-main .editorial-footer-main{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:26px 35px}.premium-main .editorial-footer-about{grid-column:1/-1}}
+@media(max-width:670px){
+ .premium-main .editorial-footer{border-radius:18px;margin:32px 0 16px;padding:0}
+ .premium-main .editorial-footer-main{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 14px;padding:31px 23px 30px}
+ .premium-main .editorial-footer-about{grid-column:1/-1;text-align:center}
+ .premium-main .editorial-footer-brand{justify-content:center;margin:0 0 23px;font-size:25px}
+ .premium-main .editorial-footer-about h2{font-size:12px}
+ .premium-main .editorial-footer-about p{font-size:13px;line-height:1.7;max-width:410px;margin:0 auto 9px}
+ .premium-main .editorial-footer-contact{justify-content:center;margin:15px auto 0}
+ .premium-main .editorial-footer-column{align-items:flex-start;gap:7px}
+ .premium-main .editorial-footer-column h2{font-size:10px;letter-spacing:1.1px;margin-bottom:10px}
+ .premium-main .editorial-footer-column a{font-size:12px;min-height:40px;gap:6px}
+ .premium-main .editorial-footer-column a svg{width:15px;height:15px}
+ .premium-main .editorial-footer-bottom{padding:23px 16px 26px;gap:19px}
+ .premium-main .editorial-footer-legal{display:flex;gap:8px 18px;max-width:420px;justify-content:center}
+ .premium-main .editorial-footer-legal a{font-size:12px;padding:7px 0}
+ .premium-main .editorial-footer-bottom p{font-size:11px}
+}
+@media(max-width:360px){.premium-main .editorial-footer-main{padding:27px 18px;gap:24px 9px}.premium-main .editorial-footer-column a{font-size:11px}.premium-main .editorial-footer-legal{gap:6px 12px}}
