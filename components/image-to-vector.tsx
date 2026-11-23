@@ -1,6 +1,8 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import Link from 'next/link';
+import {reserveStudioUsage,StudioQuotaNotice} from '@/components/studio-quota';
+import {StudioUpscalePanel} from '@/components/studio-upscale-panel';
 import ImageTracer from 'imagetracerjs';
 
 type TraceColors=2|4|8|16|24;
@@ -128,6 +130,7 @@ export function ImageToVector(){
    await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));
    const image=await loadImage(fileRef.current);
    if(image.naturalWidth*image.naturalHeight>45000000)throw Error('This photo is too large (45 MP limit). Please resize it first.');
+   await reserveStudioUsage('studio-image-to-vector');
    const result=traceSvg(image,colors,detail,removeWhite);
    const url=URL.createObjectURL(new Blob([result.xml],{type:'image/svg+xml;charset=utf-8'}));
    setSvg(result.xml);setSvgUrl(url);setPaths(result.pathCount);
@@ -216,7 +219,7 @@ export function ImageToVector(){
     {paths>0&&<p className="studio-note">Traced geometry: {sourceSize} · {paths} paths. Open the SVG in Illustrator, Inkscape or other compatible editors to edit paths and colors.</p>}
    </div>
    <div className="studio-panel vectorize-downloads">
-    <h2>4. Download Vector</h2>
+    <h2>4. Download Vector</h2><StudioQuotaNotice/>
     <div className="studio-plan"><span>FREE</span><strong>Real SVG Vector</strong>
      <p>Scale without pixelation; contains editable geometric SVG paths.</p></div>
     <button type="button" disabled={!svg||working} onClick={()=>save(
@@ -233,6 +236,7 @@ export function ImageToVector(){
     </select>
     {pro?<button type="button" disabled={!svg||working} onClick={()=>void downloadHd()}>Download Pro HD PNG</button>:
      <Link className="studio-upgrade" href="/pricing">Unlock HD with Pro →</Link>}
+    <StudioUpscalePanel getCanvas={()=>renderSvg(svg)} format="vector" disabled={!svg}/>
     <p className="studio-note">SVG is genuine vector at any zoom. Native AI / CDR / EPS / DXF / WMF / EMF export is not yet implemented; compatible editors can import SVG.</p>
    </div>
   </div>
