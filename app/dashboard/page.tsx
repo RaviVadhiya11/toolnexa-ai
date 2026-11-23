@@ -39,7 +39,13 @@ export default function Dashboard(){
     setPlan(data.plan as Plan);
     setSignedIn(data.authenticated===true);
     const owner=typeof data.userId==='string'?data.userId:null;
-    setDailyUsed(readUsage(quotaKey(owner)));
+    try{
+     const allowanceResponse=await fetch('/api/usage/quota',{cache:'no-store'});
+     const allowance=await allowanceResponse.json() as {mode?:string;used?:number};
+     if(allowanceResponse.ok&&allowance.mode==='account'&&typeof allowance.used==='number')
+      setDailyUsed(allowance.used);
+     else setDailyUsed(readUsage(quotaKey(owner)));
+    }catch{setDailyUsed(readUsage(quotaKey(owner)))}
     setStatus('ready');
    }catch{if(active){setStatus('error');setPlan(null)}}
   };
