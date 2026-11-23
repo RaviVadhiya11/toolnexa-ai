@@ -57,5 +57,9 @@ export const tools:Tool[]=[
 {slug:"csv-to-json",title:"CSV to JSON",category:"Developer" as Category,icon:"📊",description:"Convert quoted CSV records into JSON"},
 {slug:"image-flipper",title:"Image Flipper",category:"Image" as Category,icon:"🪞",description:"Flip or rotate an image and download it"},
 {slug:"text-sorter",title:"Text Sorter",category:"Text" as Category,icon:"🔠",description:"Sort and deduplicate text lines"},
+{slug:"json-to-csv",title:"JSON to CSV Converter",category:"Developer" as Category,icon:"📥",description:"Convert nested JSON records into downloadable CSV with formula-injection protection"},
+{slug:"sha-file-checker",title:"SHA File Checksum Checker",category:"Developer" as Category,icon:"🛡️",description:"Compute and verify real SHA-256 or SHA-512 checksums of local files"},
+{slug:"utm-campaign-builder",title:"UTM Campaign URL Builder",category:"Creator" as Category,icon:"🔗",description:"Build correctly encoded campaign tracking URLs with source, medium and campaign"},
+{slug:"seo-meta-generator",title:"SEO Meta Tags Generator",category:"Creator" as Category,icon:"🏷️",description:"Generate escaped Open Graph, Twitter and canonical HTML metadata"},
 ];
 export const categories:('All'|Category)[]=['All','Text','Developer','Business','Image','PDF','Creator'];
