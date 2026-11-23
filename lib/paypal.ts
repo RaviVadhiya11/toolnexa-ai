@@ -1,9 +1,10 @@
+import {batchLimits} from '@/lib/usage-limits';
 export const paypalPlanId = process.env.PAYPAL_PLAN_ID || '';
 export type PaidTier = 'Starter'|'Pro'|'Premium';
 export const paypalTierSettings: Record<PaidTier,{planId:string;maxTexts:number}> = {
- Starter:{planId:process.env.PAYPAL_PLAN_ID_STARTER || paypalPlanId,maxTexts:5},
- Pro:{planId:process.env.PAYPAL_PLAN_ID_PRO || '',maxTexts:20},
- Premium:{planId:process.env.PAYPAL_PLAN_ID_PREMIUM || '',maxTexts:50}
+ Starter:{planId:process.env.PAYPAL_PLAN_ID_STARTER || paypalPlanId,maxTexts:batchLimits.Starter},
+ Pro:{planId:process.env.PAYPAL_PLAN_ID_PRO || '',maxTexts:batchLimits.Pro},
+ Premium:{planId:process.env.PAYPAL_PLAN_ID_PREMIUM || '',maxTexts:batchLimits.Premium}
 };
 export function tierForPayPalPlan(planId:string):PaidTier|null{
  if(!planId)return null;
