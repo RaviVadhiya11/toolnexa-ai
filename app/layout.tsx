@@ -8,7 +8,8 @@ export const metadata:Metadata={
  title:{default:'ToolNexa AI | 20 Free Online PDF, Image & Text Tools',template:'%s | ToolNexa AI'},
  description:'Use 20 free online tools for PDF, images, text, developers and business. Fast, private, browser-based utilities, plus optional premium batch text analysis.',
  applicationName:'ToolNexa AI',
- robots:{index:true,follow:true},
+ // Search engine indexing is opt-in only after domain, support contact and payments are ready.
+ robots:{index:process.env.SITE_PUBLIC_LAUNCH_ENABLED==='true',follow:process.env.SITE_PUBLIC_LAUNCH_ENABLED==='true'},
  openGraph:{
   type:'website',siteName:'ToolNexa AI',url:site,
   title:'ToolNexa AI — 20 Free Online Tools',

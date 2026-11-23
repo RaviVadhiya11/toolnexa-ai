@@ -54,10 +54,11 @@ export async function POST(request:NextRequest){
 
   stage='paypal_authentication';
   const token=await paypalToken();
-  // Unlimited always uses the server-hosted flow with verified billing terms.
-  if(billingPeriod==='yearly'||tier==='Unlimited'){
+  // Every billing period is validated against PayPal's authoritative Live plan.
+  // Never allow a browser-side subscription to bypass duplicate and price checks.
+  {
    stage='paypal_validate_billing_plan';
-   // Confirm the real PayPal billing amount and recurrence before charging.
+   // Confirm the actual amount, currency, status and recurrence before customer approval.
    const detailResponse=await fetch(paypalBase+'/v1/billing/plans/'+encodeURIComponent(planId),{
     headers:{Authorization:'Bearer '+token},cache:'no-store'
    });

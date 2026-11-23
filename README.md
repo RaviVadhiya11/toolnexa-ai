@@ -67,6 +67,14 @@ Supabase Auth must allow the site's URL and the OAuth / recovery callback URLs. 
 - The site's paid subscription entitlement depends on live PayPal API and Supabase availability. Passing CI does **not** confirm successful live payments.
 - Public policy/help pages describe the implementation; **business owner must review legal wording, refund handling, jurisdiction requirements, and a private support contact before launch**. The GitHub Issues link is only for non-sensitive bug reports, never personal or billing information.
 
+## Prelaunch safety and readiness
+
+**This project is not publicly launched yet.** It may be accessible using its Vercel URL. With `SITE_PUBLIC_LAUNCH_ENABLED=false`, the site sends noindex metadata, disallows crawling in robots.txt and leaves the sitemap empty. Enable public search indexing only after the domain and business contact are ready.
+
+All eight Starter/Pro/Premium/Unlimited monthly and yearly checkout choices use the **same server-hosted PayPal approval flow**. Before creating a subscription it checks the Live billing plan's actual USD amount, active status, and month/year frequency with no trial cycles and rejects duplicate approved/active subscriptions. Checkout is disabled by the global PayPal flag and separate Yearly/Unlimited safety flags until owner-verified merchant setup. See [PAYPAL_SETUP.md](PAYPAL_SETUP.md) for the full prelaunch runbook and the exact eight PayPal Live plan IDs.
+
+Signed-in Free users can use the database-backed Free quota without having to contact PayPal or provision a paid plan. All paid entitlements still require a fresh PayPal verification. Unlimited has no fixed daily cap but the Supabase function imposes fair-use protection: up to 60 reserved runs per account per 60-second throttle window.
+
 ## Before promoting to public launch
 
 1. Confirm production Vercel deployment is Ready.

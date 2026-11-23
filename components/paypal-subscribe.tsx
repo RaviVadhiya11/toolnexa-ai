@@ -1,14 +1,8 @@
 'use client';
-import {useEffect,useRef,useState} from 'react';
+import {useEffect,useState} from 'react';
 import type {FormEvent} from 'react';
 import type {PaidTier,BillingPeriod} from '@/lib/subscription-pricing';
 import {browserSupabase} from '@/lib/supabase/client';
-
-declare global {
- interface Window {
-  paypal?: {Buttons:(options:Record<string,unknown>)=>{render:(element:HTMLElement)=>Promise<void>}};
- }
-}
 
 function SubscriptionAuth(){
  const [mode,setMode]=useState<'login'|'signup'>('signup');
@@ -65,89 +59,31 @@ function SubscriptionAuth(){
  </div>
 }
 
-export function PayPalSubscribe({clientId,planId,tier,billingPeriod}:{clientId:string;planId:string;tier:PaidTier;billingPeriod:BillingPeriod}){
- const root=useRef<HTMLDivElement>(null);
- const [userId,setUserId]=useState<string|null>(null);
+export function PayPalSubscribe({planId,tier,billingPeriod}:{clientId?:string;planId:string;tier:PaidTier;billingPeriod:BillingPeriod}){
+ const [signedIn,setSignedIn]=useState(false);
  const [checking,setChecking]=useState(true);
- const [message,setMessage]=useState('');
- const [sdkError,setSdkError]=useState(false);
- const [retry,setRetry]=useState(0);
  const [redirecting,setRedirecting]=useState(false);
+ const [message,setMessage]=useState('');
  useEffect(()=>{
   const supabase=browserSupabase();
   if(!supabase){setChecking(false);return}
   let active=true;
-  void supabase.auth.getUser().then(({data})=>{if(active){setUserId(data.user?.id??null);setChecking(false)}})
-   .catch(()=>{if(active){setUserId(null);setChecking(false)}});
+  void supabase.auth.getUser().then(({data})=>{
+   if(active){setSignedIn(!!data.user);setChecking(false)}
+  }).catch(()=>{if(active){setSignedIn(false);setChecking(false)}});
   const {data:{subscription}}=supabase.auth.onAuthStateChange((_event,session)=>{
-   if(active){setUserId(session?.user?.id??null);setChecking(false)}
+   if(active){setSignedIn(!!session?.user);setChecking(false)}
   });
   return()=>{active=false;subscription.unsubscribe()};
  },[]);
- useEffect(()=>{
-  if(!userId||!planId||billingPeriod==='yearly'||tier==='Unlimited')return;
-  let cancelled=false;
-  let script:HTMLScriptElement|null=null;
-  setSdkError(false);
-  setMessage('');
-  const fail=(detail:string)=>{
-   if(cancelled)return;
-   setSdkError(true);
-   setMessage(detail);
-  };
-  const render=async()=>{
-   if(cancelled||!root.current)return;
-   if(!window.paypal?.Buttons){
-    fail('PayPal checkout could not initialize. Please retry, or use a browser without content blockers.');
-    return;
-   }
-   root.current.replaceChildren();
-   try{
-    await window.paypal.Buttons({
-     style:{layout:'vertical',color:'blue',shape:'rect',label:'subscribe'},
-     createSubscription:(_data:unknown,actions:any)=>actions.subscription.create({plan_id:planId,custom_id:userId}),
-     onApprove:async(data:any)=>{
-      try{
-       const response=await fetch('/api/paypal/verify',{
-        method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({subscriptionID:data.subscriptionID})
-       });
-       if(!response.ok)throw Error();
-       const result=await response.json();
-       if(!cancelled)setMessage(result.status==='ACTIVE'?'Subscription verified. Your '+tier+' access is active.':'PayPal approved your subscription. '+tier+' access will start once PayPal activates it.');
-      }catch{
-       if(!cancelled)setMessage('PayPal approval received. Verification pending; contact support if this persists.');
-      }
-     },
-     onError:()=>{if(!cancelled)setMessage('PayPal could not complete checkout. No subscription was confirmed on this page.');}
-    }).render(root.current);
-   }catch{
-    fail('PayPal checkout buttons could not be displayed. Please retry.');
-   }
-  };
-  if(window.paypal?.Buttons){void render()}
-  else{
-   // Remove a previously failed SDK script before retrying; never reuse a broken load.
-   document.querySelectorAll('script[data-toolnexa-paypal-sdk]').forEach(el=>el.remove());
-   script=document.createElement('script');
-   script.dataset.toolnexaPaypalSdk='true';
-   script.src='https://www.paypal.com/sdk/js?client-id='+encodeURIComponent(clientId)+'&components=buttons&currency=USD&vault=true&intent=subscription';
-   script.async=true;
-   script.onload=()=>{void render()};
-   script.onerror=()=>fail('PayPal checkout failed to load. Check your connection or browser content blockers, then retry.');
-   document.body.appendChild(script);
-  }
-  return()=>{cancelled=true;if(script){script.onload=null;script.onerror=null;script.remove()}};
- },[clientId,planId,userId,retry,tier,billingPeriod]);
  async function hostedCheckout(){
-  setRedirecting(true);
-  setMessage('');
+  setRedirecting(true);setMessage('');
   try{
    const response=await fetch('/api/paypal/start',{
     method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({tier,billingPeriod})
+    body:JSON.stringify({tier,billingPeriod}),credentials:'same-origin',cache:'no-store'
    });
-   const data=await response.json();
+   const data=await response.json() as {approvalUrl?:unknown;error?:unknown};
    if(!response.ok||typeof data.approvalUrl!=='string')
     throw new Error(typeof data.error==='string'?data.error:'Unable to open PayPal checkout');
    const url=new URL(data.approvalUrl);
@@ -160,21 +96,13 @@ export function PayPalSubscribe({clientId,planId,tier,billingPeriod}:{clientId:s
   }
  }
  if(checking)return <p className="muted mt-7" role="status">Checking your account…</p>;
- if(!userId)return <SubscriptionAuth/>;
- if(billingPeriod==='yearly'||tier==='Unlimited')return <div className="mt-7">
-  <p className="muted text-sm mb-3">This subscription uses PayPal's hosted approval page. We check for an existing subscription first. Review the full price and renewal frequency on PayPal before approving.</p>
-  <button type="button" className="button w-full" disabled={redirecting} onClick={()=>void hostedCheckout()}>{redirecting?'Opening PayPal…':billingPeriod==='yearly'?'Continue securely to PayPal — Yearly':'Continue securely to PayPal — Monthly'}</button>
-  {message&&<p className="muted mt-3" role="status">{message}</p>}
- </div>;
+ if(!signedIn)return <SubscriptionAuth/>;
  return <div className="mt-7">
-  <div ref={root}/>
-  {message&&<p className="muted mt-3" role="status">{message}</p>}
-  {sdkError&&<div className="mt-3">
-   <button type="button" className="button w-full" disabled={redirecting}
-    onClick={()=>void hostedCheckout()}>{redirecting?'Opening PayPal…':'Continue securely on PayPal'}</button>
-   <p className="muted text-sm mt-2">You will review and approve the monthly subscription on PayPal before it can be activated.</p>
-   <button type="button" className="button outline mt-3" disabled={redirecting}
-    onClick={()=>{setMessage('');setRetry(n=>n+1)}}>Retry PayPal checkout button</button>
-  </div>}
+  <p className="muted text-sm mb-3">Your {tier} plan renews {billingPeriod==='yearly'?'every 12 months':'monthly'}.
+   The full {billingPeriod==='yearly'?'annual':'monthly'} amount will be shown on PayPal before approval.
+   An existing active subscription must be managed before starting another.</p>
+  <button type="button" className="button w-full" disabled={redirecting||!planId}
+   onClick={()=>void hostedCheckout()}>{redirecting?'Opening PayPal…':`Continue securely to PayPal — ${billingPeriod==='yearly'?'Yearly':'Monthly'}`}</button>
+  {message&&<p className="muted mt-3" role="alert">{message}</p>}
  </div>;
 }
