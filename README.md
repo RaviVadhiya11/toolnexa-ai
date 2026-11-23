@@ -21,8 +21,8 @@ Max is the highest **capped** tier: **$14.99/month or $149.99/year**, with **3,0
 ## Vector Studio and Image Enhancer
 
 - `/studio/vector`: browser-created editable SVG paths and standard PNG output, with HD PNG downloads reserved for verified Pro/Premium/Max members.
-- `/studio/enhance`: browser-only brightness/contrast/saturation tools; HD PNG upscaling uses a protected server endpoint and bilinear scaling, **not** generative AI restoration or detail hallucination.
-- Pro HD exports check the current PayPal ACTIVE subscription on the server, enforce the shared account daily quota atomically and reject unauthenticated or Starter requests. Inputs are limited to 700,000 pixels before 2×/4× resizing; up to 12 megapixels output.
+- `/studio/enhance`: browser-only brightness/contrast/saturation tools; HD JPEG upscaling uses a protected server endpoint and Lanczos resampling, **not** generative AI restoration or detail hallucination.
+- Pro HD exports check the current PayPal ACTIVE subscription on the server, enforce the shared account daily quota atomically and reject unauthenticated or Starter requests. Inputs are limited to 700,000 pixels before 2×/4× resizing; up to 12 megapixels output. Vercel's response-size limit may require a smaller export for dense artwork.
 - These two dedicated Studio pages are outside the existing 60 utility catalogue. Native AI, CDR, EPS, DXF and WMF/EMF conversion is not available yet; do not advertise those as supported exports.
 
 ## Run locally
