@@ -5,12 +5,13 @@ import {ManageSubscription} from '@/components/manage-subscription';
 import {browserSupabase} from '@/lib/supabase/client';
 import {tools} from '@/lib/tools';
 import {dailyLimits,quotaKey,readUsage} from '@/lib/usage-limits';
+import {subscriptionPrices,type BillingPeriod} from '@/lib/subscription-pricing';
 
 type Plan='Free'|'Starter'|'Pro'|'Premium';
-const plans:Record<Exclude<Plan,'Free'>,{price:string;batch:number}>={
- Starter:{price:'$3.99',batch:20},
- Pro:{price:'$5.99',batch:60},
- Premium:{price:'$9.99',batch:150}
+const plans:Record<Exclude<Plan,'Free'>,{batch:number}>={
+ Starter:{batch:20},
+ Pro:{batch:60},
+ Premium:{batch:150}
 };
 const validToolSlugs=new Set(tools.map(tool=>tool.slug));
 function labelSlug(slug:string){return slug.replaceAll('-',' ')}
@@ -18,6 +19,7 @@ function labelSlug(slug:string){return slug.replaceAll('-',' ')}
 export default function Dashboard(){
  const [recent,setRecent]=useState<string[]>([]);
  const [plan,setPlan]=useState<Plan|null>(null);
+ const [billingPeriod,setBillingPeriod]=useState<BillingPeriod|null>(null);
  const [status,setStatus]=useState<'checking'|'ready'|'error'>('checking');
  const [signedIn,setSignedIn]=useState(false);
  const [dailyUsed,setDailyUsed]=useState(0);
@@ -37,6 +39,7 @@ export default function Dashboard(){
     if(!active)return;
     if(!response.ok||!['Free','Starter','Pro','Premium'].includes(data.plan))throw Error('Status unavailable');
     setPlan(data.plan as Plan);
+    setBillingPeriod(data.billingPeriod==='monthly'||data.billingPeriod==='yearly'?data.billingPeriod:null);
     setSignedIn(data.authenticated===true);
     const owner=typeof data.userId==='string'?data.userId:null;
     try{
@@ -47,12 +50,12 @@ export default function Dashboard(){
      else setDailyUsed(readUsage(quotaKey(owner)));
     }catch{setDailyUsed(readUsage(quotaKey(owner)))}
     setStatus('ready');
-   }catch{if(active){setStatus('error');setPlan(null)}}
+   }catch{if(active){setStatus('error');setPlan(null);setBillingPeriod(null)}}
   };
   void refresh();
   const client=browserSupabase();
   const subscription=client?.auth.onAuthStateChange(()=>{
-   setStatus('checking');setPlan(null);void refresh();
+   setStatus('checking');setPlan(null);setBillingPeriod(null);void refresh();
   }).data.subscription;
   const onFocus=()=>void refresh();
   window.addEventListener('focus',onFocus);
@@ -88,8 +91,8 @@ export default function Dashboard(){
    </div>
    <div className="member-hero-meta" aria-label="Membership summary">
     <span>Current plan</span><strong>{displayPlan}</strong>
-    <span>{paid?'Monthly subscription':'Free tools available'}</span>
-    {benefits&&<b>{benefits.price}/month</b>}
+    <span>{paid?(billingPeriod==='yearly'?'Annual subscription':billingPeriod==='monthly'?'Monthly subscription':'Verified subscription'):'Free tools available'}</span>
+    {benefits&&billingPeriod&&plan&&plan!=='Free'&&<b>${subscriptionPrices[plan][billingPeriod]}/{billingPeriod==='yearly'?'year':'month'}</b>}
    </div>
   </section>
   <div className="member-overview">

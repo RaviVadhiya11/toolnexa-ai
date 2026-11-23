@@ -1,14 +1,14 @@
 import {NextRequest,NextResponse} from 'next/server';
 import {serverSupabase} from '@/lib/supabase/server';
 import {adminDb} from '@/lib/admin';
-import {configuredPayPalPlanIds,paypalBase,paypalSubscription,paypalToken,tierForPayPalPlan} from '@/lib/paypal';
+import {configuredPayPalPlanIds,paypalBase,paypalSubscription,paypalToken,planForPayPalPlan} from '@/lib/paypal';
 
 export const runtime='nodejs';
 const headers={'Cache-Control':'no-store'};
 const reply=(data:object,status=200)=>NextResponse.json(data,{status,headers});
 const activeStatuses=new Set(['ACTIVE','APPROVED','SUSPENDED']);
 type MemberRow={subscription_id:string;plan_id:string;status:string};
-type VerifiedMember={id:string;tier:string;status:string;nextBillingTime:string|null};
+type VerifiedMember={id:string;tier:string;billingPeriod:'monthly'|'yearly';status:string;nextBillingTime:string|null};
 async function currentUser(){
  const auth=await serverSupabase();
  const {data:{user},error}=auth?await auth.auth.getUser():{data:{user:null},error:null};
@@ -28,9 +28,9 @@ async function verifyRow(row:MemberRow,userId:string):Promise<VerifiedMember|nul
  const subscription=await paypalSubscription(row.subscription_id);
  if(subscription.id!==row.subscription_id||subscription.plan_id!==row.plan_id||
     subscription.custom_id!==userId)return null;
- const tier=tierForPayPalPlan(subscription.plan_id);
- if(!tier)return null;
- return {id:subscription.id,tier,status:subscription.status,
+ const plan=planForPayPalPlan(subscription.plan_id);
+ if(!plan)return null;
+ return {id:subscription.id,tier:plan.tier,billingPeriod:plan.billingPeriod,status:subscription.status,
   nextBillingTime:subscription.status==='ACTIVE'?(subscription.billing_info?.next_billing_time??null):null};
 }
 

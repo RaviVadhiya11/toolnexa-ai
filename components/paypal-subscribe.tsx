@@ -1,6 +1,7 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import type {FormEvent} from 'react';
+import type {PaidTier,BillingPeriod} from '@/lib/subscription-pricing';
 import {browserSupabase} from '@/lib/supabase/client';
 
 declare global {
@@ -64,7 +65,7 @@ function SubscriptionAuth(){
  </div>
 }
 
-export function PayPalSubscribe({clientId,planId,tier}:{clientId:string;planId:string;tier:'Starter'|'Pro'|'Premium'}){
+export function PayPalSubscribe({clientId,planId,tier,billingPeriod}:{clientId:string;planId:string;tier:PaidTier;billingPeriod:BillingPeriod}){
  const root=useRef<HTMLDivElement>(null);
  const [userId,setUserId]=useState<string|null>(null);
  const [checking,setChecking]=useState(true);
@@ -84,7 +85,7 @@ export function PayPalSubscribe({clientId,planId,tier}:{clientId:string;planId:s
   return()=>{active=false;subscription.unsubscribe()};
  },[]);
  useEffect(()=>{
-  if(!userId||!planId)return;
+  if(!userId||!planId||billingPeriod==='yearly')return;
   let cancelled=false;
   let script:HTMLScriptElement|null=null;
   setSdkError(false);
@@ -113,7 +114,7 @@ export function PayPalSubscribe({clientId,planId,tier}:{clientId:string;planId:s
        });
        if(!response.ok)throw Error();
        const result=await response.json();
-       if(!cancelled)setMessage(result.status==='ACTIVE'?'Subscription verified. Your Pro access is active.':'PayPal approved your subscription. Pro access will start once PayPal activates it.');
+       if(!cancelled)setMessage(result.status==='ACTIVE'?'Subscription verified. Your '+tier+' access is active.':'PayPal approved your subscription. '+tier+' access will start once PayPal activates it.');
       }catch{
        if(!cancelled)setMessage('PayPal approval received. Verification pending; contact support if this persists.');
       }
@@ -137,14 +138,14 @@ export function PayPalSubscribe({clientId,planId,tier}:{clientId:string;planId:s
    document.body.appendChild(script);
   }
   return()=>{cancelled=true;if(script){script.onload=null;script.onerror=null;script.remove()}};
- },[clientId,planId,userId,retry]);
+ },[clientId,planId,userId,retry,tier,billingPeriod]);
  async function hostedCheckout(){
   setRedirecting(true);
   setMessage('');
   try{
    const response=await fetch('/api/paypal/start',{
     method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({tier})
+    body:JSON.stringify({tier,billingPeriod})
    });
    const data=await response.json();
    if(!response.ok||typeof data.approvalUrl!=='string')
@@ -160,6 +161,11 @@ export function PayPalSubscribe({clientId,planId,tier}:{clientId:string;planId:s
  }
  if(checking)return <p className="muted mt-7" role="status">Checking your account…</p>;
  if(!userId)return <SubscriptionAuth/>;
+ if(billingPeriod==='yearly')return <div className="mt-7">
+  <p className="muted text-sm mb-3">Annual checkout uses PayPal's hosted approval page, so your existing subscriptions are checked before a new 12-month subscription begins. Review the yearly price and renewal details on PayPal.</p>
+  <button type="button" className="button w-full" disabled={redirecting} onClick={()=>void hostedCheckout()}>{redirecting?'Opening PayPal…':'Continue securely to PayPal — Yearly'}</button>
+  {message&&<p className="muted mt-3" role="status">{message}</p>}
+ </div>;
  return <div className="mt-7">
   <div ref={root}/>
   {message&&<p className="muted mt-3" role="status">{message}</p>}

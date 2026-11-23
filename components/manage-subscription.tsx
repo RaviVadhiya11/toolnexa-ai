@@ -2,10 +2,10 @@
 import {useCallback,useEffect,useState} from 'react';
 import Link from 'next/link';
 import {browserSupabase} from '@/lib/supabase/client';
+import {subscriptionPrices,type PaidTier,type BillingPeriod} from '@/lib/subscription-pricing';
 
-type Subscription={id:string;tier:string;status:string;nextBillingTime:string|null};
+type Subscription={id:string;tier:PaidTier;billingPeriod:BillingPeriod;status:string;nextBillingTime:string|null};
 type Result={subscriptions?:Subscription[];error?:string;ok?:boolean;status?:string};
-const prices:Record<string,string>={Starter:'$3.99',Pro:'$5.99',Premium:'$9.99'};
 export function ManageSubscription(){
  const [subscriptions,setSubscriptions]=useState<Subscription[]>([]);
  const [busy,setBusy]=useState(false);
@@ -55,7 +55,7 @@ export function ManageSubscription(){
  const history=subscriptions.filter(x=>!['ACTIVE','APPROVED','SUSPENDED'].includes(x.status));
  return <section className="panel mt-5" aria-label="Manage your subscription">
   <div className="flex items-center justify-between gap-3 flex-wrap">
-   <div><h2 className="font-bold text-xl">Manage Subscription</h2><p className="muted text-sm mt-1">Review your monthly plan and manage billing.</p></div>
+   <div><h2 className="font-bold text-xl">Manage Subscription</h2><p className="muted text-sm mt-1">Review your monthly or yearly subscription and manage billing.</p></div>
    <button type="button" className="button outline" onClick={()=>void refresh()} disabled={loading||busy}>Refresh</button>
   </div>
   {loading?<p className="muted mt-4">Loading subscriptions…</p>:null}
@@ -64,7 +64,7 @@ export function ManageSubscription(){
   {!loading&&!error&&subscriptions.length===0&&<div className="mt-5"><p className="muted">No subscription linked to this account yet.</p><Link className="button mt-4" href="/pricing">Explore premium plans</Link></div>}
   {!loading&&pending.map(item=><div key={item.id} className="mt-5" style={{padding:16,border:'1px solid var(--border)',borderRadius:14}}>
    <div className="flex justify-between items-center flex-wrap gap-2">
-    <strong>{item.tier} — {prices[item.tier]??'Monthly plan'}/month</strong>
+    <strong>{item.tier} — ${subscriptionPrices[item.tier][item.billingPeriod]}/{item.billingPeriod==='yearly'?'year':'month'}</strong>
     <span className="badge">{item.status}</span>
    </div>
    {item.nextBillingTime&&<p className="muted text-sm mt-2">Next billing: {new Date(item.nextBillingTime).toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'})}</p>}

@@ -11,11 +11,11 @@ Production site: https://toolnexa-ai.vercel.app
 - Shared daily runs: Free 10, Starter 500, Pro 1,000, Premium 1,500; resets at 00:00 UTC. Guests use a per-browser counter. Authenticated accounts can share an atomic Supabase counter across browsers/devices after the SQL migration and environment flag are applied. Server-verifies PayPal plan and account identity; local execution remains browser-based, so browser tampering can still bypass the UI. Paid-account reservations count on a run attempt, including operations which later fail; guest usage only counts successful runs.
 - Search, category filters, helpful tool landing pages and local recent-tool history.
 - Sign up/sign in with Supabase Auth, Google OAuth where configured, email confirmation and email password reset.
-- Paid Starter ($3.99/month, 20 texts per batch), Pro ($5.99/month, 60 texts), Premium ($9.99/month, 150 texts). Paid batch analyzer limit is 20,000 characters per text. **Other premium tools and AI credits are not included.**
+- Paid Starter ($3.99/month or $39.99/year, 20 texts per batch), Pro ($5.99/month or $59.99/year, 60 texts), Premium ($9.99/month or $99.99/year, 150 texts). Annual prices are billed upfront every 12 months and save about 16% versus monthly billing. Paid batch analyzer limit is 20,000 characters per text. **Other premium tools and AI credits are not included.**
 - Server-verified PayPal membership, signed webhooks, hosted subscription fallback, customer subscription overview and immediate cancellation request.
 - SEO metadata, sitemap, robots, accessible error screens, security headers and public support/policy pages.
 
-The Unlimited plan is a coming-soon preview only. Planned regular price: **$19.99/month**, with an introductory launch offer of **$14.99/month** (not available for purchase yet). No PayPal plan or unlimited entitlement is currently offered. Unlimited plans need defined fair-use and cost controls, verified subscription billing, and appropriate entitlement enforcement before launch.
+The Unlimited plan is a coming-soon preview only. Planned regular price: **$19.99/month or $199.99/year**, with introductory launch offers of **$14.99/month or $149.99/year** (not available for purchase yet). No PayPal plan or unlimited entitlement is currently offered. Unlimited plans need defined fair-use and cost controls, verified subscription billing, and appropriate entitlement enforcement before launch.
 
 ## Run locally
 
@@ -33,6 +33,15 @@ The production build executes the tool catalogue guard and automated unit / QR /
 Use Vercel / local environment variables for Supabase browser URL and anon key and for server-side service access. Configure the correct **LIVE** PayPal credentials and the distinct plan IDs for Starter, Pro and Premium according to the PayPal integration code. **Never commit client secrets or service-role keys.** The live checkout guard must remain disabled until merchant configuration, payments, webhook deliveries, cancellations and account eligibility have been verified.
 
 Supabase Auth must allow the site's URL and the OAuth / recovery callback URLs. Password reset links use `/auth/callback?next=reset`; email redirect targets need to be authorized in Supabase.
+
+## Configure separate monthly and yearly PayPal subscriptions
+
+1. Existing monthly live PayPal plan IDs use `PAYPAL_PLAN_ID_STARTER` (or legacy `PAYPAL_PLAN_ID`), `PAYPAL_PLAN_ID_PRO`, and `PAYPAL_PLAN_ID_PREMIUM`. Keep these unchanged to preserve current subscriptions.
+2. In PayPal Live, create **three additional recurring billing plans** with frequency `YEAR`, interval `1`, USD prices exactly **$39.99 Starter**, **$59.99 Pro**, **$99.99 Premium**. Configure these distinct, active billing plan IDs as Vercel server environment variables `PAYPAL_PLAN_ID_STARTER_YEARLY`, `PAYPAL_PLAN_ID_PRO_YEARLY`, and `PAYPAL_PLAN_ID_PREMIUM_YEARLY`. Do not reuse monthly plan IDs or share IDs between tiers.
+3. Only after checking the PayPal billing frequency, amount, billing disclosure, webhooks, payment confirmation, yearly entitlement, dashboard and cancellation in a real authorized test, set `PAYPAL_YEARLY_CHECKOUT_ENABLED=true` in Vercel and redeploy. Keep it absent/false beforehand. Existing live-checkout guard `PAYPAL_CHECKOUT_ENABLED=true` and other PayPal/Supabase environment settings are also required.
+4. The Pricing page offers a Monthly/Yearly toggle and shows the annual price upfront. Monthly checkout keeps the existing PayPal SDK and hosted fallback; yearly checkout uses the guarded server-hosted PayPal flow with the separate annual billing plan ID. Server-side membership verification and account management recognize active annual subscriptions even if the yearly checkout flag is later disabled.
+5. Annual entitlements have the **same daily tool and batch limits as their monthly tier**; only the billing recurrence changes. Existing customers cannot automatically change billing frequency on an active subscription; they must manage/cancel it before subscribing anew. Cancellation is immediate and may end access immediately. Check price/frequency in PayPal before approving; do not activate a mismatched plan.
+6. The Unlimited tier remains Coming Soon for both periods; neither an Unlimited PayPal plan nor unlimited quota entitlement is implemented.
 
 ## Enable account-wide Supabase quotas
 

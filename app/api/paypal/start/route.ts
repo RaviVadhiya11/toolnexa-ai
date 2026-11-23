@@ -1,11 +1,10 @@
 import {NextRequest,NextResponse} from 'next/server';
 import {serverSupabase} from '@/lib/supabase/server';
 import {adminDb} from '@/lib/admin';
-import {paypalBase,paypalTierSettings,paypalSubscription,paypalToken,tierForPayPalPlan} from '@/lib/paypal';
+import {paypalBase,paypalPlanIdForCheckout,configuredPayPalPlanIds,paypalSubscription,paypalToken} from '@/lib/paypal';
 
 export const runtime='nodejs';
-type Tier='Starter'|'Pro'|'Premium';
-const tiers=new Set<Tier>(['Starter','Pro','Premium']);
+import {paidTiers,billingPeriods,subscriptionPrices,type PaidTier,type BillingPeriod} from '@/lib/subscription-pricing';
 const noStore={'Cache-Control':'no-store'};
 
 export async function POST(request:NextRequest){
@@ -23,11 +22,16 @@ export async function POST(request:NextRequest){
   const {data:{user}}=auth?await auth.auth.getUser():{data:{user:null}};
   if(!user)return NextResponse.json({error:'Sign in required'},{status:401,headers:noStore});
   const body=await request.json();
-  const tier=body?.tier as Tier;
-  if(typeof tier!=='string'||!tiers.has(tier))
+  const tier=body?.tier as PaidTier;
+  const billingPeriod=body?.billingPeriod ?? 'monthly';
+  if(typeof tier!=='string'||!paidTiers.includes(tier))
    return NextResponse.json({error:'Invalid subscription tier'},{status:400,headers:noStore});
-  const planId=paypalTierSettings[tier].planId;
-  if(!planId||tierForPayPalPlan(planId)!==tier)
+  if(!billingPeriods.includes(billingPeriod as BillingPeriod))
+   return NextResponse.json({error:'Invalid billing period'},{status:400,headers:noStore});
+  if(billingPeriod==='yearly'&&process.env.PAYPAL_YEARLY_CHECKOUT_ENABLED!=='true')
+   return NextResponse.json({error:'Yearly checkout is not enabled yet'},{status:503,headers:noStore});
+  const planId=paypalPlanIdForCheckout(tier,billingPeriod as BillingPeriod);
+  if(!planId)
    return NextResponse.json({error:'Subscription plan not configured'},{status:503,headers:noStore});
 
   // Prevent accidental duplicate subscriptions for already subscribed users.
@@ -36,7 +40,7 @@ export async function POST(request:NextRequest){
   stage='membership_lookup';
   const {data:existing,error:existingError}=await db.from('paypal_subscriptions')
    .select('subscription_id,plan_id').eq('user_id',user.id)
-   .in('plan_id',Object.values(paypalTierSettings).map(p=>p.planId).filter(Boolean))
+   .in('plan_id',configuredPayPalPlanIds())
    .in('status',['APPROVED','ACTIVE']).limit(20);
   if(existingError)return NextResponse.json({error:'Membership lookup unavailable'},{status:503,headers:noStore});
   for(const entry of existing??[]){
@@ -50,6 +54,30 @@ export async function POST(request:NextRequest){
 
   stage='paypal_authentication';
   const token=await paypalToken();
+  if(billingPeriod==='yearly'){
+   stage='paypal_validate_yearly_plan';
+   // Confirm the real PayPal billing amount and recurrence before charging.
+   const detailResponse=await fetch(paypalBase+'/v1/billing/plans/'+encodeURIComponent(planId),{
+    headers:{Authorization:'Bearer '+token},cache:'no-store'
+   });
+   if(!detailResponse.ok)return NextResponse.json({error:'Annual PayPal plan details could not be verified'},{status:503,headers:noStore});
+   const details=await detailResponse.json() as {
+    status?:string;billing_cycles?:Array<{
+     tenure_type?:string;total_cycles?:number;
+     frequency?:{interval_unit?:string;interval_count?:number};
+     pricing_scheme?:{fixed_price?:{currency_code?:string;value?:string}}
+    }>
+   };
+   const cycles=details.billing_cycles??[];
+   const cycle=cycles[0];
+   const expectedPrice=Number(subscriptionPrices[tier].yearly);
+   const actualPrice=Number(cycle?.pricing_scheme?.fixed_price?.value);
+   if(details.status!=='ACTIVE'||cycles.length!==1||cycle?.tenure_type!=='REGULAR'||
+      cycle?.total_cycles!==0||cycle?.frequency?.interval_unit!=='YEAR'||
+      cycle?.frequency?.interval_count!==1||cycle?.pricing_scheme?.fixed_price?.currency_code!=='USD'||
+      !Number.isFinite(actualPrice)||actualPrice!==expectedPrice)
+    return NextResponse.json({error:'Annual PayPal plan amount or renewal frequency does not match the published price. Checkout is disabled for safety.'},{status:503,headers:noStore});
+  }
   stage='paypal_create_subscription';
   // Fixed, trusted return URLs avoid untrusted Host header based redirects.
   const site='https://toolnexa-ai.vercel.app';

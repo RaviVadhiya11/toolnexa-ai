@@ -1,7 +1,7 @@
 import {NextResponse} from 'next/server';
 import {serverSupabase} from '@/lib/supabase/server';
 import {adminDb} from '@/lib/admin';
-import {configuredPayPalPlanIds,paypalSubscription,tierForPayPalPlan,PaidTier} from '@/lib/paypal';
+import {configuredPayPalPlanIds,paypalSubscription,planForPayPalPlan,type PaidTier,type BillingPeriod} from '@/lib/paypal';
 export const runtime='nodejs';
 export async function GET(){
  const headers={'Cache-Control':'no-store'};
@@ -15,19 +15,19 @@ export async function GET(){
    .eq('user_id',user.id).in('plan_id',ids).eq('status','ACTIVE').limit(20);
   if(error)return NextResponse.json({error:'Membership lookup failed'},{status:503,headers});
   if(!data?.length)return NextResponse.json({plan:'Free',authenticated:true,userId:user.id},{headers});
-  const active=new Set<PaidTier>();
+  const active=new Map<PaidTier,BillingPeriod>();
   for(const record of data){
    let subscription;
    try{subscription=await paypalSubscription(record.subscription_id)}
    catch{return NextResponse.json({error:'PayPal membership verification unavailable'},{status:503,headers})}
-   const tier=tierForPayPalPlan(record.plan_id);
-   if(!tier||subscription.id!==record.subscription_id||subscription.plan_id!==record.plan_id||subscription.custom_id!==user.id)continue;
-   if(subscription.status==='ACTIVE')active.add(tier);
+   const billingPlan=planForPayPalPlan(record.plan_id);
+   if(!billingPlan||subscription.id!==record.subscription_id||subscription.plan_id!==record.plan_id||subscription.custom_id!==user.id)continue;
+   if(subscription.status==='ACTIVE')active.set(billingPlan.tier,billingPlan.billingPeriod);
    else await db.from('paypal_subscriptions')
     .update({status:subscription.status,updated_at:new Date().toISOString()})
     .eq('subscription_id',record.subscription_id).eq('user_id',user.id).eq('plan_id',record.plan_id);
   }
   const plan=active.has('Premium')?'Premium':active.has('Pro')?'Pro':active.has('Starter')?'Starter':'Free';
-  return NextResponse.json({plan,authenticated:true,userId:user.id},{headers});
+  return NextResponse.json({plan,billingPeriod:plan==='Free'?null:active.get(plan as PaidTier)??null,authenticated:true,userId:user.id},{headers});
  }catch{return NextResponse.json({error:'Membership service unavailable'},{status:503,headers})}
 }
