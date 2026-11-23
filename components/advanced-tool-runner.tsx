@@ -225,7 +225,7 @@ export function AdvancedToolRunner({tool}:{tool:Tool}){
      download(generated.blob,generated.name);
     }
    }
-   if(output.length>800_000)throw Error('Output exceeds the safe browser display limit.');
+   if(output.length>3_000_000)throw Error('Output exceeds the safe browser display limit.');
    setResult(output||'Completed.');
    if(after.mode==='browser'){
     const used=consumeUsage(after.key,after.limit??0);
