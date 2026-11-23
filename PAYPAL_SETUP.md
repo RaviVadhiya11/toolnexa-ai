@@ -35,7 +35,7 @@ For safe setup:
 5. After testing sandbox, live creation requires `PAYPAL_ENV=live`, `--execute` and an additional **`--confirm-live-payments` acknowledgement**. Create one plan at a time and save its verified ID before repeating; never generate duplicates or overwrite a subscriber's existing terms.
 6. Add the new IDs to Vercel **Production Sensitive** variables: `PAYPAL_PLAN_ID_MAX`, `PAYPAL_PLAN_ID_MAX_YEARLY`, `PAYPAL_PLAN_ID_STARTER_YEARLY`, `PAYPAL_PLAN_ID_PRO_YEARLY`, `PAYPAL_PLAN_ID_PREMIUM_YEARLY`. Never put live secrets in GitHub, the browser or support screenshots. Keep all payment feature flags **false** until successful approval, webhook, cancellation and entitlement tests.
 
-PayPal also provides a Business dashboard workflow for creating subscription plans manually. The website's server verifies actual amount and recurring interval before starting checkout. If the merchant account lacks supported recurring billing capabilities, **do not bypass this validation or pretend that paid plans are ready**.
+Official references: [PayPal fixed-price plan API documentation](https://developer.paypal.com/subscriptions/pricing-plan) and [PayPal Business dashboard plan creation](https://developer.paypal.com/subscriptions/dashboard/use-dashboard). PayPal also provides a Business dashboard workflow for creating subscription plans manually. The website's server verifies actual amount and recurring interval before starting checkout. If the merchant account lacks supported recurring billing capabilities, **do not bypass this validation or pretend that paid plans are ready**.
 
 ## PayPal merchant setup
 
