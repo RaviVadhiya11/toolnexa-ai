@@ -135,7 +135,7 @@ if(!isEnabled){
      const list=await request('/v1/notifications/webhooks',headers);
      const needed=['BILLING.SUBSCRIPTION.ACTIVATED','BILLING.SUBSCRIPTION.CANCELLED','BILLING.SUBSCRIPTION.SUSPENDED'];
      const candidates=(Array.isArray(list.webhooks)?list.webhooks:[]).filter(h=>{
-      if(typeof h.id!=='string'||typeof h.url!=='string'||h.url.replace(/\\/+$/,'')!=='https://toolnexa-ai.vercel.app/api/paypal/webhook')return false;
+      if(typeof h.id!=='string'||typeof h.url!=='string'||h.url.replace(/\/+$/,'')!=='https://toolnexa-ai.vercel.app/api/paypal/webhook')return false;
       const events=new Set((Array.isArray(h.event_types)?h.event_types:[]).map(v=>v.name));
       return needed.every(name=>events.has(name)||events.has('*'));
      });
