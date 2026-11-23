@@ -8,7 +8,6 @@ export async function GET(req:NextRequest){
  const tokenHash=params.get('token_hash');
  const type=params.get('type');
  const code=params.get('code');
- const flowId=params.get('sb_flow_id');
  const isRecovery=next==='reset'||type==='recovery';
  // Only allow known destinations (avoid untrusted open redirects).
  const destination=isRecovery?'/reset-password?verified=1':next==='pricing'?'/pricing':'/dashboard';
@@ -16,7 +15,7 @@ export async function GET(req:NextRequest){
  if(supabase){
   // PKCE links: code is exchanged on the server to create the session cookie.
   if(code){
-   const {error}=await supabase.auth.exchangeCodeForSession(code,flowId?{flowId}:undefined);
+   const {error}=await supabase.auth.exchangeCodeForSession(code);
    if(!error)return NextResponse.redirect(new URL(destination,base));
   }
   // Email template token-hash links: verify only supported recovery tokens here.
