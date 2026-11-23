@@ -692,3 +692,9 @@ body{background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,syst
 .social-result-tip{padding:10px 13px;border-left:3px solid var(--accent);background:var(--panel);border-radius:8px}
 .social-copy-feedback{margin:12px 0 0;font-size:12px;font-weight:700;color:var(--accent)}
 @media(max-width:500px){.social-result-section{padding:13px}.social-title-row{gap:8px;padding:10px}.social-title-text{font-size:13px}.social-copy-btn{padding:8px 10px;min-height:38px}.social-section-head h4{font-size:15px}}
+
+/* Readable, scroll-bounded copy rows for multi-value tools */
+.copy-lines-panel{margin-top:15px;padding:15px;border:1px solid var(--border);border-radius:15px;background:var(--panel);min-width:0}
+.copy-lines-list{display:grid;gap:9px;max-height:340px;overflow:auto}
+.copy-lines-list .social-title-text{white-space:pre-wrap;word-break:break-word}
+.copy-lines-panel .social-copy-feedback{min-height:16px}

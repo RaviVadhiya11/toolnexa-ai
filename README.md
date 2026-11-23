@@ -1,14 +1,15 @@
 # ToolNexa AI
 
-ToolNexa AI is a responsive web application built with Next.js 15, React 19, TypeScript, Supabase Auth, PayPal subscriptions, pdf-lib, and qrcode. It has 56 utility tools plus a paid Batch Text Analyzer.
+ToolNexa AI is a responsive web application built with Next.js 15, React 19, TypeScript, Supabase Auth, PayPal subscriptions, pdf-lib, and qrcode. It has 60 utility tools plus a paid Batch Text Analyzer.
 
 Production site: https://toolnexa-ai.vercel.app
 
 ## Features
 
 - Design 6 dark-navy and purple responsive interface, optional light theme, desktop sidebar and mobile navigation.
-- 56 utilities across Text, Developer, Business, Image, PDF and Creator. New tools include verified browser-local PDF AES-256 encryption, Creator aspect resizing and public YouTube thumbnails. The title/hashtag generator now supports a guarded Google Gemini Flash-Lite AI Mode (when securely configured) and a separate transparent Offline Smart Mode.
-- Gemini AI Mode is optional, server-only and disabled by default until GEMINI_API_KEY and GEMINI_AI_ENABLED=true are configured. Authenticated users are limited to 3 model generations/day and the whole site to 30 model generations/day, in addition to the normal tool-run quota. The Free API provider may still return its own 429 / 503 errors. Free-tier prompts may be used by Google for product improvement; never submit sensitive user content. See app/api/ai/social/route.ts and supabase/migrations/20261123_social_ai_free_quotas.sql.\n- Shared daily runs: Free 10, Starter 500, Pro 1,000, Premium 1,500; resets at 00:00 UTC. Guests use a per-browser counter. Authenticated accounts can share an atomic Supabase counter across browsers/devices after the SQL migration and environment flag are applied. Server-verifies PayPal plan and account identity; local execution remains browser-based, so browser tampering can still bypass the UI. Paid-account reservations count on a run attempt, including operations which later fail; guest usage only counts successful runs.
+- 60 utilities across Text, Developer, Business, Image, PDF and Creator. New utilities include JSON-to-CSV with formula-injection protection, SHA-256/SHA-512 file verification, UTM Campaign URL Builder, SEO Meta Tags Generator, verified local AES-256 PDF encryption, Creator aspect resizing and public YouTube thumbnails. The title/hashtag generator now supports a guarded Google Gemini Flash-Lite AI Mode (when securely configured) and a separate transparent Offline Smart Mode. Multi-item outputs provide one-tap individual Copy buttons wherever meaningful, in addition to whole-result copying and downloads.
+- Gemini AI Mode is optional, server-only and disabled by default until GEMINI_API_KEY and GEMINI_AI_ENABLED=true are configured. Authenticated users are limited to 3 model generations/day and the whole site to 30 model generations/day, in addition to the normal tool-run quota. The Free API provider may still return its own 429 / 503 errors. Free-tier prompts may be used by Google for product improvement; never submit sensitive user content. See app/api/ai/social/route.ts and supabase/migrations/20261123_social_ai_free_quotas.sql.
+- Shared daily runs: Free 10, Starter 500, Pro 1,000, Premium 1,500; resets at 00:00 UTC. Guests use a per-browser counter. Authenticated accounts can share an atomic Supabase counter across browsers/devices after the SQL migration and environment flag are applied. Server-verifies PayPal plan and account identity; local execution remains browser-based, so browser tampering can still bypass the UI. Paid-account reservations count on a run attempt, including operations which later fail; guest usage only counts successful runs.
 - Search, category filters, helpful tool landing pages and local recent-tool history.
 - Sign up/sign in with Supabase Auth, Google OAuth where configured, email confirmation and email password reset.
 - Paid Starter ($3.99/month or $39.99/year, 20 texts per batch), Pro ($5.99/month or $59.99/year, 60 texts), Premium ($9.99/month or $99.99/year, 150 texts) and Max ($14.99/month or $149.99/year, 300 texts). Annual prices are billed upfront every 12 months and save about 16% versus monthly billing. Paid batch analyzer limit is 20,000 characters per text. **Other premium tools and AI credits are not included.**
@@ -42,7 +43,7 @@ Supabase Auth must allow the site's URL and the OAuth / recovery callback URLs. 
 4. All plans use a server-hosted PayPal approval flow verifying the live plan price and frequency, plus active-subscription duplicate prevention. Annual payment covers the next 12 months in advance.
 5. Paid AI credits are not included. Optional Google Gemini AI Mode is a limited and separately protected **free preview**.
 
-See [PAYPAL_SETUP.md](PAYPAL_SETUP.md) for details.
+For missing monthly/annual PayPal Plan IDs, use the merchant-only **dry-run-first** helper `scripts/paypal-provision-plans.mjs` and follow [PAYPAL_SETUP.md](PAYPAL_SETUP.md). The helper needs a real PayPal Business product and private credentials, refuses live creation without an explicit acknowledgement, and never enables checkout. **No actual Plan ID exists until PayPal creates one.**
 
 ## Enable account-wide Supabase quotas
 

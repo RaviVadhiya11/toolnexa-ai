@@ -40,6 +40,6 @@ export function ToolList({compact=false}:{compact?:boolean}){
     <span className="tool-card-action">Open tool <span aria-hidden="true">→</span></span>
    </Link>)}
   </div>
-  {list.length===0&&<div className="panel tool-empty-catalogue"><strong>No matching tools found</strong><p>Try another keyword or browse all 20 tools.</p><button type="button" className="button outline" onClick={clearFilters}>Show all tools</button></div>}
+  {list.length===0&&<div className="panel tool-empty-catalogue"><strong>No matching tools found</strong><p>Try another keyword or browse all 60 tools.</p><button type="button" className="button outline" onClick={clearFilters}>Show all tools</button></div>}
  </section>;
 }
