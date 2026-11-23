@@ -8,12 +8,14 @@ Production site: https://toolnexa-ai.vercel.app
 
 - Design 6 dark-navy and purple responsive interface, optional light theme, desktop sidebar and mobile navigation.
 - 20 browser-side utilities across Text, Developer, Business, Image and PDF.
-- Shared per-browser daily runs: Free 10, Starter 150, Pro 500, Premium 2,000; resets at 00:00 UTC. Checked before each operation and increments only after successful processing; subscription tier is fetched from server-verified membership status, not trusted from localStorage. This is a client-side UX quota, **not tamper-resistant or synced across devices**. True abuse-proof enforcement requires server-backed atomic quotas and authorization for each operation.
+- Shared per-browser daily runs: Free 10, Starter 500, Pro 1,000, Premium 1,500; resets at 00:00 UTC. Checked before each operation and increments only after successful processing; subscription tier is fetched from server-verified membership status, not trusted from localStorage. This is a client-side UX quota, **not tamper-resistant or synced across devices**. True abuse-proof enforcement requires server-backed atomic quotas and authorization for each operation.
 - Search, category filters, helpful tool landing pages and local recent-tool history.
 - Sign up/sign in with Supabase Auth, Google OAuth where configured, email confirmation and email password reset.
 - Paid Starter ($3.99/month, 20 texts per batch), Pro ($5.99/month, 60 texts), Premium ($9.99/month, 150 texts). Paid batch analyzer limit is 20,000 characters per text. **Other premium tools and AI credits are not included.**
 - Server-verified PayPal membership, signed webhooks, hosted subscription fallback, customer subscription overview and immediate cancellation request.
 - SEO metadata, sitemap, robots, accessible error screens, security headers and public support/policy pages.
+
+The Unlimited plan is a coming-soon preview only; no PayPal plan or unlimited entitlement is currently offered. Unlimited plans should have fair-use and cost controls before launch.
 
 ## Run locally
 
