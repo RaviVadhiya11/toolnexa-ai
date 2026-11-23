@@ -8,13 +8,13 @@ export async function GET(){
  try{
   const auth=await serverSupabase();
   const {data:{user},error:authError}=auth?await auth.auth.getUser():{data:{user:null},error:null};
-  if(authError||!user)return NextResponse.json({plan:'Free',authenticated:false},{headers});
+  if(authError||!user)return NextResponse.json({plan:'Free',authenticated:false,userId:null},{headers});
   const db=adminDb();const ids=configuredPayPalPlanIds();
   if(!db||!ids.length||process.env.PAYPAL_ENV!=='live')return NextResponse.json({error:'Membership service unavailable'},{status:503,headers});
   const {data,error}=await db.from('paypal_subscriptions').select('subscription_id,plan_id')
    .eq('user_id',user.id).in('plan_id',ids).eq('status','ACTIVE').limit(20);
   if(error)return NextResponse.json({error:'Membership lookup failed'},{status:503,headers});
-  if(!data?.length)return NextResponse.json({plan:'Free',authenticated:true},{headers});
+  if(!data?.length)return NextResponse.json({plan:'Free',authenticated:true,userId:user.id},{headers});
   const active=new Set<PaidTier>();
   for(const record of data){
    let subscription;
@@ -28,6 +28,6 @@ export async function GET(){
     .eq('subscription_id',record.subscription_id).eq('user_id',user.id).eq('plan_id',record.plan_id);
   }
   const plan=active.has('Premium')?'Premium':active.has('Pro')?'Pro':active.has('Starter')?'Starter':'Free';
-  return NextResponse.json({plan,authenticated:true},{headers});
+  return NextResponse.json({plan,authenticated:true,userId:user.id},{headers});
  }catch{return NextResponse.json({error:'Membership service unavailable'},{status:503,headers})}
 }
