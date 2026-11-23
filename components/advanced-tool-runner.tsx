@@ -396,7 +396,7 @@ export function AdvancedToolRunner({tool}:{tool:Tool}){
       <span className="small-note">{last.name} · {(last.blob.size/1024/1024).toFixed(2)} MB</span></div>}
     {result&&!failed&&!last&&!socialOutput&&<CopyableResultRows text={result} slug={slug}/>}
     {result&&!failed&&!last&&<div className="tool-output-actions"><button type="button" className="button outline" onClick={()=>void copyPart(result,'full')}>{copiedItem==='full'?'Copied!':socialOutput?'Copy full result':'Copy result'}</button>
-      <button type="button" className="button outline" onClick={()=>download(new Blob([result],{type:'text/plain;charset=utf-8'}),slug==='json-to-csv'?'toolnexa-data.csv':slug==='seo-meta-generator'?'toolnexa-seo-tags.html':'toolnexa-result.txt')}>Download text</button></div>}
+      <button type="button" className="button outline" onClick={()=>download(new Blob([result],{type:slug==='json-to-csv'?'text/csv;charset=utf-8':slug==='seo-meta-generator'?'text/html;charset=utf-8':'text/plain;charset=utf-8'}),slug==='json-to-csv'?'toolnexa-data.csv':slug==='seo-meta-generator'?'toolnexa-seo-tags.html':'toolnexa-result.txt')}>Download text</button></div>}
     <p className="tool-local-note">{slug==='ai-title-hashtag-generator'&&aiMode==='gemini'?'AI text generation uses Google Gemini on the server; topic text is shared with Google.':BINARY_TOOLS.has(slug)?'Your document or image is processed in the browser.':'Privacy first · Browser-only processing'}</p>
    </aside>
   </div>
