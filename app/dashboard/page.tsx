@@ -39,7 +39,7 @@ export default function Dashboard(){
     setPlan(data.plan as Plan);
     setSignedIn(data.authenticated===true);
     const owner=typeof data.userId==='string'?data.userId:null;
-    setQuotaOwner(owner);setDailyUsed(readUsage(quotaKey(owner)));
+    setDailyUsed(readUsage(quotaKey(owner)));
     setStatus('ready');
    }catch{if(active){setStatus('error');setPlan(null)}}
   };
