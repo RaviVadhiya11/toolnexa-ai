@@ -2,7 +2,7 @@
 const structured=new Set([
  'json-formatter','csv-to-json','html-formatter','css-minifier',
  'javascript-minifier','sql-formatter','jwt-decoder','base64-encoder',
- 'url-encoder','image-to-base64'
+ 'url-encoder','image-to-base64','json-to-csv'
 ]);
 export type CopyRow={display:string;copyValue:string};
 export function extractCopyableRows(output:string,slug:string):CopyRow[]{
