@@ -3,14 +3,14 @@
  * ToolNexa PayPal live configuration audit (READ ONLY).
  *
  * Runs only when PAYPAL_LIVE_AUDIT_ENABLED=true in the Vercel Production build.
- * Calls only PayPal OAuth token, GET /v1/billing/plans/{id}, and
- * GET /v1/notifications/webhooks/{id}. Never creates subscriptions, invoices,
+ * Calls only PayPal OAuth token, GET plan details / list and webhook details. Never creates subscriptions, invoices,
  * payments, plans, cancellations, or updates an existing resource.
  *
- * Logs only labels, HTTP status codes and validation summaries. Does not log
- * credentials, access tokens, PayPal IDs, or returned PayPal responses.
- * A failed audit never enables or disables checkout and must not fail website
- * builds; merchant read-only diagnostics are informational.
+ * Logs labels and validation summaries; on a 404, a uniquely price-verified
+ * replacement Plan ID may be shown. Never logs auth secrets, access tokens or
+ * raw PayPal responses.
+ * A failed audit never enables checkout. When checkout is enabled, failed
+ * merchant validation prevents release; otherwise diagnostics are informational.
  */
 const isEnabled=process.env.PAYPAL_LIVE_AUDIT_ENABLED==='true';
 if(!isEnabled){
@@ -68,6 +68,29 @@ if(!isEnabled){
   if(token){
    const headers={Authorization:'Bearer '+token};
    const unique=new Set();
+   // Read-only recovery for an incorrectly copied plan ID. Page through a
+   // bounded list and confirm plan name + Live recurring USD amount before
+   // showing a single non-secret PayPal Plan ID in private build logs.
+   const locatePlan=async(tier,period,price)=>{
+    const expectedName='ToolNexa AI '+tier+' '+(period==='yearly'?'Yearly':'Monthly');
+    const candidates=[];
+    for(let page=1;page<=5;page++){
+     const list=await request('/v1/billing/plans?page_size=20&page='+page,headers);
+     const entries=Array.isArray(list.plans)?list.plans:[];
+     for(const entry of entries){
+      if(entry?.name!==expectedName||entry?.status!=='ACTIVE'||typeof entry?.id!=='string'||!/^P-[A-Z0-9]+$/i.test(entry.id))continue;
+      const detail=await request('/v1/billing/plans/'+encodeURIComponent(entry.id),headers);
+      const c=detail.billing_cycles?.[0];
+      if(detail.status==='ACTIVE'&&detail.billing_cycles?.length===1&&c?.tenure_type==='REGULAR'&&
+         Number(c?.total_cycles)===0&&c?.frequency?.interval_count===1&&
+         c?.frequency?.interval_unit===(period==='yearly'?'YEAR':'MONTH')&&
+         c?.pricing_scheme?.fixed_price?.currency_code==='USD'&&
+         Number(c?.pricing_scheme?.fixed_price?.value)===Number(price))candidates.push(entry.id);
+     }
+     if(entries.length<20)break;
+    }
+    return [...new Set(candidates)];
+   };
    for(const [tier,period,price,key,legacy] of tiers){
     const label=tier+' '+period;
     const id=process.env[key]||(legacy?process.env[legacy]:'');
@@ -92,14 +115,26 @@ if(!isEnabled){
       status&&billing&&amount?'Active, correct USD price and recurring cycle':
       'Check PayPal plan status, amount, currency or recurring cycle');
     }catch(e){
-     emit(label,false,e instanceof Error?e.message.slice(0,60):'Request failed');
+     const errorText=e instanceof Error?e.message.slice(0,60):'Request failed';
+     emit(label,false,errorText);
+     if(errorText==='HTTP 404'){
+      try{
+       const matches=await locatePlan(tier,period,price);
+       if(matches.length===1)console.log('PAYPAL_LIVE_AUDIT_CANDIDATE '+label+' verified_live_plan_id='+matches[0]);
+       else console.log('PAYPAL_LIVE_AUDIT_CANDIDATE '+label+' matching_plans='+matches.length);
+      }catch{
+       console.log('PAYPAL_LIVE_AUDIT_CANDIDATE '+label+' lookup_unavailable');
+      }
+     }
     }
    }
-   if(!config.webhookId||!/^[A-Z0-9-]{8,80}$/i.test(config.webhookId)){
-    emit('Webhook',false,'Webhook ID missing or malformed');
+   if(!config.webhookId||typeof config.webhookId!=='string'||config.webhookId.trim().length<3||config.webhookId.length>128){
+    emit('Webhook',false,'Webhook ID missing or improperly configured');
    }else{
     try{
-     const hook=await request('/v1/notifications/webhooks/'+encodeURIComponent(config.webhookId),headers);
+     // PayPal is authoritative for webhook IDs. Do not guess an ID pattern:
+     // real merchant webhook identifiers may use several formats.
+     const hook=await request('/v1/notifications/webhooks/'+encodeURIComponent(config.webhookId.trim()),headers);
      const urlOk=typeof hook.url==='string'&&
       hook.url.replace(/\/+$/,'')==='https://toolnexa-ai.vercel.app/api/paypal/webhook';
      const events=new Set((Array.isArray(hook.event_types)?hook.event_types:[]).map(x=>x.name));
