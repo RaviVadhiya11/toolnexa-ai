@@ -49,8 +49,8 @@ export function PremiumPricing({clientId,plans,enabled,yearlyEnabled}:{
     return <article className={`tier-card ${tier.name==='Pro'?'featured':''}`} key={tier.name}>
      {tier.name==='Pro'&&<span className="popular-label">MOST POPULAR</span>}
      <div><span className="tier-tag">{tier.name}</span><h2 className="mt-2">{tier.name}</h2><p className="muted text-sm mt-2">{tier.tagline}</p></div>
-     <p className="tier-price">${'$'}{price}<span> / {periodLabel}</span></p>
-     {billingPeriod==='yearly'&&<p className="muted text-sm mt-2">Equivalent to ${'$'}{monthlyEquivalent}/month · billed ${'$'}{price} upfront yearly</p>}
+     <p className="tier-price">${price}<span> / {periodLabel}</span></p>
+     {billingPeriod==='yearly'&&<p className="muted text-sm mt-2">Equivalent to ${monthlyEquivalent}/month · billed ${price} upfront yearly</p>}
      <ul className="tier-features">{[...tier.features,billingPeriod==='yearly'?'12-month recurring subscription':'Monthly recurring subscription'].map(feature=><li key={feature}>{feature}</li>)}</ul>
      <button type="button" className={`tier-cta ${active?'selected':''}`}
       onClick={()=>{setSelected(tier.name);document.getElementById('subscription-checkout')?.scrollIntoView({behavior:'smooth',block:'center'})}}
@@ -63,14 +63,14 @@ export function PremiumPricing({clientId,plans,enabled,yearlyEnabled}:{
   </div>
   <div className="unlimited-plan-preview" aria-label="Unlimited plan preview">
    <div><span className="tier-tag">COMING SOON · PLANNED LAUNCH OFFER</span><h2>Unlimited Plan</h2>
-    <p className="tier-price">${'$'}{unlimitedPrice.launch}<span> / {periodLabel} at launch</span></p>
-    <p className="muted text-sm">Planned regular price: ${'$'}{unlimitedPrice.regular}/{periodLabel}. {billingPeriod==='yearly'?'Annual amount would be billed upfront.':'Monthly recurring billing.'} Neither offer is active yet.</p>
+    <p className="tier-price">${unlimitedPrice.launch}<span> / {periodLabel} at launch</span></p>
+    <p className="muted text-sm">Planned regular price: ${unlimitedPrice.regular}/{periodLabel}. {billingPeriod==='yearly'?'Annual amount would be billed upfront.':'Monthly recurring billing.'} Neither offer is active yet.</p>
     <p>For workflows beyond 1,500 daily runs. Fair-use safeguards, included features and verified recurring billing will be finalized before launch. This plan cannot be purchased yet.</p>
    </div><span className="unlimited-coming-soon">Not available yet</span>
   </div>
   <div id="subscription-checkout" className="subscribe-panel" aria-live="polite">
    {selected?<>
-    <h2 className="text-xl font-extrabold">{selected} subscription — ${'$'}{selectedPrice}/{periodLabel}</h2>
+    <h2 className="text-xl font-extrabold">{selected} subscription — ${selectedPrice}/{periodLabel}</h2>
     <p className="muted text-sm mt-2">Your selection renews {billingPeriod==='monthly'?'monthly':'annually'}. {billingPeriod==='yearly'?'The full annual price is charged upfront. ':''}Sign up or log in, then approve recurring billing securely with PayPal.</p>
     {available?<PayPalSubscribe key={selected+'-'+billingPeriod} clientId={clientId} planId={planId} tier={selected} billingPeriod={billingPeriod}/>:<p className="muted mt-5" role="status">Checkout for this selection is not active. The matching PayPal Live {billingPeriod} plan must be configured and verified first; no payment can be taken here yet.</p>}
    </>:<>
