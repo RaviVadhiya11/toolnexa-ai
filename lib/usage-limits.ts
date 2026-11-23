@@ -4,6 +4,7 @@
  */
 export type UsagePlan='Free'|'Starter'|'Pro'|'Premium';
 export const dailyLimits:Record<UsagePlan,number>={Free:10,Starter:150,Pro:500,Premium:2000};
+export const batchLimits={Starter:20,Pro:60,Premium:150} as const;
 export const planNames:UsagePlan[]=['Free','Starter','Pro','Premium'];
 export function isUsagePlan(value:unknown):value is UsagePlan{
  return typeof value==='string'&&planNames.some(plan=>plan===value);
