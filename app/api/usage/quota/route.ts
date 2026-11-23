@@ -34,7 +34,7 @@ async function member(){
   if(!tier||subscription.id!==row.subscription_id||subscription.plan_id!==row.plan_id||subscription.custom_id!==user.id)continue;
   if(subscription.status==='ACTIVE')tiers.add(tier);
  }
- const plan:UsagePlan=tiers.has('Unlimited')?'Unlimited':tiers.has('Premium')?'Premium':tiers.has('Pro')?'Pro':tiers.has('Starter')?'Starter':'Free';
+ const plan:UsagePlan=tiers.has('Max')?'Max':tiers.has('Premium')?'Premium':tiers.has('Pro')?'Pro':tiers.has('Starter')?'Starter':'Free';
  return {user,plan} as const;
 }
 
@@ -52,14 +52,12 @@ async function handler(request:NextRequest,consume:boolean){
   const limit=dailyLimits[plan];
   // Anonymous visitors remain on the original shared per-browser daily allowance.
   if(!user)return consume?reply({error:'Guest usage is managed on this browser'},400):reply({mode:'browser',plan,limit,userId:null});
-  // An Unlimited subscription must never fall back to a browser-local unlimited allowance.
-  if(plan==='Unlimited' && (process.env.USAGE_DB_QUOTAS_ENABLED!=='true'||process.env.UNLIMITED_QUOTA_ENABLED!=='true'))
-   return reply({error:'Unlimited account verification is not enabled'},503);
+  // The capped Max tier requires server-enforced counters; never fall back to a bypassable browser-only quota.
+  if(plan==='Max'&&process.env.USAGE_DB_QUOTAS_ENABLED!=='true')
+   return reply({error:'Max account quotas are not enabled'},503);
   // Deploy this code before applying the migration without breaking existing tools.
   if(process.env.USAGE_DB_QUOTAS_ENABLED!=='true')
    return consume?reply({error:'Account quota migration is not enabled'},503):reply({mode:'browser',plan,limit,userId:user.id});
-  if(plan==='Unlimited'&&process.env.UNLIMITED_QUOTA_ENABLED!=='true')
-   return reply({error:'Unlimited fair-use verification is not available'},503);
   const db=adminDb();
   if(!db)return reply({error:'Usage database unavailable'},503);
   if(consume){
@@ -67,15 +65,12 @@ async function handler(request:NextRequest,consume:boolean){
    try{body=await request.json()}catch{return reply({error:'Invalid request body'},400)}
    const slug=body&&typeof body==='object'&&'slug' in body?(body as {slug:unknown}).slug:null;
    if(typeof slug!=='string'||!allowed.has(slug))return reply({error:'Unknown tool'},400);
-   const {data,error}=plan==='Unlimited'
-    ?await db.rpc('consume_unlimited_tool_usage',{p_user_id:user.id})
-    :await db.rpc('consume_daily_tool_usage',{p_user_id:user.id,p_limit:limit});
+   const {data,error}=await db.rpc('consume_daily_tool_usage',{p_user_id:user.id,p_limit:limit});
    if(error)return reply({error:'Account quota unavailable. Check database migration.'},503);
    if(data===null){
-    if(plan==='Unlimited')return reply({error:'Fair-use request rate reached (60 runs per minute). Retry shortly.',mode:'account',plan,limit:null},429);
     return reply({error:'Daily account usage limit reached. Upgrade for more runs.',mode:'account',plan,limit,used:limit},429);
    }
-   if(typeof data!=='number'||data<1||(limit!==null&&data>limit))return reply({error:'Unexpected quota state'},503);
+   if(typeof data!=='number'||data<1||data>limit)return reply({error:'Unexpected quota state'},503);
    return reply({mode:'account',plan,limit,used:data,userId:user.id});
   }
   const utcDay=new Date().toISOString().slice(0,10);
