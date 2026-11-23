@@ -64,3 +64,11 @@ test('auditor can identify a uniquely matching PayPal plan when a copied ID retu
  ])assert.ok(source.includes(snippet),'Audit must contain '+snippet);
  assert.doesNotMatch(source,/\/v1\/billing\/subscriptions['"]\s*,\s*\{/);
 });
+
+test('webhook recovery reads merchant webhook listing without creating one',()=>{
+ assert.ok(source.includes("request('/v1/notifications/webhooks',headers)"));
+ assert.ok(source.includes('matching_webhooks='));
+ assert.ok(source.includes('verified_live_webhook_id='));
+ assert.ok(source.includes('await inspectWebhookList()'));
+ assert.doesNotMatch(source,/method:\s*'POST'\s*,\s*headers/);
+});
