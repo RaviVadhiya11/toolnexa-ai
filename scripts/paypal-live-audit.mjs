@@ -15,6 +15,10 @@
 const isEnabled=process.env.PAYPAL_LIVE_AUDIT_ENABLED==='true';
 if(!isEnabled){
  console.log('PAYPAL_LIVE_AUDIT: skipped (explicit opt-in disabled)');
+ if(process.env.PAYPAL_CHECKOUT_ENABLED==='true'){
+  console.error('PAYPAL_LIVE_AUDIT: refusing checkout-enabled release without PayPal live audit');
+  process.exitCode=1;
+ }
 }else{
  const tiers=[
   ['Starter','monthly','3.99','PAYPAL_PLAN_ID_STARTER','PAYPAL_PLAN_ID'],
@@ -113,5 +117,11 @@ if(!isEnabled){
  console.log('PAYPAL_LIVE_AUDIT_RESULT='+(problems.length===0?'PASS':'FAIL')+
   ' checks_failed='+problems.length);
  console.log('PAYPAL_LIVE_AUDIT_NOTE=Read-only audit cannot prove merchant payment capture, webhook delivery or cancellation.');
- // Never fail a production build, never change checkout flags.
+ // Hard fail any attempt to publish an enabled checkout unless the read-only
+ // PayPal plan/webhook audit has passed in this exact production build.
+ // Do not enable checkout from Vercel settings before merchant acceptance.
+ if(process.env.PAYPAL_CHECKOUT_ENABLED==='true' && problems.length){
+  console.error('PAYPAL_LIVE_AUDIT: checkout-enabled release blocked by failed merchant verification');
+  process.exitCode=1;
+ }
 }
