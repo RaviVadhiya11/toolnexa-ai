@@ -2,6 +2,8 @@
 import {useEffect,useRef,useState} from 'react';
 import type {PointerEvent as ReactPointerEvent} from 'react';
 import Link from 'next/link';
+import {reserveStudioUsage,StudioQuotaNotice} from '@/components/studio-quota';
+import {StudioUpscalePanel} from '@/components/studio-upscale-panel';
 import {readImage,cropCanvas,imageBlob,downloadFile,proDownload,createCanvas} from '@/lib/studio-suite-client';
 import {solidBackgroundCutout,healMaskedImage,restorePhoto} from '@/lib/studio-image-effects';
 type Mode='background'|'retouch'|'restore';
@@ -92,6 +94,7 @@ export function StudioImageSuite({mode}:{mode:Mode}){
   setWorking(true);setStatus('Processing local image…');
   try{
    const source=sourceRef.current;
+   await reserveStudioUsage('studio-'+mode as 'studio-background'|'studio-retouch'|'studio-restore');
    let output:HTMLCanvasElement;
    if(mode==='background'){
     if(algorithm==='solid')output=solidBackgroundCutout(source,tolerance,feather);
@@ -196,7 +199,7 @@ export function StudioImageSuite({mode}:{mode:Mode}){
     <p className="studio-message" role="status">{status}</p>
    </div>
    <div className="studio-panel suite-advanced">
-    <h2>4. Download</h2>
+    <h2>4. Download</h2><StudioQuotaNotice/>
     <div className="studio-plan"><span>STANDARD</span><strong>Free PNG / JPG</strong><p>Download the processed image at working resolution.</p></div>
     <button type="button" disabled={!resultUrl||working} onClick={()=>void standard('png')}>Download PNG</button>
     <button className="studio-secondary" type="button" disabled={!resultUrl||working} onClick={()=>void standard('jpeg')}>Download JPG</button>
@@ -206,6 +209,7 @@ export function StudioImageSuite({mode}:{mode:Mode}){
     <select id="suite-hd-scale" value={scale} onChange={e=>setScale(Number(e.target.value) as 2|4)}><option value={2}>2× HD</option><option value={4}>4× HD</option></select>
     {pro?<button type="button" disabled={!resultUrl||working} onClick={()=>void hd()}>Download Pro HD</button>:
       <Link href="/pricing" className="studio-upgrade">Unlock Pro HD Export →</Link>}
+    <StudioUpscalePanel getCanvas={async()=>{if(!resultRef.current)throw Error('Process your image first');return resultRef.current}} format={mode==='background'?'cutout':'photo'} disabled={!resultUrl}/>
     <p className="studio-note">AI cutout may have imperfect edges. Retouching works best on small marks, and resizing does not reconstruct missing photograph detail.</p>
    </div>
   </div>
