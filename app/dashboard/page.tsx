@@ -7,11 +7,12 @@ import {tools} from '@/lib/tools';
 import {dailyLimits,quotaKey,readUsage} from '@/lib/usage-limits';
 import {subscriptionPrices,type BillingPeriod} from '@/lib/subscription-pricing';
 
-type Plan='Free'|'Starter'|'Pro'|'Premium';
+type Plan='Free'|'Starter'|'Pro'|'Premium'|'Unlimited';
 const plans:Record<Exclude<Plan,'Free'>,{batch:number}>={
  Starter:{batch:20},
  Pro:{batch:60},
- Premium:{batch:150}
+ Premium:{batch:150},
+ Unlimited:{batch:300}
 };
 const validToolSlugs=new Set(tools.map(tool=>tool.slug));
 function labelSlug(slug:string){return slug.replaceAll('-',' ')}
@@ -37,7 +38,7 @@ export default function Dashboard(){
     const response=await fetch('/api/pro/status',{cache:'no-store'});
     const data=await response.json();
     if(!active)return;
-    if(!response.ok||!['Free','Starter','Pro','Premium'].includes(data.plan))throw Error('Status unavailable');
+    if(!response.ok||!['Free','Starter','Pro','Premium','Unlimited'].includes(data.plan))throw Error('Status unavailable');
     setPlan(data.plan as Plan);
     setBillingPeriod(data.billingPeriod==='monthly'||data.billingPeriod==='yearly'?data.billingPeriod:null);
     setSignedIn(data.authenticated===true);
@@ -97,7 +98,7 @@ export default function Dashboard(){
   </section>
   <div className="member-overview">
    <div className="member-metric"><span>Current plan</span><strong>{displayPlan}</strong><small>{paid?'Verified paid access':status==='error'?'Please refresh later':'Your membership'}</small></div>
-   <div className="member-metric"><span>Daily tool uses left</span><strong>{status==='ready'?Math.max(0,dailyLimits[plan??'Free']-dailyUsed):'—'}</strong><small>{status==='ready'?dailyUsed+' / '+dailyLimits[plan??'Free']+' used today · '+plan+' plan':'Verifying allowance'}</small></div>
+   <div className="member-metric"><span>{plan==='Unlimited'?'Daily tool usage':'Daily tool uses left'}</span><strong>{status==='ready'?(plan==='Unlimited'?'Unlimited':Math.max(0,(dailyLimits[plan??'Free']??0)-dailyUsed)):'—'}</strong><small>{status==='ready'?(plan==='Unlimited'?dailyUsed+' used today · up to 60 runs/minute fair use':dailyUsed+' / '+dailyLimits[plan??'Free']+' used today · '+plan+' plan'):'Verifying allowance'}</small></div>
    <div className="member-metric"><span>Recent tools</span><strong>{recent.length}</strong><small>Saved on this device</small></div>
   </div>
   <section className="member-section" aria-label="Premium tools">
@@ -108,7 +109,7 @@ export default function Dashboard(){
      <h3>Batch Text Analyzer</h3>
      <p>Analyze words, characters, sentences and reading time across multiple texts in one request.</p>
      <div className="member-plan-limits">
-      {(['Starter','Pro','Premium'] as const).map(t=><span key={t}>{t}: {plans[t].batch} texts</span>)}
+      {(['Starter','Pro','Premium','Unlimited'] as const).map(t=><span key={t}>{t}: {plans[t].batch} texts</span>)}
      </div>
      <Link href={paid?'/pro/text-batch':'/pricing'} className="button mt-4">{paid?'Launch tool':'Choose a plan'}</Link>
     </article>

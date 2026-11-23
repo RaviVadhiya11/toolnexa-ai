@@ -85,7 +85,7 @@ export function PayPalSubscribe({clientId,planId,tier,billingPeriod}:{clientId:s
   return()=>{active=false;subscription.unsubscribe()};
  },[]);
  useEffect(()=>{
-  if(!userId||!planId||billingPeriod==='yearly')return;
+  if(!userId||!planId||billingPeriod==='yearly'||tier==='Unlimited')return;
   let cancelled=false;
   let script:HTMLScriptElement|null=null;
   setSdkError(false);
@@ -161,9 +161,9 @@ export function PayPalSubscribe({clientId,planId,tier,billingPeriod}:{clientId:s
  }
  if(checking)return <p className="muted mt-7" role="status">Checking your account…</p>;
  if(!userId)return <SubscriptionAuth/>;
- if(billingPeriod==='yearly')return <div className="mt-7">
-  <p className="muted text-sm mb-3">Annual checkout uses PayPal's hosted approval page, so your existing subscriptions are checked before a new 12-month subscription begins. Review the yearly price and renewal details on PayPal.</p>
-  <button type="button" className="button w-full" disabled={redirecting} onClick={()=>void hostedCheckout()}>{redirecting?'Opening PayPal…':'Continue securely to PayPal — Yearly'}</button>
+ if(billingPeriod==='yearly'||tier==='Unlimited')return <div className="mt-7">
+  <p className="muted text-sm mb-3">This subscription uses PayPal's hosted approval page. We check for an existing subscription first. Review the full price and renewal frequency on PayPal before approving.</p>
+  <button type="button" className="button w-full" disabled={redirecting} onClick={()=>void hostedCheckout()}>{redirecting?'Opening PayPal…':billingPeriod==='yearly'?'Continue securely to PayPal — Yearly':'Continue securely to PayPal — Monthly'}</button>
   {message&&<p className="muted mt-3" role="status">{message}</p>}
  </div>;
  return <div className="mt-7">

@@ -54,8 +54,9 @@ export async function POST(request:NextRequest){
 
   stage='paypal_authentication';
   const token=await paypalToken();
-  if(billingPeriod==='yearly'){
-   stage='paypal_validate_yearly_plan';
+  // Unlimited always uses the server-hosted flow with verified billing terms.
+  if(billingPeriod==='yearly'||tier==='Unlimited'){
+   stage='paypal_validate_billing_plan';
    // Confirm the real PayPal billing amount and recurrence before charging.
    const detailResponse=await fetch(paypalBase+'/v1/billing/plans/'+encodeURIComponent(planId),{
     headers:{Authorization:'Bearer '+token},cache:'no-store'
@@ -70,13 +71,14 @@ export async function POST(request:NextRequest){
    };
    const cycles=details.billing_cycles??[];
    const cycle=cycles[0];
-   const expectedPrice=Number(subscriptionPrices[tier].yearly);
+   const expectedPrice=Number(subscriptionPrices[tier][billingPeriod as BillingPeriod]);
+   const expectedInterval=billingPeriod==='yearly'?'YEAR':'MONTH';
    const actualPrice=Number(cycle?.pricing_scheme?.fixed_price?.value);
    if(details.status!=='ACTIVE'||cycles.length!==1||cycle?.tenure_type!=='REGULAR'||
-      cycle?.total_cycles!==0||cycle?.frequency?.interval_unit!=='YEAR'||
+      cycle?.total_cycles!==0||cycle?.frequency?.interval_unit!==expectedInterval||
       cycle?.frequency?.interval_count!==1||cycle?.pricing_scheme?.fixed_price?.currency_code!=='USD'||
       !Number.isFinite(actualPrice)||actualPrice!==expectedPrice)
-    return NextResponse.json({error:'Annual PayPal plan amount or renewal frequency does not match the published price. Checkout is disabled for safety.'},{status:503,headers:noStore});
+    return NextResponse.json({error:'PayPal plan amount or renewal frequency does not match the published price. Checkout is disabled for safety.'},{status:503,headers:noStore});
   }
   stage='paypal_create_subscription';
   // Fixed, trusted return URLs avoid untrusted Host header based redirects.

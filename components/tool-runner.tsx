@@ -38,7 +38,7 @@ async function canvasImage(file:File,width?:number,maxDimension?:number){
 async function toBlob(canvas:HTMLCanvasElement,mime:string,quality=.9){return new Promise<Blob>((resolve,reject)=>canvas.toBlob(x=>x?resolve(x):reject(Error('Unable to export this image in your browser')),mime,quality))}
 function validFile(file:File|undefined,types:string[]){if(!file)throw Error('Choose a file first');if(file.size>25*1024*1024)throw Error('Maximum file size is 25 MB');if(!types.some(t=>file.type===t||file.name.toLowerCase().endsWith(t==='application/pdf'?'.pdf':'.'+t.split('/').pop())))throw Error('Invalid file type');return file}
 export function ToolRunner({tool}:{tool:Tool}){const [text,setText]=useState(''),[mode,setMode]=useState('encode'),[num,setNum]=useState(tool.slug==='password-generator'?'16':tool.slug==='image-resizer'?'800':'1000'),[num2,setNum2]=useState('18'),[files,setFiles]=useState<File[]>([]),[output,setOutput]=useState(''),[qr,setQr]=useState(''),[working,setWorking]=useState(false),[symbols,setSymbols]=useState(true),[fileKey,setFileKey]=useState(0),[copyMessage,setCopyMessage]=useState(''),[imageQuality,setImageQuality]=useState(90),[downloaded,setDownloaded]=useState(false),[lastDownload,setLastDownload]=useState<{blob:Blob;name:string}|null>(null);const slug=tool.slug;
-const [quota,setQuota]=useState<{plan:UsagePlan;used:number;limit:number;key:string;mode:'browser'|'account'}|null>(null);
+const [quota,setQuota]=useState<{plan:UsagePlan;used:number;limit:number|null;key:string;mode:'browser'|'account'}|null>(null);
 const [quotaError,setQuotaError]=useState('');
 async function getLiveQuota(){
  const response=await fetch('/api/usage/quota',{cache:'no-store'});
@@ -49,6 +49,7 @@ async function getLiveQuota(){
  const key=quotaKey(owner);
  const mode=result.mode as 'browser'|'account';
  const limit=dailyLimits[result.plan];
+ if(result.plan==='Unlimited' && (mode!=='account'||result.limit!==null))throw Error('Unlimited account access must be server verified.');
  const used=mode==='account'&&typeof result.used==='number'?result.used:readUsage(key);
  const next={plan:result.plan,used,limit,key,mode};
  setQuota(next);setQuotaError('');
@@ -66,13 +67,13 @@ useEffect(()=>{
 
 const textSlugs=['word-counter','case-converter','text-reverser','json-formatter','base64-encoder','url-encoder','qr-code-generator','text-to-pdf'];const fileSlugs=['image-resizer','image-to-png','image-to-jpg','image-to-webp','image-to-pdf','merge-pdf','split-pdf'];
 function saveGenerated(blob:Blob,name:string){setLastDownload({blob,name});download(blob,name)}
-async function run(){if(working)return;setWorking(true);setOutput('');setQr('');setDownloaded(false);setLastDownload(null);try{let allowance=await getLiveQuota();if(allowance.used>=allowance.limit)throw Error('Daily limit reached. Subscribe or upgrade for more usage.');
+async function run(){if(working)return;setWorking(true);setOutput('');setQr('');setDownloaded(false);setLastDownload(null);try{let allowance=await getLiveQuota();if(allowance.limit!==null&&allowance.used>=allowance.limit)throw Error('Daily limit reached. Subscribe or upgrade for more usage.');
  if(allowance.mode==='account'){
   // Atomic reservation before any local operation: concurrent devices cannot exceed the quota.
   // A reservation is charged even if local processing subsequently fails.
   const res=await fetch('/api/usage/quota',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug})});
   const data=await res.json() as {error?:string;used?:number};
-  if(!res.ok){if(res.status===429)setQuota({...allowance,used:allowance.limit});throw Error(data.error||'Unable to reserve a daily tool run.')}
+  if(!res.ok){if(res.status===429&&allowance.limit!==null)setQuota({...allowance,used:allowance.limit});throw Error(data.error||'Unable to reserve a daily tool run.')}
   if(typeof data.used!=='number')throw Error('Unexpected account quota response');
   allowance={...allowance,used:data.used};setQuota(allowance);
  }
@@ -137,6 +138,7 @@ case 'text-to-pdf':{
 case 'merge-pdf':{if(files.length<2)throw Error('Select at least 2 PDF files');if(files.length>15)throw Error('Select at most 15 PDF files');if(files.reduce((sum,f)=>sum+f.size,0)>125*1024*1024)throw Error('Combined PDFs exceed 125 MB. Merge smaller batches.');const pdf=await PDFDocument.create();for(const f of files){validFile(f,['application/pdf']);const src=await PDFDocument.load(await f.arrayBuffer());const pages=await pdf.copyPages(src,src.getPageIndices());pages.forEach(p=>pdf.addPage(p))}saveGenerated(new Blob([new Uint8Array(await pdf.save())],{type:'application/pdf'}),'toolnexa-merged.pdf');setDownloaded(true);output=`Downloaded merged PDF (${files.length} files)`;break}
 case 'split-pdf':{const file=validFile(files[0],['application/pdf']);const src=await PDFDocument.load(await file.arrayBuffer());const indexes=parsePageRanges(text,src.getPageCount());const pdf=await PDFDocument.create();const pages=await pdf.copyPages(src,indexes);pages.forEach(p=>pdf.addPage(p));saveGenerated(new Blob([new Uint8Array(await pdf.save())],{type:'application/pdf'}),'toolnexa-extracted.pdf');setDownloaded(true);output=`Downloaded PDF with ${indexes.length} selected pages`;break}
 }if(allowance.mode==='browser'){
+ if(allowance.limit===null)throw Error('Unlimited runs require a verified signed-in account.');
  const used=consumeUsage(allowance.key,allowance.limit);
  if(used===null)throw Error('Daily limit reached or browser storage is disabled. Subscribe or try again later.');
  setQuota({...allowance,used});
@@ -164,7 +166,7 @@ const fileAccept=slug==='merge-pdf'||slug==='split-pdf'?'application/pdf,.pdf':'
 return <section className="tool-workspace" aria-label={tool.title+' workspace'}>
  <div className="tool-workspace-heading">
   <div><p className="tool-workspace-kicker">SMART TOOL WORKSPACE</p><h2>Try {tool.title}</h2><p>Configure your input and generate a result in your browser.</p></div>
-  <span className="tool-workspace-free">{quota?quota.plan+' · '+Math.max(0,quota.limit-quota.used)+' left':'Checking access…'}</span>
+  <span className="tool-workspace-free">{quota?(quota.limit===null?'Unlimited · no daily cap':quota.plan+' · '+Math.max(0,quota.limit-quota.used)+' left'):'Checking access…'}</span>
  </div>
  <div className="tool-workspace-body">
   <div className="tool-editor">
@@ -187,14 +189,14 @@ return <section className="tool-workspace" aria-label={tool.title+' workspace'}>
    {['gst-calculator','percentage-calculator','profit-margin'].includes(slug)&&<div className="tool-field"><label htmlFor="tool-number-2">{slug==='gst-calculator'?'GST rate (%)':slug==='profit-margin'?'Selling price':'Percentage (%)'}</label><input id="tool-number-2" type="number" inputMode="decimal" className="field" value={num2} onChange={e=>setNum2(e.target.value)}/></div>}
    {slug==='password-generator'&&<label className="tool-checkbox"><input type="checkbox" checked={symbols} onChange={e=>setSymbols(e.target.checked)}/> Include symbols for stronger passwords</label>}
    <div className="tool-quota-panel" aria-live="polite">
-    <div className="tool-quota-top"><strong>{quota?quota.plan+' plan':'Checking your plan…'}</strong><span>{quota?quota.used+' / '+quota.limit+' uses today':'Verifying limits'}</span></div>
-    <div className="tool-quota-track" role="progressbar" aria-label="Daily tool usage" aria-valuemin={0} aria-valuemax={quota?.limit??1} aria-valuenow={quota?.used??0}><span style={{width:quota?Math.min(100,quota.used/quota.limit*100)+'%':'0%'}}/></div>
-    <p>{quota?Math.max(0,quota.limit-quota.used)+' daily uses remaining · resets at 00:00 UTC':'Daily limits are checked against your verified subscription.'}</p>
+    <div className="tool-quota-top"><strong>{quota?quota.plan+' plan':'Checking your plan…'}</strong><span>{quota?(quota.limit===null?quota.used+' uses today · no daily cap':quota.used+' / '+quota.limit+' uses today'):'Verifying limits'}</span></div>
+    {quota&&quota.limit!==null&&<div className="tool-quota-track" role="progressbar" aria-label="Daily tool usage" aria-valuemin={0} aria-valuemax={quota.limit} aria-valuenow={quota.used}><span style={{width:Math.min(100,quota.used/quota.limit*100)+'%'}}/></div>}
+    <p>{quota?(quota.limit===null?'No fixed daily run cap · fair use allows up to 60 runs per minute; daily tally resets at 00:00 UTC':Math.max(0,quota.limit-quota.used)+' daily uses remaining · resets at 00:00 UTC'):'Daily limits are checked against your verified subscription.'}</p>
     {quota&&<p className="tool-quota-notice">{quota.mode==='account'?'Synced across signed-in devices · a run is reserved before processing':'Stored in this browser · successful operations count toward the daily limit'}</p>}
     {quotaError&&<p role="alert" className="tool-quota-error">{quotaError}</p>}
-    {quota&&quota.used>=quota.limit&&<div className="tool-quota-upgrade" role="status"><strong>Daily limit reached</strong><p>New operations are locked until the next daily reset or a higher plan is activated.</p><Link href="/pricing" className="button">View subscription plans →</Link></div>}
+    {quota&&quota.limit!==null&&quota.used>=quota.limit&&<div className="tool-quota-upgrade" role="status"><strong>Daily limit reached</strong><p>New operations are locked until the next daily reset or a higher plan is activated.</p><Link href="/pricing" className="button">View subscription plans →</Link></div>}
    </div>
-   <div className="tool-editor-actions"><button type="button" className="button tool-run-button" onClick={()=>{setCopyMessage('');void run()}} disabled={working||quota===null||!!quotaError||quota.used>=quota.limit}>{quota&&quota.used>=quota.limit?'Limit reached':runLabel} <span aria-hidden="true">→</span></button></div>
+   <div className="tool-editor-actions"><button type="button" className="button tool-run-button" onClick={()=>{setCopyMessage('');void run()}} disabled={working||quota===null||!!quotaError||(quota.limit!==null&&quota.used>=quota.limit)}>{quota&&quota.limit!==null&&quota.used>=quota.limit?'Limit reached':runLabel} <span aria-hidden="true">→</span></button></div>
   </div>
   <aside className="tool-output" aria-label="Tool result">
    <div className="tool-output-top"><div><p className="tool-workspace-kicker">RESULT</p><h3>Your output</h3></div><span className={'tool-result-status '+(hasError?'is-error':output||qr?'is-ready':'')}>{working?'Processing':hasError?'Error':output||qr?'Ready':'Waiting'}</span></div>
