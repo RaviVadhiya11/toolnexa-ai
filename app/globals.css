@@ -667,3 +667,12 @@ body{background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,syst
 .tool-quota-upgrade a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;text-decoration:none}
 .tool-run-button:disabled{cursor:not-allowed;opacity:.62}
 @media(max-width:670px){.tool-quota-panel{margin-top:16px;padding:15px}.tool-quota-upgrade a{width:100%}}
+
+/* Future-plan preview is intentionally not a purchasable PayPal tier. */
+.unlimited-plan-preview{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin:22px 0;padding:24px 27px;border:1px solid #8f70d47d;border-radius:19px;background:linear-gradient(115deg,#6a40be24,#a167de0f);box-shadow:0 12px 30px #10092313}
+.unlimited-plan-preview>div{flex:1 1 270px;min-width:0}
+.unlimited-plan-preview .tier-tag{display:inline-block;margin-bottom:10px}
+.unlimited-plan-preview h2{font-size:22px;line-height:1.3;font-weight:850;color:var(--text);margin-bottom:8px}
+.unlimited-plan-preview p{max-width:680px;font-size:13px;line-height:1.7;color:var(--muted)}
+.unlimited-coming-soon{display:inline-flex;align-items:center;justify-content:center;min-height:42px;border:1px solid #9475cb80;border-radius:11px;padding:10px 15px;color:var(--muted);font-weight:800;font-size:12px;text-align:center}
+@media(max-width:670px){.unlimited-plan-preview{padding:21px 18px;gap:15px}.unlimited-coming-soon{width:100%}}
