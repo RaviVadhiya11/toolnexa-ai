@@ -40,5 +40,5 @@ export async function verifyHdMember():Promise<{userId:string;plan:'Pro'|'Premiu
  const member=await verifyStudioMember();
  if('error' in member)return member;
  if(member.plan==='Starter')return {error:'Upgrade to Pro or higher for HD downloads',status:403};
- return member;
+ return {userId:member.userId,plan:member.plan};
 }
