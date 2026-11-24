@@ -6,7 +6,7 @@ import {studioSampleFile} from '@/lib/studio-sample-scenes';
 import {prepareStudioUpload} from '@/lib/studio-hero-transfer';
 
 const accepted=['image/jpeg','image/png','image/webp'];
-export function FlagshipHomeExperience(){
+export function FlagshipHomeExperience({mode='both'}:{mode?:'upload'|'compare'|'both'}){
  const router=useRouter();
  const fileRef=useRef<HTMLInputElement|null>(null);
  const [preview,setPreview]=useState('');
@@ -14,6 +14,7 @@ export function FlagshipHomeExperience(){
  const [drag,setDrag]=useState(false);
  const [error,setError]=useState('');
  useEffect(()=>{
+  if(mode==='upload')return;
   let active=true,localUrl='';
   void studioSampleFile('mountain').then(file=>{
    if(!active)return;
@@ -21,7 +22,7 @@ export function FlagshipHomeExperience(){
    setPreview(localUrl);
   }).catch(()=>{if(active)setError('Illustrative comparison unavailable in this browser.')});
   return()=>{active=false;if(localUrl)URL.revokeObjectURL(localUrl)};
- },[]);
+ },[mode]);
  function open(file?:File){
   if(!file)return;
   if(!accepted.includes(file.type)){setError('Choose JPG, PNG or WebP.');return}
@@ -34,17 +35,17 @@ export function FlagshipHomeExperience(){
   e.preventDefault();setDrag(false);open(e.dataTransfer.files[0]);
  }
  function choose(e:ChangeEvent<HTMLInputElement>){open(e.currentTarget.files?.[0]);e.currentTarget.value=''}
- return <div className="flagship-hero-experience">
-  <div className={'flagship-hero-upload '+(drag?'is-dragging':'')}
+ return <div className={"flagship-hero-experience flagship-hero-"+mode}>
+  {mode!=='compare'&&<div className={'flagship-hero-upload '+(drag?'is-dragging':'')}
    onDrop={drop} onDragOver={e=>{e.preventDefault();setDrag(true)}} onDragLeave={e=>{e.preventDefault();setDrag(false)}}>
    <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={choose} aria-label="Upload an image to Studio"/>
    <span className="flagship-upload-icon"><UploadCloud size={26}/></span>
    <span className="flagship-upload-copy"><strong>Drop a JPG, PNG or WebP to launch Studio</strong>
     <small>Your file stays in this browser · Upload once, edit in Studio</small></span>
    <button type="button" onClick={()=>fileRef.current?.click()}>Select image <ArrowUpRight size={15}/></button>
-  </div>
-  {error&&<p className="flagship-upload-error" role="status">{error}</p>}
-  <div className="flagship-compare-frame">
+  </div>}
+  {mode!=='compare'&&error&&<p className="flagship-upload-error" role="status">{error}</p>}
+  {mode!=='upload'&&<div className="flagship-compare-frame">
    <div className="flagship-compare-head"><span className="flagship-pill"><ImageIcon size={14}/> LIVE FILTER COMPARISON</span>
     <span className="flagship-compare-hint"><MoveHorizontal size={14}/> Drag to compare</span></div>
    <div className="flagship-compare-stage">
@@ -61,6 +62,6 @@ export function FlagshipHomeExperience(){
    </div>
    <div className="flagship-compare-foot"><span>Illustrative local filter demo · not a processed 8K output</span>
     <a href="/studio/enhance">Open full editor →</a></div>
-  </div>
+  </div>}
  </div>;
 }
