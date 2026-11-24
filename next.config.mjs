@@ -23,7 +23,12 @@ const nextConfig={
       {source:'/dashboard/:path*',headers:[{key:'X-Robots-Tag',value:'noindex, nofollow'}]},
       {source:'/admin/:path*',headers:[{key:'X-Robots-Tag',value:'noindex, nofollow'}]},
       {source:'/subscribe/:path*',headers:[{key:'X-Robots-Tag',value:'noindex, nofollow'}]},
-      {source:'/auth/:path*',headers:[{key:'X-Robots-Tag',value:'noindex, nofollow'}]}
+      {source:'/auth/:path*',headers:[{key:'X-Robots-Tag',value:'noindex, nofollow'}]},
+      {source:'/login',headers:[{key:'X-Robots-Tag',value:'noindex, nofollow'}]},
+      {source:'/signup',headers:[{key:'X-Robots-Tag',value:'noindex, nofollow'}]},
+      {source:'/reset-password',headers:[{key:'X-Robots-Tag',value:'noindex, nofollow'}]},
+      {source:'/pro/:path*',headers:[{key:'X-Robots-Tag',value:'noindex, nofollow'}]},
+      {source:'/studio/passport-social/pro',headers:[{key:'X-Robots-Tag',value:'noindex, nofollow'}]}
     ];
   }
 };
