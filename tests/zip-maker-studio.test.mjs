@@ -38,7 +38,7 @@ test('approved ZIP Maker demo styling and functioning ZIP32 composer remain inta
  const html=read('public/studio-zip-maker.html');
  for(const term of ['Upload & File Manager','Smart Compression & Export','selectFolder','keepFolders','includeReadme','crc32','centralHeader','endHeader','CompressionStream','ZIP Archive Summary','Try Demo'])
   assert.ok(html.includes(term),'Missing approved UI or ZIP writer '+term);
- assert.match(html,/studio-zip-maker/); // path and brand
+ assert.match(html,/ToolNexa AI — Advanced ZIP Maker Studio/); // approved brand
  assert.match(html,/toolnexa-zip-access/);
  assert.match(html,/toolnexa-zip-resume/);
  assert.match(html,/requestZipAccess\(\)/);
