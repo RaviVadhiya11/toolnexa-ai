@@ -169,7 +169,10 @@ export function AdvancedToolRunner({tool}:{tool:Tool}){
   const next={...q,used:data.used};setQuota(next);return next;
  }
  async function run(){
-  if(BINARY_TOOLS.has(slug)){
+  // Text-only inspection remains available within Free daily runs;
+  // only actions that actually produce a downloadable binary are gated here.
+  if(BINARY_TOOLS.has(slug)&&!['image-to-base64','color-picker'].includes(slug)&&
+     !(slug==='pdf-metadata'&&option==='view')){
    await withPaidDownload({slug,feature:tool.title+' file download'},execute);
   }else await execute();
  }
