@@ -54,7 +54,7 @@ function uniquePath(original,seen){let path=original,n=1;while(seen.has(path)){c
 // The standalone ZIP preview cannot grant or simulate paid download access.
 // This file is sandboxed by the Next.js parent and receives a verified
 // authorization result through a source-checked message channel.
-let authorizationSequence=0,plan='Free';
+let authorizationSequence=0,plan='Free',lastDeniedZip=null;
 function requestZipAccess(){
  if(window.parent===window)return Promise.reject(Error('Open ZIP Maker from ToolNexa AI to verify your subscription.'));
  const id='zip-'+(++authorizationSequence);
@@ -65,8 +65,8 @@ function requestZipAccess(){
    const data=event.data;
    if(!data||data.type!=='toolnexa-zip-access-result'||data.id!==id)return;
    clearTimeout(timer);window.removeEventListener('message',handler);
-   if(data.ok===true)resolve(data);
-   else reject(Error(data.error||'A compatible paid subscription is required for ZIP downloads.'));
+   if(data.ok===true){lastDeniedZip=null;resolve(data);}
+   else {lastDeniedZip=id;reject(Error(data.error||'A compatible paid subscription is required for ZIP downloads.'));}
   }
   window.addEventListener('message',handler);
   const count=files.length+($('includeReadme').checked?1:0);
@@ -88,6 +88,12 @@ function onPlan(event){
  }
 }
 window.addEventListener('message',onPlan);
+window.addEventListener('message',event=>{
+ if(event.origin!==window.location.origin||event.source!==window.parent)return;
+ if(event.data?.type!=='toolnexa-zip-resume'||event.data?.id!==lastDeniedZip)return;
+ lastDeniedZip=null;
+ void createZip(true); // rechecked by Next.js and one run already reserved
+});
 function sendHeight(){
  if(window.parent===window)return;
  const content=document.querySelector('.shell');if(!content)return;
@@ -100,7 +106,7 @@ window.addEventListener('resize',sendHeight);
 if('ResizeObserver' in window)new ResizeObserver(()=>requestAnimationFrame(sendHeight)).observe(document.querySelector('.shell'));
 requestAnimationFrame(()=>{sendHeight();if(window.parent!==window)window.parent.postMessage({type:'toolnexa-zip-ready'},window.location.origin)});
 
-async function createZip(){if(busy)return;if(!files.length){tell('Add at least one file before creating a ZIP.',true);return}busy=true;$('createZip').disabled=true;$('progressZone').hidden=false;const progress=(pct,label)=>{$('progressFill').style.width=pct+'%';$('progressPercent').textContent=pct+'%';$('progressLabel').textContent=label};let archiveName=$('zipName').value.trim().replace(/[\\/:*?"<>|\x00-\x1f]/g,'-').replace(/^\.+/,'').slice(0,90)||'ToolNexa-Archive';archiveName=archiveName.replace(/\.zip$/i,'');try{progress(1,'Verifying subscription and available daily runs…');await requestZipAccess();progress(4,'Preparing ZIP…');const src=files.map(x=>({...x})),seen=new Set();if($('includeReadme').checked){const content='ToolNexa ZIP Maker Studio\nCreated: '+new Date().toISOString()+'\nCompression strategy: '+mode+'\nFiles: '+src.length+'\nThis archive was generated locally in the browser.\n';src.push({file:new File([content],'ZIP-INFO.txt'),path:'ZIP-INFO.txt'})}const main=[],central=[];let offset=0,centralSize=0;const enc=new TextEncoder();for(let i=0;i<src.length;i++){const item=src[i];const path=uniquePath(cleanPath($('keepFolders').checked?item.path:item.path.split('/').pop()),seen);const name=enc.encode(path);if(name.length>0xffff)throw Error('File path is too long for ZIP.');progress(Math.floor(i/src.length*90),'Compressing '+(i+1)+' / '+src.length+': '+path.split('/').pop());await new Promise(r=>setTimeout(r,0));const input=new Uint8Array(await item.file.arrayBuffer());const crc=crc32(input);let payload=input,method=0;const compress=mode==='maximum'||mode==='smart'&&!precompressed.test(path);if(compress&&input.length>45){const result=await deflate(input);if(result&&result.length<input.length){payload=result;method=8}}const dt=dosDate(new Date(item.file.lastModified||Date.now()));let lh=localHeader(name,input.length,payload.length,crc,method,dt.time,dt.date);let ch=centralHeader(name,input.length,payload.length,crc,method,dt.time,dt.date,offset);main.push(lh,payload);central.push(ch);offset+=lh.length+payload.length;centralSize+=ch.length;if(offset+centralSize>0xffffffff)throw Error('ZIP32 size limit exceeded.')}if(src.length>0xffff)throw Error('Too many ZIP entries.');progress(95,'Finalizing ZIP headers…');const zip=new Blob([...main,...central,endHeader(src.length,centralSize,offset)],{type:'application/zip'});const url=URL.createObjectURL(zip),a=document.createElement('a');a.href=url;a.download=archiveName+'.zip';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);progress(100,'✓ '+archiveName+'.zip • '+formatSize(zip.size));tell('ZIP downloaded: '+formatSize(zip.size)+' ('+src.length+' files)');}catch(err){tell('ZIP creation failed: '+(err?.message||String(err)),true);progress(0,'Could not create archive')}finally{busy=false;$('createZip').disabled=false}}
+async function createZip(alreadyAuthorized=false){if(busy)return;if(!files.length){tell('Add at least one file before creating a ZIP.',true);return}busy=true;$('createZip').disabled=true;$('progressZone').hidden=false;const progress=(pct,label)=>{$('progressFill').style.width=pct+'%';$('progressPercent').textContent=pct+'%';$('progressLabel').textContent=label};let archiveName=$('zipName').value.trim().replace(/[\\/:*?"<>|\x00-\x1f]/g,'-').replace(/^\.+/,'').slice(0,90)||'ToolNexa-Archive';archiveName=archiveName.replace(/\.zip$/i,'');try{progress(1,'Verifying subscription and available daily runs…');if(!alreadyAuthorized)await requestZipAccess();progress(4,'Preparing ZIP…');const src=files.map(x=>({...x})),seen=new Set();if($('includeReadme').checked){const content='ToolNexa ZIP Maker Studio\nCreated: '+new Date().toISOString()+'\nCompression strategy: '+mode+'\nFiles: '+src.length+'\nThis archive was generated locally in the browser.\n';src.push({file:new File([content],'ZIP-INFO.txt'),path:'ZIP-INFO.txt'})}const main=[],central=[];let offset=0,centralSize=0;const enc=new TextEncoder();for(let i=0;i<src.length;i++){const item=src[i];const path=uniquePath(cleanPath($('keepFolders').checked?item.path:item.path.split('/').pop()),seen);const name=enc.encode(path);if(name.length>0xffff)throw Error('File path is too long for ZIP.');progress(Math.floor(i/src.length*90),'Compressing '+(i+1)+' / '+src.length+': '+path.split('/').pop());await new Promise(r=>setTimeout(r,0));const input=new Uint8Array(await item.file.arrayBuffer());const crc=crc32(input);let payload=input,method=0;const compress=mode==='maximum'||mode==='smart'&&!precompressed.test(path);if(compress&&input.length>45){const result=await deflate(input);if(result&&result.length<input.length){payload=result;method=8}}const dt=dosDate(new Date(item.file.lastModified||Date.now()));let lh=localHeader(name,input.length,payload.length,crc,method,dt.time,dt.date);let ch=centralHeader(name,input.length,payload.length,crc,method,dt.time,dt.date,offset);main.push(lh,payload);central.push(ch);offset+=lh.length+payload.length;centralSize+=ch.length;if(offset+centralSize>0xffffffff)throw Error('ZIP32 size limit exceeded.')}if(src.length>0xffff)throw Error('Too many ZIP entries.');progress(95,'Finalizing ZIP headers…');const zip=new Blob([...main,...central,endHeader(src.length,centralSize,offset)],{type:'application/zip'});const url=URL.createObjectURL(zip),a=document.createElement('a');a.href=url;a.download=archiveName+'.zip';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);progress(100,'✓ '+archiveName+'.zip • '+formatSize(zip.size));tell('ZIP downloaded: '+formatSize(zip.size)+' ('+src.length+' files)');}catch(err){tell('ZIP creation failed: '+(err?.message||String(err)),true);progress(0,'Could not create archive')}finally{busy=false;$('createZip').disabled=false}}
 $('createZip').onclick=()=>void createZip();update();
 })();
 </script></body></html>
