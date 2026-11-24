@@ -4,6 +4,7 @@ import {usePathname,useRouter} from 'next/navigation';
 import {FlagshipCommandPalette} from '@/components/flagship-command-palette';
 import {useEffect,useRef,useState} from 'react';
 import {AccountStatus} from '@/components/account-status';
+import {DownloadAccessDialog} from '@/components/download-access-dialog';
 import {tools} from '@/lib/tools';
 import {ShieldCheck,Home,LayoutGrid,LayoutDashboard,Crown,Moon,Sun,Search,FileText,Image as ImageIcon,Code2,Briefcase,Type,Menu,X,Sparkles,ArrowUpRight,LifeBuoy,CreditCard,Clapperboard} from 'lucide-react';
 const nav=[{href:'/',label:'Home',icon:Home},{href:'/tools',label:'All Tools',icon:LayoutGrid},{href:'/studio',label:'Creator Studio',icon:Sparkles},{href:'/dashboard',label:'Dashboard',icon:LayoutDashboard},{href:'/pricing',label:'Pricing',icon:Crown},{href:'/admin',label:'Admin',icon:ShieldCheck}];
@@ -150,6 +151,7 @@ export function Shell({children}:{children:React.ReactNode}){
     </div>
    </footer>
   </main>
+  <DownloadAccessDialog/>
   <FlagshipCommandPalette/>
   <nav className="mobile-nav premium-mobile-nav" aria-label="Mobile quick navigation">
    {mobileNav.map(item=>{
