@@ -42,7 +42,7 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
   window.addEventListener('toolnexa-subscription-changed',refresh);
   return()=>{active=false;window.removeEventListener('focus',refresh);
    window.removeEventListener('toolnexa-subscription-changed',refresh)};
- },[]);
+ },[resolution]);
  useEffect(()=>()=>{if(resultUrl)URL.revokeObjectURL(resultUrl)},[resultUrl]);
  useEffect(()=>{
   generation.current+=1;
@@ -133,11 +133,10 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
    }
    setMessage('Subscription verified. Preparing your full-resolution '+resultSize+' export…');
    const id=generation.current;
-   const {width,height}=upscaleDimensions(prepared.current.width,prepared.current.height,resolution);
-   // 2x/4x must use the original source dimensions; 4K/8K bounds were already
-   // computed when the preview was created. Read the exact stored output size.
+   // Match preview-selected resolution exactly; AI model size may differ from input.
    const requested=resultSize.match(/^(\d+) × (\d+) px$/);
-   const w=requested?Number(requested[1]):width,h=requested?Number(requested[2]):height;
+   if(!requested)throw Error('Preview dimensions unavailable. Run Upscale again.');
+   const w=Number(requested[1]),h=Number(requested[2]);
    const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
    const ctx=canvas.getContext('2d',{alpha:format!=='photo'});
    if(!ctx)throw Error('Your device cannot allocate a full '+resolution.toUpperCase()+
