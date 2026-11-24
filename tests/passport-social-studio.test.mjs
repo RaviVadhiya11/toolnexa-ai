@@ -124,6 +124,10 @@ test('mobile Passport Studio avoids nested footer, sticky toolbar and iframe hei
  assert.doesNotMatch(html,/height:Math\.max\(document\.documentElement\.scrollHeight/);
  assert.match(bridge,/setHeight\(previous=>Math\.abs\(previous-next\)>3\?next:previous\)/);
  assert.doesNotMatch(bridge,/minHeight:'100vh'/);
- assert.match(shell,/!isPassportEditor&&<footer/);
+ assert.match(shell,/<footer className="premium-footer editorial-footer" aria-label="ToolNexa AI website footer">/);
+ assert.doesNotMatch(shell,/!isPassportEditor&&<footer/);
+ const css=read('app/globals.css');
+ assert.match(css,/Footer restoration and mobile readability/);
+ assert.match(css,/padding-bottom: calc\(108px \+ env\(safe-area-inset-bottom\)\)/);
  assert.match(nav,/pathname==='\/studio\/passport-social'\)return null/);
 });
