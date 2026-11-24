@@ -262,7 +262,7 @@ export function StudioImageSuite({mode}:{mode:Mode}){
     ctx.globalCompositeOperation='destination-over';ctx.fillStyle='#fff';ctx.fillRect(0,0,input.width,input.height);
    }
    const blob=await imageBlob(input,type==='png'?'image/png':'image/jpeg',.93);
-   downloadFile(blob,'toolnexa-'+mode+'-standard.'+(type==='png'?'png':'jpg'));
+   if(!await downloadFile(blob,'toolnexa-'+mode+'-standard.'+(type==='png'?'png':'jpg')))return;
    setStatus('Standard export downloaded.');
   }catch(e){setStatus(e instanceof Error?e.message:'Export failed')}
   finally{setWorking(false)}
