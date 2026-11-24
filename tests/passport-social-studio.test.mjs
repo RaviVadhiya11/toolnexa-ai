@@ -119,11 +119,11 @@ test('mobile Passport Studio avoids nested footer, sticky toolbar and iframe hei
  const shell=read('components/shell.tsx');
  const nav=read('components/studio-premium-nav.tsx');
  assert.doesNotMatch(html,/<body[^>]*min-h-screen/);
- assert.doesNotMatch(html,/<footer[\\s>]/);
- assert.match(html,/content\\.getBoundingClientRect\\(\\)\\.bottom/);
- assert.doesNotMatch(html,/height:Math\\.max\\(document\\.documentElement\\.scrollHeight/);
- assert.match(bridge,/setHeight\\(previous=>Math\\.abs\\(previous-next\\)>3\\?next:previous\\)/);
+ assert.doesNotMatch(html,/<footer[\s>]/);
+ assert.match(html,/content\.getBoundingClientRect\(\)\.bottom/);
+ assert.doesNotMatch(html,/height:Math\.max\(document\.documentElement\.scrollHeight/);
+ assert.match(bridge,/setHeight\(previous=>Math\.abs\(previous-next\)>3\?next:previous\)/);
  assert.doesNotMatch(bridge,/minHeight:'100vh'/);
  assert.match(shell,/!isPassportEditor&&<footer/);
- assert.match(nav,/pathname==='\\/studio\\/passport-social'\\)return null/);
+ assert.match(nav,/pathname==='\/studio\/passport-social'\)return null/);
 });
