@@ -32,10 +32,11 @@ export default function Home(){return <div className="premium-home flagship-home
     <Link className="button" href="/studio/enhance"><Sparkles size={18}/> Open Creator Studio <ArrowRight size={16}/></Link>
     <Link className="button outline" href="/tools"><Layers3 size={17}/> Explore All 60 Tools</Link>
    </div>
+   <FlagshipHomeExperience mode="upload"/>
    <div className="flagship-hero-points"><span><ShieldCheck size={16}/> Browser-first processing</span>
     <span><Zap size={16}/> Real working editors</span><span><Lock size={16}/> Secure paid downloads</span></div>
   </div>
-  <FlagshipHomeExperience/>
+  <FlagshipHomeExperience mode="compare"/>
  </section>
  <section className="flagship-metrics" aria-label="ToolNexa product features">
   <div><strong>68</strong><span>Working tool pages</span></div>
