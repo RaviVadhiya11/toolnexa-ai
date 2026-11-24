@@ -10,7 +10,9 @@ export async function middleware(request:NextRequest){
  // API paths, and previously issued Supabase callback links functional.
  // The incoming path and query string are preserved across the permanent redirect.
  if(host===LEGACY_SITE_HOST&&shouldRedirectLegacyPage(path,request.method)){
-  const destination=new URL(path+request.nextUrl.search,CANONICAL_SITE_URL);
+  const destination=new URL(CANONICAL_SITE_URL);
+  destination.pathname=path;
+  destination.search=request.nextUrl.search;
   return NextResponse.redirect(destination,308);
  }
 
