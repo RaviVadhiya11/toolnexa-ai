@@ -154,7 +154,13 @@ case 'split-pdf':{const file=validFile(files[0],['application/pdf']);const src=a
 }if(allowance.mode==='browser'){
  if(allowance.limit===null)throw Error('No valid daily tool run allowance was returned.');
  const used=consumeUsage(allowance.key,allowance.limit);
- if(used===null)throw Error('Daily limit reached or browser storage is disabled. Subscribe or try again later.');
+ if(used===null){
+  const reached=readUsage(allowance.key)>=allowance.limit;
+  showDownloadGate({kind:reached?'limit':'error',feature:tool.title,requiredTier:'Starter',
+   currentPlan:allowance.plan,
+   message:reached?'Your daily allowance is complete. Upgrade for more runs or return after UTC reset.':'Browser storage could not be accessed. Enable storage and retry.'});
+  throw Error('Daily limit reached or browser storage is disabled. Subscribe or try again later.');
+ }
  setQuota({...allowance,used});
  }setOutput(output);remember(slug);recordUse(slug)}catch(error){const message=error instanceof Error?error.message:'Processing failed';setLastDownload(null);setDownloaded(false);setOutput(`Error: ${/encrypted|password/i.test(message)?'Password-protected PDFs are not supported. Unlock the PDF before uploading.':message}`)}finally{setWorking(false)}}
 const isText=textSlugs.includes(slug);
