@@ -10,7 +10,11 @@ export async function GET(req:NextRequest){
  const code=params.get('code');
  const isRecovery=next==='reset'||type==='recovery';
  // Only allow known destinations (avoid untrusted open redirects).
- const destination=isRecovery?'/reset-password?verified=1':next==='pricing'?'/pricing':'/dashboard';
+ const requestedTier=params.get('plan'),requestedBilling=params.get('billing');
+ const pricingUrl=new URL('/pricing',base);
+ if(requestedTier&&['Starter','Pro','Premium','Max'].includes(requestedTier))pricingUrl.searchParams.set('plan',requestedTier);
+ if(requestedBilling==='monthly'||requestedBilling==='yearly')pricingUrl.searchParams.set('billing',requestedBilling);
+ const destination=isRecovery?'/reset-password?verified=1':next==='pricing'?pricingUrl.pathname+pricingUrl.search:'/dashboard';
  const supabase=await serverSupabase();
  if(supabase){
   // PKCE links: code is exchanged on the server to create the session cookie.
@@ -26,6 +30,13 @@ export async function GET(req:NextRequest){
  }
  // Invalid, expired or already used recovery links must never silently sign the user in.
  if(isRecovery)return NextResponse.redirect(new URL('/reset-password?error=invalid-link',base));
- const fallback=next==='pricing'?'/login?next=pricing&error=confirmation':'/login?error=confirmation';
+ const loginUrl=new URL('/login',base);
+ loginUrl.searchParams.set('error','confirmation');
+ if(next==='pricing'){
+  loginUrl.searchParams.set('next','pricing');
+  if(pricingUrl.searchParams.has('plan'))loginUrl.searchParams.set('plan',pricingUrl.searchParams.get('plan')!);
+  if(pricingUrl.searchParams.has('billing'))loginUrl.searchParams.set('billing',pricingUrl.searchParams.get('billing')!);
+ }
+ const fallback=loginUrl.pathname+loginUrl.search;
  return NextResponse.redirect(new URL(fallback,base));
 }
