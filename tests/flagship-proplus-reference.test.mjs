@@ -11,7 +11,7 @@ test('flagship homepage reproduces reference sections using real routes and pric
   'studioItems.map','pricing.map'])
   assert.ok(home.includes(section),section);
  for(const url of ['/studio/enhance','/studio/image-to-vector','/studio/background-remove',
- '/studio/vector','/studio/convert','/studio/svg-editor','/studio/retouch','/studio/restore','/studio/batch'])
+ '/studio/vector','/studio/convert','/studio/svg-editor','/studio/retouch','/studio/restore','/studio/batch','/studio/passport-social'])
   assert.ok(home.includes(url),url);
  assert.doesNotMatch(home,/Unlimited GPU|Razorpay|UPI|Save over 85%|₹299|₹699/);
 });
