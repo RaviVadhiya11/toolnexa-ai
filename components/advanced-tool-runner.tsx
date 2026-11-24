@@ -4,7 +4,7 @@ import {useEffect,useState} from 'react';
 import {withPaidDownload,showDownloadGate} from '@/lib/download-access';
 import Link from 'next/link';
 import type {Tool} from '@/lib/tools';
-import {dailyLimits,isUsagePlan,quotaKey,readUsage,consumeUsage,type UsagePlan} from '@/lib/usage-limits';
+import {dailyLimits,isUsagePlan,quotaKey,readUsage,consumeUsage,reconcileFreeDeviceUsage,mirrorFreeDeviceUsage,type QuotaMode,type UsagePlan} from '@/lib/usage-limits';
 import {ageReport,colorConvert,csvToJson,dateDifferenceReport,emiReport,jwtReport,parseYoutubeId,regexReport,socialSuggestions,textDiff,textSort,timestampReport} from '@/lib/advanced-operations';
 import {processAdvancedPdf,type GeneratedFile} from '@/lib/advanced-file-ops';
 import {processAdvancedImage} from '@/lib/advanced-image-ops';
@@ -18,7 +18,7 @@ const IMAGE_TOOLS=new Set(['image-compressor','image-cropper','background-remove
 const DOC_TOOLS=new Set(['invoice-generator','quotation-maker','resume-builder']);
 const TEXTAREA_TOOLS=new Set(['html-formatter','css-minifier','javascript-minifier','regex-tester','jwt-decoder','sql-formatter','csv-to-json','text-sorter','text-compare','ai-title-hashtag-generator','invoice-generator','quotation-maker','resume-builder','json-to-csv','utm-campaign-builder','seo-meta-generator']);
 const BINARY_TOOLS=new Set([...PDF_TOOLS,...IMAGE_TOOLS,...DOC_TOOLS,'youtube-thumbnail-downloader']);
-type Q={plan:UsagePlan;used:number;limit:number|null;mode:'browser'|'account';key:string};
+type Q={plan:UsagePlan;used:number;limit:number|null;mode:QuotaMode;key:string;userId:string|null};
 function download(blob:Blob,name:string){
  const url=URL.createObjectURL(blob),anchor=document.createElement('a');
  anchor.href=url;anchor.download=name;document.body.append(anchor);anchor.click();anchor.remove();
@@ -143,10 +143,14 @@ export function AdvancedToolRunner({tool}:{tool:Tool}){
   const response=await fetch('/api/usage/quota',{cache:'no-store',credentials:'same-origin'});
   const data=await response.json() as {plan?:unknown;mode?:unknown;used?:unknown;limit?:unknown;userId?:unknown;error?:string};
   if(!response.ok)throw Error(data.error||'Unable to check your usage allowance');
-  if(!isUsagePlan(data.plan)||!['account','browser'].includes(String(data.mode)))throw Error('Invalid account quota response.');
-  const limit=dailyLimits[data.plan],mode=data.mode as Q['mode'],key=quotaKey(typeof data.userId==='string'?data.userId:null);
+  if(!isUsagePlan(data.plan)||!['account','browser','device'].includes(String(data.mode)))throw Error('Invalid account quota response.');
+  const limit=dailyLimits[data.plan],mode=data.mode as Q['mode'];
+  const userId=typeof data.userId==='string'?data.userId:null;
+  const key=quotaKey(mode==='device'?null:userId);
   if(data.plan==='Max'&&(mode!=='account'||data.limit!==3000))throw Error('Max 3,000/day allowance must be verified server-side.');
-  const next={plan:data.plan,mode,limit,key,used:mode==='account'&&typeof data.used==='number'?data.used:readUsage(key)};
+  const used=mode==='device'?await reconcileFreeDeviceUsage(Number(data.used),userId):
+   mode==='account'&&typeof data.used==='number'?data.used:readUsage(key);
+  const next={plan:data.plan,mode,limit,key,userId,used};
   setQuota(next);setQuotaError('');return next;
  }
  useEffect(()=>{
@@ -163,14 +167,14 @@ export function AdvancedToolRunner({tool}:{tool:Tool}){
    throw Error('Daily usage limit reached. See subscription plans.');
   }
   if(q.mode==='browser')return q;
-  const response=await fetch('/api/usage/quota',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug}),credentials:'same-origin'});
+  const response=await fetch('/api/usage/quota',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug,...(q.mode==='device'?{clientUsed:readUsage(quotaKey(null))}:{})}),credentials:'same-origin'});
   const data=await response.json() as {used?:unknown;error?:string};
   if(!response.ok){if(response.status===429){
    if(q.limit!==null)setQuota({...q,used:q.limit});
    showDownloadGate({kind:'limit',feature:tool.title,requiredTier:'Starter',message:typeof data.error==='string'?data.error:'Daily allowance reached. Upgrade for more runs.'});
   }throw Error(data.error||'Could not reserve tool usage.')}
   if(typeof data.used!=='number')throw Error('Invalid usage reservation.');
-  const next={...q,used:data.used};setQuota(next);return next;
+  const next={...q,used:data.used};if(q.mode==='device')mirrorFreeDeviceUsage(data.used);setQuota(next);return next;
  }
  async function run(){
   // Text-only inspection remains available within Free daily runs;
@@ -189,7 +193,7 @@ export function AdvancedToolRunner({tool}:{tool:Tool}){
     showDownloadGate({kind:'limit',feature:tool.title,requiredTier:'Starter',message:'Your shared daily allowance is exhausted. Upgrade or return after the UTC daily reset.'});
     throw Error('Daily usage limit reached. Upgrade for more runs.');
    }
-   if(slug==='ai-title-hashtag-generator'&&aiMode==='gemini'&&q.mode!=='account')
+   if(slug==='ai-title-hashtag-generator'&&aiMode==='gemini'&&!q.userId)
     throw Error('Gemini AI requires a signed-in account. Sign in, or choose Offline Smart Mode.');
    const after=await reserve(q);
    let output='',generated:GeneratedFile|null=null;
