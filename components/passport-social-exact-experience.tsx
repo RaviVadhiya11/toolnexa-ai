@@ -1,22 +1,21 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
-import {Crown,ShieldCheck,Sparkles} from 'lucide-react';
+import {Crown,ShieldCheck} from 'lucide-react';
+import {downloadFile,imageBlob} from '@/lib/studio-suite-client';
+import {upscaleDimensions} from '@/lib/studio-upscale';
 import {StudioQuotaNotice,reserveStudioUsage} from '@/components/studio-quota';
-import {StudioUpscalePanel} from '@/components/studio-upscale-panel';
 
 /** The user-supplied photo UI is sandboxed. Its pixels remain on-device;
  * only explicit user export and processing actions reach the Next.js bridge.
  */
 export function PassportSocialExactExperience(){
  const frame=useRef<HTMLIFrameElement|null>(null);
- const aiSection=useRef<HTMLElement|null>(null);
+ const autoUpscaleBusy=useRef(false);
  const canvasRequests=useRef(new Map<string,{
   resolve:(blob:Blob)=>void;reject:(error:Error)=>void;timeout:ReturnType<typeof setTimeout>
  }>());
  const canvasSequence=useRef(0);
  const [height,setHeight]=useState(900);
- const [photoRevision,setPhotoRevision]=useState('0');
- const [showAi,setShowAi]=useState(false);
 
  useEffect(()=>{
   const onMessage=(event:MessageEvent)=>{
@@ -32,14 +31,10 @@ export function PassportSocialExactExperience(){
     }
     return;
    }
-   if(data.type==='toolnexa-photo-revision'){
-    if(Number.isSafeInteger(data.revision)&&data.revision>=0)
-     setPhotoRevision(String(data.revision));
-    return;
-   }
-   if(data.type==='toolnexa-photo-open-ai'){
-    setShowAi(true);
-    requestAnimationFrame(()=>aiSection.current?.scrollIntoView({behavior:'smooth',block:'start'}));
+   if(data.type==='toolnexa-photo-auto-upscale' &&
+      typeof data.id==='string' && data.id.length<80 &&
+      (data.resolution==='4k'||data.resolution==='8k')){
+    void automaticHdDownload(data as {id:string;resolution:'4k'|'8k';format?:string;quality?:number});
     return;
    }
    if(data.type==='toolnexa-photo-canvas-result'&&typeof data.id==='string'){
@@ -47,7 +42,7 @@ export function PassportSocialExactExperience(){
     if(!pending)return;
     canvasRequests.current.delete(data.id);
     clearTimeout(pending.timeout);
-    if(data.ok===true&&data.blob instanceof Blob)pending.resolve(data.blob);
+    if(data.ok===true && data.blob && typeof data.blob.arrayBuffer==='function')pending.resolve(data.blob as Blob);
     else pending.reject(new Error(typeof data.error==='string'?data.error:'Unable to read your edited photo'));
     return;
    }
@@ -126,11 +121,104 @@ export function PassportSocialExactExperience(){
   return canvas;
  }
 
+ async function automaticHdDownload(request:{
+  id:string;resolution:'4k'|'8k';format?:string;quality?:number
+ }):Promise<void>{
+  const sourceWindow=frame.current?.contentWindow;
+  if(!sourceWindow)return;
+  const reply=(message:string,finished=false,ok=false,upgrade=false)=>{
+   sourceWindow.postMessage({
+    type:'toolnexa-photo-upscale-progress',
+    id:request.id,message,finished,ok,upgrade
+   },'*');
+  };
+  if(autoUpscaleBusy.current){
+   reply('Another HD export is in progress. Please finish it first.',true,false);
+   return;
+  }
+  autoUpscaleBusy.current=true;
+  let original:HTMLCanvasElement|null=null;
+  let enhanced:HTMLCanvasElement|null=null;
+  let output:HTMLCanvasElement|null=null;
+  try{
+   reply('Verifying active PayPal subscription for '+request.resolution.toUpperCase()+'…');
+   const authorization=await fetch('/api/studio/upscale-authorize',{
+    method:'POST',credentials:'same-origin',cache:'no-store',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({resolution:request.resolution,purpose:'download'})
+   });
+   const access=await authorization.json().catch(()=>({error:'Unable to verify your membership'})) as {
+    authorized?:boolean;error?:string;plan?:string
+   };
+   if(!authorization.ok||access.authorized!==true){
+    reply(access.error||'Active subscription required.',true,false,
+     authorization.status===401||authorization.status===403);
+    return;
+   }
+   reply('Subscription verified. Reading the current cropped and filtered photo…');
+   original=await currentEditedCanvas();
+   const dimensions=upscaleDimensions(original.width,original.height,request.resolution);
+   const mime=['image/jpeg','image/png','image/webp'].includes(request.format||'')
+    ? request.format as 'image/jpeg'|'image/png'|'image/webp' : 'image/jpeg';
+   const quality=typeof request.quality==='number'&&Number.isFinite(request.quality)
+    ?Math.min(1,Math.max(.65,request.quality)):.93;
+   // Reserve exactly one server-validated run for a single export, AFTER
+   // entitlement verification and input dimension validation.
+   await reserveStudioUsage('studio-passport-social');
+   let aiApplied=false;
+   // Neural enhancement is optional: it operates on a compact image,
+   // is most useful for smaller originals, and can fail on low-memory phones.
+   // Do not downgrade an already-large original to 320px for an AI pass.
+   if(Math.max(original.width,original.height)<=900){
+    try{
+     const {neuralEnhance2x}=await import('@/lib/studio-neural-upscale');
+     enhanced=await neuralEnhance2x(original,reply);
+     aiApplied=true;
+    }catch(error){
+     reply('Neural model unavailable; automatically switching to high-quality local HD resize…');
+     if(enhanced){enhanced.width=0;enhanced.height=0;enhanced=null;}
+    }
+   }else{
+    reply('Preserving the original photo detail with automatic high-quality HD resize…');
+   }
+   // Keep image processing local. Browsers with insufficient memory report
+   // a clear error instead of generating a corrupted or lower-resolution file.
+   reply('Rendering '+dimensions.width+' × '+dimensions.height+' '+request.resolution.toUpperCase()+' image…');
+   output=document.createElement('canvas');
+   output.width=dimensions.width;
+   output.height=dimensions.height;
+   const ctx=output.getContext('2d',{alpha:mime!=='image/jpeg'});
+   if(!ctx)throw Error('Your device cannot allocate this HD output. Try 4K on a device with more memory.');
+   ctx.imageSmoothingEnabled=true;
+   ctx.imageSmoothingQuality='high';
+   if(mime==='image/jpeg'){
+    ctx.fillStyle='#ffffff';
+    ctx.fillRect(0,0,dimensions.width,dimensions.height);
+   }
+   ctx.drawImage(enhanced||original,0,0,dimensions.width,dimensions.height);
+   reply('Saving '+request.resolution.toUpperCase()+' photo…');
+   const blob=await imageBlob(output,mime,quality);
+   if(blob.type!==mime)throw Error('This browser cannot export the chosen format. Select JPG and retry.');
+   const ext=mime==='image/jpeg'?'jpg':mime==='image/png'?'png':'webp';
+   downloadFile(blob,'toolnexa-'+request.resolution+'-auto-hd-'+dimensions.width+'x'+dimensions.height+'.'+ext);
+   reply('✓ '+request.resolution.toUpperCase()+' HD download started ('+
+    dimensions.width+' × '+dimensions.height+' px). '+
+    (aiApplied?'Neural AI detail pass applied.':'Original details preserved with high-quality enlargement.'),true,true);
+  }catch(error){
+   reply(error instanceof Error?error.message:'Automatic HD export failed. Try again.',true,false);
+  }finally{
+   if(output){output.width=0;output.height=0;}
+   if(enhanced){enhanced.width=0;enhanced.height=0;}
+   if(original){original.width=0;original.height=0;}
+   autoUpscaleBusy.current=false;
+  }
+ }
+
  return <div style={{background:'#060913',minHeight:0,overflow:'hidden'}}>
   <div className="mx-auto max-w-7xl px-4 pt-4 sm:px-6" style={{color:'#f8fafc'}}>
    <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-cyan-500/20 bg-slate-900/70 px-4 py-3">
     <span className="flex items-center gap-2 text-xs sm:text-sm text-slate-200"><ShieldCheck size={17} className="text-cyan-300"/> Your uploaded Studio layout · Browser-local photo editing</span>
-    <span className="inline-flex items-center gap-2 rounded-xl bg-amber-500/15 px-4 py-2 text-xs font-bold text-amber-200 border border-amber-400/30"><Crown size={16}/> Pro HD tools in this editor ↓</span>
+    <span className="inline-flex items-center gap-2 rounded-xl bg-amber-500/15 px-4 py-2 text-xs font-bold text-amber-200 border border-amber-400/30"><Crown size={16}/> Automatic 4K / 8K HD in Smart Export</span>
    </div>
    <StudioQuotaNotice/>
   </div>
@@ -138,25 +226,6 @@ export function PassportSocialExactExperience(){
    title="ToolNexa Passport and Social Photo Studio — original premium design"
    style={{display:'block',width:'100%',height:height+'px',border:0,background:'#060913'}}
    scrolling="no" loading="eager" sandbox="allow-scripts allow-downloads allow-top-navigation-by-user-activation"/>
-  <section ref={aiSection} id="toolnexa-inline-ai-upscaler"
-   className="mx-auto max-w-7xl px-4 pt-2 pb-8 sm:px-6"
-   style={{color:'#f8fafc',scrollMarginTop:90}}>
-   <div className="rounded-2xl border border-violet-500/35 bg-slate-900/80 p-4 sm:p-6">
-    <div className="flex flex-wrap items-center justify-between gap-3">
-     <div><span className="text-xs font-black tracking-wider text-cyan-300">ADVANCED · SAME-PAGE PHOTO</span>
-      <h2 className="mt-2 flex items-center gap-2 text-lg sm:text-xl font-extrabold"><Sparkles size={20} className="text-violet-300"/> AI Detail &amp; 4K / 8K Upscaler</h2>
-      <p className="mt-2 text-xs sm:text-sm text-slate-300">Uses your current photo, crop, color and adjustments automatically. No second upload or page change. Preview is watermarked; full HD downloads require verified plans.</p>
-     </div>
-     {!showAi&&<button type="button"
-      className="rounded-xl bg-gradient-to-r from-violet-600 to-cyan-600 px-5 py-3 text-sm font-bold text-white"
-      onClick={()=>setShowAi(true)}>Open Advanced AI Tools</button>}
-    </div>
-    {showAi&&<div className="mt-4">
-     <StudioUpscalePanel getCanvas={currentEditedCanvas}
-      format="photo" usageSlug="studio-passport-social"
-      sourceKey={photoRevision} enableAI/>
-    </div>}
-   </div>
-  </section>
+
  </div>;
 }
