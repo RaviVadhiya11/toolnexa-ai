@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
-import {usePathname,useRouter} from 'next/navigation';
+import {usePathname} from 'next/navigation';
+import {FlagshipCommandPalette} from '@/components/flagship-command-palette';
 import {useEffect,useState} from 'react';
 import {AccountStatus} from '@/components/account-status';
 import {tools} from '@/lib/tools';
@@ -8,8 +9,8 @@ import {ShieldCheck,Home,LayoutGrid,LayoutDashboard,Crown,Moon,Sun,Search,FileTe
 const nav=[{href:'/',label:'Home',icon:Home},{href:'/tools',label:'All Tools',icon:LayoutGrid},{href:'/studio',label:'Creator Studio V4',icon:Sparkles},{href:'/dashboard',label:'Dashboard',icon:LayoutDashboard},{href:'/pricing',label:'Pricing',icon:Crown},{href:'/admin',label:'Admin',icon:ShieldCheck}];
 const groups=[{name:'Text',icon:Type},{name:'Image',icon:ImageIcon},{name:'PDF',icon:FileText},{name:'Developer',icon:Code2},{name:'Business',icon:Briefcase},{name:'Creator',icon:Clapperboard}] as const;
 export function Shell({children}:{children:React.ReactNode}){
- const path=usePathname(),router=useRouter();
- const [dark,setDark]=useState(true),[q,setQ]=useState(''),[menuOpen,setMenuOpen]=useState(false);
+ const path=usePathname();
+ const [dark,setDark]=useState(true),[menuOpen,setMenuOpen]=useState(false);
  useEffect(()=>{
   const useDark=localStorage.getItem('toolnexa-theme')!=='light';
   setDark(useDark);
@@ -18,12 +19,6 @@ export function Shell({children}:{children:React.ReactNode}){
  },[]);
  useEffect(()=>{setMenuOpen(false)},[path]);
  function toggle(){const value=!dark;setDark(value);document.documentElement.classList.toggle('dark',value);document.documentElement.classList.toggle('light',!value);localStorage.setItem('toolnexa-theme',value?'dark':'light')}
- function findTools(e:React.FormEvent<HTMLFormElement>){e.preventDefault();router.push('/tools?q='+encodeURIComponent(q.trim()))}
- const toolsIndex=path==='/tools';
- const searchBox=<form className="shell-search-form" onSubmit={findTools} role="search">
-  <input className="search" placeholder="Search 60 smart tools…" aria-label="Search tools" value={q} onChange={e=>setQ(e.target.value)}/>
-  <button className="button outline shell-search-button" type="submit" aria-label="Search tools"><Search size={19}/></button>
- </form>;
  return <div className="shell premium-shell">
   <a className="site-skip-link" href="#main-content">Skip to main content</a>
   <aside className={'sidebar premium-sidebar '+(menuOpen?'sidebar-open':'')} aria-label="Main menu">
@@ -48,18 +43,26 @@ export function Shell({children}:{children:React.ReactNode}){
   </aside>
   {menuOpen&&<button className="premium-menu-backdrop" aria-label="Close menu overlay" onClick={()=>setMenuOpen(false)} type="button"/>}
   <main id="main-content" className="main premium-main" tabIndex={-1}>
-   <div className="premium-mobile-brand-row">
-    <button type="button" className="premium-menu-button" onClick={()=>setMenuOpen(true)} aria-label="Open menu"><Menu size={21}/></button>
-    <Link href="/" className="brand premium-brand"><span className="brand-icon"><Sparkles size={18}/></span><span>ToolNexa <em>AI</em></span></Link>
-    <Link href="/pricing" className="premium-mobile-pro"><Crown size={16}/> Pro</Link>
-   </div>
-   <div className="top premium-top">
-    {!toolsIndex&&searchBox}
-    {toolsIndex&&<div className="premium-context-title"><LayoutGrid size={18}/><span>Tools workspace</span></div>}
-    <button className="button outline shell-theme-toggle" onClick={toggle} type="button" aria-label={dark?'Switch to light mode':'Switch to dark mode'}>{dark?<Sun size={20}/>:<Moon size={20}/>}</button>
-    <AccountStatus/>
-    <Link href="/pricing" className="button shell-pro-link"><Crown size={17}/> Pro</Link>
-   </div>
+   <header className="top premium-top flagship-top" aria-label="ToolNexa flagship navigation">
+    <div className="flagship-nav-brand">
+     <button type="button" className="flagship-nav-menu" onClick={()=>setMenuOpen(true)} aria-label="Open full navigation"><Menu size={20}/></button>
+     <Link href="/" className="flagship-brand-link"><span className="brand-icon"><Sparkles size={21}/></span><span>ToolNexa <b>AI</b></span></Link>
+     <Link className="flagship-proplus-badge" href="/pricing" title="See available subscription plans">PRO+</Link>
+    </div>
+    <nav className="flagship-nav-links" aria-label="Main product navigation">
+     {[{href:'/',name:'Home'},{href:'/studio',name:'AI Studio'},{href:'/tools',name:'60+ Tools'},{href:'/pricing',name:'Pricing'}].map(item=>
+      <Link href={item.href} key={item.href} className={path===item.href||(item.href==='/tools'&&path.startsWith('/tools/'))?'active':''}
+        aria-current={path===item.href?'page':undefined}>{item.name}</Link>)}
+    </nav>
+    <div className="flagship-nav-actions">
+     <button type="button" className="flagship-search-trigger" onClick={()=>window.dispatchEvent(new Event('toolnexa-open-command'))}
+       aria-label="Search all 69 tools"><Search size={18}/><span>Search</span><kbd>⌘K</kbd></button>
+     <Link className="flagship-workspace-link" href="/dashboard"><LayoutDashboard size={17}/><span>Workspace</span></Link>
+     <button className="flagship-theme-toggle" onClick={toggle} type="button" aria-label={dark?'Switch to light mode':'Switch to dark mode'}>{dark?<Sun size={18}/>:<Moon size={18}/>}</button>
+     <AccountStatus/>
+     <Link href="/pricing" className="flagship-gold-cta"><Crown size={17}/> Upgrade <span>Pro+</span></Link>
+    </div>
+   </header>
    {children}
    <footer className="premium-footer editorial-footer">
     <div className="editorial-footer-main">
@@ -68,7 +71,7 @@ export function Shell({children}:{children:React.ReactNode}){
       <h2 id="footer-about-title">ABOUT TOOLNEXA AI</h2>
       <p>All your everyday PDF, image, text, developer, business and creator tools in one smart workspace.</p>
       <p className="editorial-footer-caption">60 practical utility tools. Optional premium batch text analysis.</p>
-      <a href="https://github.com/RaviVadhiya11/toolnexa-ai/issues" className="editorial-footer-contact" target="_blank" rel="noopener noreferrer"><span className="editorial-footer-contact-icon"><Briefcase size={17}/></span>Report a technical issue <ArrowUpRight size={17}/></a>
+      <Link href="/support" className="editorial-footer-contact"><span className="editorial-footer-contact-icon"><Briefcase size={17}/></span>Report a technical issue <ArrowUpRight size={17}/></Link>
      </section>
      <nav className="editorial-footer-column" aria-labelledby="footer-categories-title">
       <h2 id="footer-categories-title">POPULAR CATEGORIES</h2>
@@ -90,7 +93,7 @@ export function Shell({children}:{children:React.ReactNode}){
       </div>
       <div className="editorial-contact-actions">
        <Link href="/support" className="editorial-contact-button"><LifeBuoy size={17}/> Help Center</Link>
-       <a href="https://github.com/RaviVadhiya11/toolnexa-ai/issues" target="_blank" rel="noopener noreferrer" className="editorial-contact-button"><Briefcase size={17}/> Report an Issue <ArrowUpRight size={15}/></a>
+       <Link href="/support" className="editorial-contact-button"><Briefcase size={17}/> Report an Issue <ArrowUpRight size={15}/></Link>
        <Link href="/billing" className="editorial-contact-button"><CreditCard size={17}/> Billing Help</Link>
       </div>
      </section>
@@ -105,6 +108,7 @@ export function Shell({children}:{children:React.ReactNode}){
     </div>
    </footer>
   </main>
+  <FlagshipCommandPalette/>
   <nav className="mobile-nav premium-mobile-nav" aria-label="Bottom navigation">{nav.map(item=><Link href={item.href} key={item.href} className={path===item.href||item.href==='/tools'&&path.startsWith('/tools/')?'active':''} aria-current={path===item.href||item.href==='/tools'&&path.startsWith('/tools/')?'page':undefined}><item.icon size={21}/><span>{item.label}</span></Link>)}</nav>
  </div>;
 }

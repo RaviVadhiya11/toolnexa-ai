@@ -169,3 +169,17 @@ The creator supplied an HTML *demo*, which has been used as a visual/interaction
 - **Privacy and limitations**: the uploaded demo's “Cloud AI GPU (Real-ESRGAN v4)”, unlimited usage, local Pro-unlock, and Indian UPI options are **not** functioning paid backend services and are **not claimed** or enabled here. This website uses its existing on-device browser model (experimental), signed-in PayPal subscriptions, and the established 3 Free shared daily uses. 8K output may require a high-memory browser.
 
 Run automated tests and Next.js builds before releasing. Mobile/browser behavior and a real paid customer checkout–webhook–download sequence still require separate end-to-end acceptance testing.
+
+
+## Flagship Pro+ reference redesign (2026-11-24)
+
+The second user-provided reference, \`toolnexa_ai_pro_flagship_ai_studio_60_tools.html\`, is a design prototype. The live site now adapts its obsidian/dark, cyan/indigo with gold accents, compact top navbar, responsive navigation, Ctrl/Cmd+K searchable command palette, split interactive comparison hero, universal hero image upload, Studio bento cards, tool directory, comparison table, real multi-plan pricing view and professional dashboard shortcuts.
+
+### Functional implementation
+- **Hero upload transfer** keeps the File only in memory during client-side navigation to the real Enhance editor. It does not upload or persist the original image. The homepage before/after sample is openly labelled as a procedural illustrative filter demo, not a neural 8K result.
+- **60 core utility tools** retain their existing tested, quota-limited browser-first processing, with shared premium V4/V5 styling. **Eight original Studio tools** retain their real workflows, and a **new ninth Batch Pro+ image workspace** was added at \`/studio/batch\`.
+- **Batch Pro+** processes at most eight JPEG/PNG/WebP images, at most 10 MB each. Each image uses a shared daily tool run, and its full-size export is allowed only after \`/api/studio/upscale-authorize\` verifies an active **Premium or Max** subscription with live PayPal membership. Source files are processed sequentially using Canvas locally. Each processed image is packed into one standards-conforming ZIP (CRC32 / central directory), in one browser download. Device and memory limits remain relevant; outputs apply conventional filters and interpolation, not cloud super-resolution.
+- **Real pricing** remains in USD with verified recurring PayPal plans: Starter, Pro, Premium and Max. Free remains **3 shared runs/day** and paid daily limits are 500 / 1,000 / 1,500 / 3,000. No fake Pro+/Max toggle, unlimited credits, demo-only checkout activation, unverified INR/UPI/Razorpay billing or fictitious GPU performance claims were shipped.
+- **Command palette** uses the existing real tool slugs and Studio routes; Ctrl/Cmd+K opens search, arrow keys navigate, Enter opens a real page and Escape closes.
+
+Build/automated tests should be verified on GitHub Actions and Vercel before merging. Browser/mobile and real merchant capture plus webhook delivery remain separate end-to-end acceptance tests.

@@ -9,7 +9,8 @@ const tools=[
  {path:'/studio/enhance',name:'Enhance',icon:'✺'},
  {path:'/studio/background-remove',name:'Remove BG',icon:'▣'},
  {path:'/studio/retouch',name:'Retouch',icon:'◉'},
- {path:'/studio/restore',name:'Restore',icon:'☀'}
+ {path:'/studio/restore',name:'Restore',icon:'☀'},
+ {path:'/studio/batch',name:'Batch Pro+',icon:'⚡'}
 ] as const;
 export function StudioTopbar(){
  const pathname=usePathname();
