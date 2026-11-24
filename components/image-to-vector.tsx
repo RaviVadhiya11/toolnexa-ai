@@ -212,7 +212,7 @@ export function ImageToVector(){
     <select id="vector-colors" value={colors} onChange={e=>setColors(Number(e.target.value) as TraceColors)}>
      <option value="2">2 colors (black &amp; white style)</option>
      <option value="4">4 colors</option><option value="8">8 colors</option>
-     <option value="16">16 colors</option><option value="24">24 colors</option>
+     <option value="16">16 colors</option><option value="24">24 colors</option><option value="32">32 colors</option><option value="48">48 colors</option>
     </select>
     <label htmlFor="vector-detail">Path detail</label>
     <select id="vector-detail" value={detail} onChange={e=>setDetail(e.target.value as TraceDetail)}>
