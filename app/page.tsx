@@ -13,11 +13,12 @@ const studioItems=[
  {href:'/studio/convert',title:'Vector Format Converter',desc:'SVG, vector PDF, EPS and DXF outline exports',tag:'4 formats',icon:Workflow},
  {href:'/studio/svg-editor',title:'SVG Shape & Color Editor',desc:'Edit SVG colors, geometry and paths',tag:'Editable',icon:SlidersHorizontal},
  {href:'/studio/retouch',title:'Object Remover & Retouch',desc:'Paint over small unwanted marks and heal',tag:'Local retouch',icon:ScanText},
- {href:'/studio/restore',title:'Photo Restore & Colorizer',desc:'Sharpen, denoise and regrade older photos',tag:'Photo tools',icon:ImageIcon}
+ {href:'/studio/restore',title:'Photo Restore & Colorizer',desc:'Sharpen, denoise and regrade older photos',tag:'Photo tools',icon:ImageIcon},
+ {href:'/studio/batch',title:'Batch Pro+ ZIP Engine',desc:'Premium/Max sequential image jobs and one ZIP export',tag:'Premium / Max',icon:Layers3}
 ] as const;
 const pricing=[
- {name:'Free',price:'0',detail:'3 shared tool runs per day',features:['All 60 utilities','8 Studio previews','No paid export access'],href:'/tools'},
- {name:'Starter',price:subscriptionPrices.Starter.monthly,detail:'500 shared tool runs per day',features:['All 68 tools','Up to 2× paid image export','Monthly subscription'],href:'/pricing?plan=Starter'},
+ {name:'Free',price:'0',detail:'3 shared tool runs per day',features:['All 60 utilities','Studio previews,'No paid export access'],href:'/tools'},
+ {name:'Starter',price:subscriptionPrices.Starter.monthly,detail:'500 shared tool runs per day',features:['60 utilities + Studio previews','Up to 2× paid image export','Monthly subscription'],href:'/pricing?plan=Starter'},
  {name:'Pro',price:subscriptionPrices.Pro.monthly,detail:'1,000 shared tool runs per day',features:['4× HD and 4K image export','Pro HD backgrounds and vectors','Monthly subscription'],href:'/pricing?plan=Pro'},
  {name:'Premium',price:subscriptionPrices.Premium.monthly,detail:'1,500 shared tool runs per day',features:['Up to 8K eligible export','Premium Studio tools','Monthly subscription'],href:'/pricing?plan=Premium'},
  {name:'Max',price:subscriptionPrices.Max.monthly,detail:'3,000 shared tool runs per day',features:['Up to 8K eligible export','Highest daily usage allowance','Monthly subscription'],href:'/pricing?plan=Max'}
@@ -39,14 +40,14 @@ export default function Home(){return <div className="premium-home flagship-home
   <FlagshipHomeExperience mode="compare"/>
  </section>
  <section className="flagship-metrics" aria-label="ToolNexa product features">
-  <div><strong>68</strong><span>Working tool pages</span></div>
+  <div><strong>69</strong><span>Working tool pages</span></div>
   <div><strong>Up to 8K</strong><span>Plan-gated export resolution</span></div>
   <div><strong>3 / day</strong><span>Shared Free tool runs</span></div>
   <div><strong>PayPal</strong><span>Verified subscription checkout</span></div>
  </section>
  <section className="flagship-section" aria-labelledby="flagship-studio-title">
   <div className="flagship-section-head"><div><span className="flagship-kicker gold">CREATOR STUDIO</span>
-    <h2 id="flagship-studio-title">Eight professional visual workflows</h2>
+    <h2 id="flagship-studio-title">Creative Studio workflows plus Batch Pro+</h2>
     <p>Open a real editor, not a simulated demo screen. See original and processed results in the same stage.</p></div>
    <Link href="/studio">All Studio tools <ArrowRight size={16}/></Link></div>
   <div className="flagship-studio-bento">
