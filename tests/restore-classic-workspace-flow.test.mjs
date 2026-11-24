@@ -38,7 +38,7 @@ test('Previous all-tool categories and search are functional in the classic draw
 });
 test('Previous interaction behavior is restored without changing premium layouts or quotas',()=>{
  const shell=read('components/shell.tsx'),css=read('app/globals.css');
- assert.match(shell,/e.key==='Escape'/);
+ assert.match(shell,/event.key==='Escape'/);
  assert.match(shell,/document.body.style.overflow='hidden'/);
  assert.match(shell,/drawerClose.current\?\.focus\(\)/);
  assert.match(shell,/onClick=\{toggle\}/);
