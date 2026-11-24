@@ -6,6 +6,7 @@ import {StudioQuotaNotice} from '@/components/studio-quota';
 import {StudioUploadPreview} from '@/components/studio-upload-preview';
 import {enhancePhotoCanvas,photoPresets,type PhotoSettings,type PhotoPreset} from '@/lib/studio-photo-enhance';
 import {studioSampleFile,type StudioSample} from '@/lib/studio-sample-scenes';
+import {takeStudioUpload} from '@/lib/studio-hero-transfer';
 
 const MAX_IMAGE=10*1024*1024;
 const presets:{key:PhotoPreset;label:string;subtitle:string}[]=[
@@ -29,6 +30,7 @@ export function ProfessionalImageEnhancer(){
  const [sampleLoading,setSampleLoading]=useState(false);
  const [upscaledPreview,setUpscaledPreview]=useState('');
  const previewSeq=useRef(0);
+ useEffect(()=>{const image=takeStudioUpload();if(image)chooseFile(image)},[]);
  useEffect(()=>()=>{if(imageUrl)URL.revokeObjectURL(imageUrl)},[imageUrl]);
  useEffect(()=>()=>{if(previewUrl)URL.revokeObjectURL(previewUrl)},[previewUrl]);
  useEffect(()=>{
