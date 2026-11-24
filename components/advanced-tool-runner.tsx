@@ -1,4 +1,5 @@
 'use client';
+import {ToolUploadPreview} from '@/components/tool-upload-preview';
 import {useEffect,useState} from 'react';
 import Link from 'next/link';
 import type {Tool} from '@/lib/tools';
@@ -307,6 +308,7 @@ export function AdvancedToolRunner({tool}:{tool:Tool}){
     {fileNeeded&&<div className="tool-field"><label htmlFor="advanced-file">Choose {pdf?'a PDF':hashFile?'a file':'an image'}</label>
      <input id="advanced-file" className="field tool-file-input" type="file" accept={hashFile?undefined:pdf?".pdf,application/pdf":"image/png,image/jpeg,image/webp,image/gif,image/bmp"}
       onChange={e=>setFile(e.target.files?.[0]||null)}/>
+     {file&&<ToolUploadPreview files={[file]}/>}
      <p className="small-note">{file?file.name+' · '+Math.round(file.size/1024)+' KB':'Files stay in your browser for processing (25 MB maximum).'}</p>
     </div>}
     {showPrimary&&<div className="tool-field"><label htmlFor="advanced-primary">{labelFor[0]}</label>
