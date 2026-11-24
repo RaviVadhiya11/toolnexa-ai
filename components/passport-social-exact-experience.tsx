@@ -4,6 +4,7 @@ import {Crown,ShieldCheck} from 'lucide-react';
 import {downloadFile,imageBlob} from '@/lib/studio-suite-client';
 import {upscaleDimensions} from '@/lib/studio-upscale';
 import {StudioQuotaNotice,reserveStudioUsage} from '@/components/studio-quota';
+import {withPaidDownload,showDownloadGate} from '@/lib/download-access';
 
 /** The user-supplied photo UI is sandboxed. Its pixels remain on-device;
  * only explicit user export and processing actions reach the Next.js bridge.
@@ -62,6 +63,14 @@ export function PassportSocialExactExperience(){
        authorized?:boolean;error?:string;plan?:string
       };
       if(!res.ok||json.authorized!==true){
+       if(res.status===401||res.status===403)showDownloadGate({
+        kind:'subscription',feature:'Pro HD Passport / Social Photo export',
+        requiredTier:'Pro',message:json.error||'Pro or higher subscription required.',
+        retry:()=>withPaidDownload({
+         slug:'studio-passport-social',feature:'Pro HD Passport / Social Photo export',requiredTier:'Pro'
+        },async()=>{await reserveStudioUsage('studio-passport-social');
+         source?.postMessage({type:'toolnexa-photo-premium-result',id,ok:true},'*');})
+       });
        source?.postMessage({type:'toolnexa-photo-premium-result',id,ok:false,
         upgrade:res.status===401||res.status===403,
         error:json.error||'Pro or higher subscription is required.'},'*');
@@ -80,12 +89,14 @@ export function PassportSocialExactExperience(){
    if(data.type==='toolnexa-photo-usage'&&typeof data.id==='string'&&data.id.length<80){
     const source=frame.current?.contentWindow;
     const id=data.id;
-    void reserveStudioUsage('studio-passport-social')
-     .then(()=>source?.postMessage({type:'toolnexa-photo-usage-result',id,ok:true},'*'))
-     .catch(error=>source?.postMessage({
-      type:'toolnexa-photo-usage-result',id,ok:false,
-      error:error instanceof Error?error.message:'Unable to verify daily usage'
-     },'*'));
+    void withPaidDownload({slug:'studio-passport-social',feature:'Passport & Social Photo download'},
+     async()=>{await reserveStudioUsage('studio-passport-social');
+      source?.postMessage({type:'toolnexa-photo-usage-result',id,ok:true},'*');
+     }).then(allowed=>{
+      if(!allowed)source?.postMessage({type:'toolnexa-photo-usage-result',id,ok:false,
+       error:'Active subscription required. Choose a plan in the popup, then retry the download.'},'*');
+     }).catch(error=>source?.postMessage({type:'toolnexa-photo-usage-result',id,ok:false,
+      error:error instanceof Error?error.message:'Download verification unavailable'},'*'));
    }
   };
   window.addEventListener('message',onMessage);
@@ -151,8 +162,18 @@ export function PassportSocialExactExperience(){
     authorized?:boolean;error?:string;plan?:string
    };
    if(!authorization.ok||access.authorized!==true){
-    reply(access.error||'Active subscription required.',true,false,
-     authorization.status===401||authorization.status===403);
+    const upgrade=authorization.status===401||authorization.status===403;
+    if(upgrade)showDownloadGate({kind:'subscription',
+     feature:request.resolution.toUpperCase()+' Automatic HD Download',
+     requiredTier:request.resolution==='8k'?'Premium':'Pro',
+     message:access.error||'Active HD subscription required.',
+     retry:()=>withPaidDownload({
+      slug:'studio-passport-social',
+      feature:request.resolution.toUpperCase()+' Automatic HD Download',
+      requiredTier:request.resolution==='8k'?'Premium':'Pro'
+     },()=>automaticHdDownload(request))
+    });
+    reply(access.error||'Active subscription required.',true,false,upgrade);
     return;
    }
    reply('Subscription verified. Reading the current cropped and filtered photo…');
