@@ -127,3 +127,13 @@ live outside that static catalogue.
 - **Upscale Image** works for Free users (3 shared previews/day) and for all paid plans, regardless of resolution. It produces the selected pixel dimensions in the browser and displays a capped 720-pixel, watermarked preview. The full-resolution output remains in memory. Clicking **Download Upscaled** verifies a PayPal ACTIVE subscription server-side; unsubscribed users see a plan modal and no file is downloaded. Starter can download 2×, Pro adds 4×/4K, Premium/Max add 8K. Pricing opens in a new tab to preserve the original preview; the user returns and clicks Download again after activation. Browser-side image processing cannot prevent advanced local pixel inspection.
 - 4K/8K exports preserve aspect ratio and fit inside a 3840×2160 / 7680×4320 landscape bounding box (portrait equivalent). Output is generated via browser canvas high-quality interpolation; not generative AI super-resolution and does not reconstruct hidden detail. 8K may fail on memory-limited devices.
 - Existing paid daily caps remain Starter 500, Pro 1000, Premium 1500, Max 3000.
+
+
+## Image Enhancer: photo-quality controls and optional neural enhancement (Nov 2026)
+
+- /studio/enhance now presents a 10 MB JPG/PNG/WebP drag-and-drop image uploader, max 4000x4000 source, image mode presets (Photo/Portrait/Product/Graphic/Old Photo), brightness, contrast, saturation, noise reduction and sharpening.
+- Responsive before/after comparison slider previews colour and detail improvements in the browser. 'Auto Enhance' selects a balanced photo preset.
+- The existing shared Upscale Image panel keeps 2x, 4x, 4K and 8K resolution choices. Free users can process previews using the shared 3 daily runs, while full-sized downloads require verified PayPal subscriptions at the applicable tier.
+- For photo inputs only, **AI Detail (experimental)** uses the MIT-licensed UpscalerJS neural network + default ESRGAN-Slim 2x model, running locally in TensorFlow.js. The neural input is capped to 320 px on phones or 480 px on larger screens. Further scaling to requested output dimensions uses conventional canvas resampling. This is a real learned enhancement step, but it cannot guarantee true reconstruction of a lost image detail.
+- **Classic HD** remains the default and is faster. If the neural model fails to download, a browser has inadequate memory, or the model runtime is unavailable, user can choose Classic and retry. Model weights may be downloaded from the UpscalerJS public CDN, while the photo is processed on device.
+- Browser-side generated pixels are not cryptographically protected; UI subscription gating is intended for ordinary usage and must not be represented as tamper-proof DRM.
