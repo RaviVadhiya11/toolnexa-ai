@@ -240,6 +240,7 @@ export function StudioImageSuite({mode}:{mode:Mode}){
     output=healMaskedImage(source,maskRef.current);
    }else output=restorePhoto(source,denoise,sharpness,tint,autoLevels);
    resultRef.current=output;
+   undoBG.current=[];redoBG.current=[];setHistory({undo:0,redo:0});
    setResultUrl(output.toDataURL('image/png'));
    setStatus(mode==='background'?'Transparent PNG ready. Check fine hair edges before export.':
       mode==='retouch'?'Selected marks healed. Large subjects may need specialist AI inpainting.':
@@ -286,7 +287,7 @@ export function StudioImageSuite({mode}:{mode:Mode}){
       beforeLabel="Original" afterLabel={mode==='background'?'Background removed':mode==='retouch'?'Retouched':'Restored'}
       onReset={resetPreview}
       editor={mode==='background'&&resultUrl?<canvas ref={bgCanvas} className="studio-bg-edit-canvas"
-        style={{touchAction:'none'}} onPointerDown={e=>{bgDrawing.current=true;e.currentTarget.setPointerCapture(e.pointerId);paintBG(e)}}
+        style={{touchAction:'none'}} onPointerDown={e=>{recordBG();bgDrawing.current=true;e.currentTarget.setPointerCapture(e.pointerId);paintBG(e)}}
         onPointerMove={e=>{if(bgDrawing.current)paintBG(e)}}
         onPointerUp={finishBgBrush} onPointerCancel={finishBgBrush}/>:
        mode==='retouch'&&!resultUrl&&fileName?<canvas ref={paintRef} className="suite-brush-canvas" style={{touchAction:'none'}}
@@ -307,7 +308,11 @@ export function StudioImageSuite({mode}:{mode:Mode}){
      <p className="studio-note">AI mode downloads an open-source U²-Netp model on first use; solid-background removal works offline. Your pixels stay in the browser.</p>
      {resultUrl&&<>
       <h2>3. Refine &amp; Change Background</h2>
-      <p className="studio-note">Brush directly on the image in the upload box. Erase removes leftover background; Restore recovers subject details.</p>
+      <p className="studio-note">Brush directly on the image in the upload box. Erase removes leftover background; Restore recovers subject details. Undo/Redo tracks your last 12 strokes.</p>
+      <div className="suite-pair">
+       <button type="button" className="studio-secondary" disabled={!history.undo} onClick={()=>travelBG('undo')}>↶ Undo</button>
+       <button type="button" className="studio-secondary" disabled={!history.redo} onClick={()=>travelBG('redo')}>↷ Redo</button>
+      </div>
       <div className="suite-pair">
        <button type="button" className={bgTool==='erase'?'suite-selected':'studio-secondary'} onClick={()=>setBgTool('erase')}>Erase</button>
        <button type="button" className={bgTool==='restore'?'suite-selected':'studio-secondary'} onClick={()=>setBgTool('restore')}>Restore</button>
@@ -318,20 +323,34 @@ export function StudioImageSuite({mode}:{mode:Mode}){
        <option value="transparent">Transparent PNG</option>
        <option value="white">Clean White</option>
        <option value="color">Solid Color</option>
-       <option value="gradient">Soft Gradient</option>
+       <option value="gradient">Soft Gradient</option><option value="image">My Background Photo</option>
       </select>
       {(bgFill==='color'||bgFill==='gradient')&&<label>Background color<input type="color" value={bgColor} onChange={e=>setBgColor(e.target.value)}/></label>}
+      <label className="studio-bg-file-label">Upload a photo background
+       <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>{void chooseBackgroundPhoto(e.target.files?.[0]);e.currentTarget.value=''}}/>
+       {bgPhotoUrl&&<small>Custom background ready</small>}
+      </label>
       <label>Subject size {bgSize}%<input type="range" min="60" max="145" value={bgSize} onChange={e=>setBgSize(+e.target.value)}/></label>
       <label>Horizontal position {bgOffsetX}%<input type="range" min="-40" max="40" value={bgOffsetX} onChange={e=>setBgOffsetX(+e.target.value)}/></label>
       <label>Vertical position {bgOffsetY}%<input type="range" min="-40" max="40" value={bgOffsetY} onChange={e=>setBgOffsetY(+e.target.value)}/></label>
       <label className="studio-bg-checkbox"><input type="checkbox" checked={bgShadow} onChange={e=>setBgShadow(e.target.checked)}/> Soft subject shadow</label>
+      {bgShadow&&<label>Shadow intensity {bgShadowStrength}%<input type="range" min="15" max="100" value={bgShadowStrength} onChange={e=>setBgShadowStrength(+e.target.value)}/></label>
       <p className="studio-note">To brush-refine, return size to 100% and both positions to 0. Colors, background and shadow appear immediately in the upload preview.</p>
      </>}
     </>:mode==='retouch'?<>
       <label>Healing brush size {brush}px<input type="range" min="5" max="65" value={brush} onChange={e=>setBrush(+e.target.value)}/></label>
       <p className="studio-note">Paint purple over small marks in the After panel, then heal. This is local neighborhood inpainting, not generative person removal.</p>
+      <div className="suite-pair">
+       <button type="button" className="studio-secondary" disabled={!maskHistory.undo} onClick={()=>travelMask('undo')}>↶ Undo brush</button>
+       <button type="button" className="studio-secondary" disabled={!maskHistory.redo} onClick={()=>travelMask('redo')}>↷ Redo brush</button>
+      </div>
       <button type="button" className="studio-secondary" disabled={!fileName||working} onClick={clearBrush}>Clear brush selection</button>
     </>:<>
+      <h2>Restoration presets</h2>
+      <div className="studio-premium-presets">{(['balanced','portrait','scan','vintage'] as const).map(value=>
+       <button key={value} type="button" className={restorePreset===value?'active':''}
+        onClick={()=>setRestoration(value)}>{value==='scan'?'Old Scan':value[0].toUpperCase()+value.slice(1)}</button>)}</div>
+      <label className="studio-bg-checkbox"><input type="checkbox" checked={autoLevels} onChange={e=>setAutoLevels(e.target.checked)}/> Automatic tonal correction</label>
       <label>Noise reduction {denoise}%<input type="range" min="0" max="100" value={denoise} onChange={e=>setDenoise(+e.target.value)}/></label>
       <label>Sharpening {sharpness}%<input type="range" min="0" max="100" value={sharpness} onChange={e=>setSharpness(+e.target.value)}/></label>
       <label htmlFor="photo-tone">Colour treatment</label><select id="photo-tone" value={tint} onChange={e=>setTint(e.target.value as Tint)}>
@@ -368,7 +387,7 @@ export function StudioImageSuite({mode}:{mode:Mode}){
     <select id="suite-hd-scale" value={scale} onChange={e=>setScale(Number(e.target.value) as 2|4)}><option value={2}>2× HD</option><option value={4}>4× HD</option></select>
     {pro?<button type="button" disabled={!resultUrl||working} onClick={()=>void hd()}>Download Pro HD</button>:
       <Link href="/pricing" className="studio-upgrade">Unlock Pro HD Export →</Link>}
-    <StudioUpscalePanel getCanvas={async()=>exportCanvas()} format={mode==='background'?'cutout':'photo'} disabled={!resultUrl} sourceKey={[resultUrl,bgFill,bgColor,bgSize,bgOffsetX,bgOffsetY,bgShadow].join(':')} usageSlug={mode==='background'?'studio-background':mode==='retouch'?'studio-retouch':'studio-restore'}/>
+    <StudioUpscalePanel getCanvas={async()=>exportCanvas()} format={mode==='background'?'cutout':'photo'} disabled={!resultUrl} sourceKey={[resultUrl,bgFill,bgColor,bgSize,bgOffsetX,bgOffsetY,bgShadow,bgShadowStrength,bgPhotoUrl].join(':')} usageSlug={mode==='background'?'studio-background':mode==='retouch'?'studio-retouch':'studio-restore'}/>
     <p className="studio-note">AI cutout may have imperfect edges. Retouching works best on small marks, and resizing does not reconstruct missing photograph detail.</p>
    </div>
   </div>
