@@ -31,3 +31,38 @@ export function consumeUsage(key:string,limit:number):number|null{
  try{localStorage.setItem(key,String(used+1))}catch{return null}
  return used+1;
 }
+
+
+/* Free usage belongs to a browser/device cookie, never the current login.
+ * A localStorage mirror preserves earlier same-day usage during migration
+ * from the legacy 'guest' and per-account counters. The database owns the
+ * actual atomic device counter; local storage cannot reduce its value.
+ */
+export type QuotaMode='browser'|'account'|'device';
+export function freeBrowserUsageFloor(userId:string|null):number{
+ return Math.max(readUsage(quotaKey(null)),userId?readUsage(quotaKey(userId)):0);
+}
+export function mirrorFreeDeviceUsage(used:number):void{
+ if(!Number.isSafeInteger(used)||used<0)return;
+ const key=quotaKey(null);
+ try{localStorage.setItem(key,String(Math.max(used,readUsage(key))))}catch{/* The server cookie/database remains authoritative. */}
+}
+export async function reconcileFreeDeviceUsage(serverUsed:number,userId:string|null):Promise<number>{
+ if(!Number.isSafeInteger(serverUsed)||serverUsed<0||serverUsed>dailyLimits.Free)
+  throw Error('Invalid device quota response.');
+ const floor=freeBrowserUsageFloor(userId);
+ let used=serverUsed;
+ if(floor>used){
+  const response=await fetch('/api/usage/quota',{
+   method:'PATCH',credentials:'same-origin',cache:'no-store',
+   headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({used:Math.min(floor,dailyLimits.Free)})
+  });
+  const data=await response.json().catch(()=>({error:'Device quota sync unavailable'})) as {used?:unknown;error?:string};
+  if(!response.ok||typeof data.used!=='number')
+   throw Error(data.error||'Unable to preserve your existing Free usage.');
+  used=data.used;
+ }
+ mirrorFreeDeviceUsage(used);
+ return used;
+}
