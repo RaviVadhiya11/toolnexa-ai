@@ -30,7 +30,7 @@ test('unconfigured PhonePe never takes payment, stores card details or grants ac
  assert.match(ui,/PhonePe.*Activation pending/);
  assert.match(ui,/No card or UPI information is collected here/);
  assert.match(ui,/Card information will be entered only on PhonePe's secure hosted checkout/);
- assert.match(ui,/INR pricing/);
+ assert.match(ui,/Pricing pending/);
  assert.doesNotMatch(ui,/type="password".*CVV|Cardholder Name|placeholder="4242/);
  assert.doesNotMatch(ui,/fetch\('\/api\/phonepe\/start'/);
  assert.match(verify,/paypalSubscription\(row\.subscription_id\)/);
