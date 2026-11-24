@@ -133,12 +133,6 @@ export function ProfessionalImageEnhancer(){
       onClick={()=>void loadSample(key)} disabled={sampleLoading}>{label}</button>)}
     </div>
     <p className="studio-v4-sample-note">Samples are generated illustrations for testing, not AI photographs.</p>
-    <div className="photo-enhance-step"><span>01</span><div><h2>Upload Image</h2><p>Start with a photo from your device</p></div></div>
-    <StudioUploadPreview id="photo-enhance-input" accept="image/jpeg,image/png,image/webp"
-      name={fileName} sourceUrl={loaded?imageUrl:''} outputUrl={upscaledPreview||previewUrl}
-      onFile={chooseFile} hint="JPG · PNG · WebP · up to 10 MB" busy={previewLoading}
-      beforeLabel="Original" afterLabel="Enhanced" onReset={()=>choosePreset('natural')}/>
-    {fileName&&<p className="photo-upload-meta">{fileName} {loaded?'· '+dimensions.width+' × '+dimensions.height+' px':''}</p>}
     <div className="photo-enhance-step photo-enhance-second"><span>02</span><div><h2>Enhance Photo</h2><p>Fine-tune for better clarity</p></div></div>
     <div className="photo-preset-grid">
      {presets.map(item=><button key={item.key} type="button" className={preset===item.key?'photo-preset selected':'photo-preset'}
@@ -165,10 +159,25 @@ export function ProfessionalImageEnhancer(){
      <button type="button" className="studio-secondary" onClick={()=>choosePreset('natural')}>↶ Reset adjustments</button>
      <button type="button" className="studio-secondary" onClick={smartAutoEnhance} disabled={!loaded}>✦ Analyze exposure</button>
     </div>
+    <section className="studio-panel photo-enhance-upscale">
+     <div className="photo-enhance-step"><span>03</span><div><h2>Upscale &amp; Download</h2>
+      <p>Generate the result first; payment is checked only for the full-size download</p></div></div>
+     <StudioQuotaNotice/>
+     <StudioUpscalePanel getCanvas={processedCanvas} format="photo" disabled={!loaded}
+       sourceKey={sourceKey} usageSlug="studio-enhance" enableAI onPreviewChange={setUpscaledPreview}/>
+    </section>
    </section>
    <div className="photo-enhance-preview-group">
     <section className="studio-panel photo-enhance-preview-panel">
+    <div className="photo-enhance-step"><span>01</span><div><h2>Upload Image</h2><p>Start with a photo from your device</p></div></div>
+    <StudioUploadPreview id="photo-enhance-input" accept="image/jpeg,image/png,image/webp"
+      name={fileName} sourceUrl={loaded?imageUrl:''} outputUrl={upscaledPreview||previewUrl}
+      onFile={chooseFile} hint="JPG · PNG · WebP · up to 10 MB" busy={previewLoading}
+      beforeLabel="Original" afterLabel="Enhanced" onReset={()=>choosePreset('natural')}/>
+    {fileName&&<p className="photo-upload-meta">{fileName} {loaded?'· '+dimensions.width+' × '+dimensions.height+' px':''}</p>}
      <div className="studio-work-top"><strong>Before / After Image Preview</strong><span>{previewLoading?'Enhancing preview…':loaded?'Ready to compare':'No image selected'}</span></div>
+     <details className="studio-v4-detailed-compare">
+      <summary>Open additional precision comparison</summary>
      <div className="photo-compare">
       {imageUrl&&loaded?<><img className="photo-compare-original" src={imageUrl} alt="Original uploaded photo"/>
        {(upscaledPreview||previewUrl)&&<img className="photo-compare-after" src={upscaledPreview||previewUrl} alt="Enhanced colour and sharpness preview"
@@ -180,16 +189,11 @@ export function ProfessionalImageEnhancer(){
       </>:<div className="photo-compare-empty"><span aria-hidden="true">✦</span><strong>Your image preview</strong>
        <p>Upload a photo to see the original and enhanced version side by side.</p></div>}
      </div>
+     </details>
      <p role="status" className="studio-message">{status}</p>
      <p className="studio-note">Preview uses local photo filters. Select <strong>AI Detail</strong> below for an additional trained neural super-resolution pass when your device supports it.</p>
     </section>
-    <section className="studio-panel photo-enhance-upscale">
-     <div className="photo-enhance-step"><span>03</span><div><h2>Upscale &amp; Download</h2>
-      <p>Generate the result first; payment is checked only for the full-size download</p></div></div>
-     <StudioQuotaNotice/>
-     <StudioUpscalePanel getCanvas={processedCanvas} format="photo" disabled={!loaded}
-       sourceKey={sourceKey} usageSlug="studio-enhance" enableAI onPreviewChange={setUpscaledPreview}/>
-    </section>
+
    </div>
   </div>
   <p className="photo-enhance-footnote">
