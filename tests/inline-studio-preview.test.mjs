@@ -12,9 +12,9 @@ test('all eight Studio tools use same upload/design area for live preview',()=>{
  assert.match(enhancer,/StudioUploadPreview/);
  assert.match(enhancer,/outputUrl=\{upscaledPreview\|\|previewUrl\}/);
  assert.match(suite,/StudioUploadPreview/);
- assert.match(suite,/outputUrl=\{mode==='retouch'\?resultUrl\|\|originalUrl:resultUrl\}/);
+ assert.match(suite,/outputUrl=\{upscaledPreview\|\|\(mode==='retouch'\?resultUrl\|\|originalUrl:resultUrl\)\}/);
  assert.match(toVector,/StudioUploadPreview/);
- assert.match(toVector,/outputUrl=\{svgUrl\}/);
+ assert.match(toVector,/outputUrl=\{upscaledPreview\|\|svgUrl\}/);
  assert.match(formats,/StudioUploadPreview/);
  assert.match(formats,/sourceUrl=\{preview\}/);
  assert.match(vector,/studio-inline-preset-stage/);
