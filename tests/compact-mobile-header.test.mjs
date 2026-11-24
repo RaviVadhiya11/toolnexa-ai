@@ -1,0 +1,67 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const read=(p)=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
+
+test('mobile header stays one line with compact Menu, logo, Search, Account and Upgrade controls',()=>{
+ const shell=read('components/shell.tsx'),css=read('app/globals.css');
+ assert.match(shell,/flagship-nav-menu/);
+ assert.match(shell,/flagship-brand-link/);
+ assert.match(shell,/flagship-search-trigger/);
+ assert.match(shell,/<AccountStatus\/>/);
+ assert.match(shell,/flagship-gold-cta/);
+ assert.match(css,/\.premium-shell \.flagship-top\{\s*display:grid;grid-template-columns:auto minmax\(0,1fr\) auto/);
+ assert.match(css,/@media\(max-width:750px\)\{\s*\.premium-shell \.flagship-top\{position:sticky/);
+ assert.match(css,/grid-template-columns:minmax\(0,1fr\) auto;column-gap:7px/);
+ assert.match(css,/\.flagship-top \.flagship-nav-actions\{gap:5px;flex:none\}/);
+ assert.match(css,/\.flagship-top \.flagship-proplus-badge\{display:none\}/);
+ assert.match(css,/\.flagship-top \.flagship-gold-cta \.flagship-upgrade-label/);
+ assert.match(css,/\.premium-shell \.flagship-top\{padding-left:9px;padding-right:9px\}/);
+});
+test('account button is small on mobile and sign out is safely accessible in a real dropdown',()=>{
+ const ui=read('components/account-status.tsx'),css=read('app/globals.css');
+ assert.match(ui,/browserSupabase\(\)/);
+ assert.match(ui,/client\.auth\.getUser\(\)/);
+ assert.match(ui,/client\.auth\.onAuthStateChange/);
+ assert.match(ui,/aria-label="Open account menu"/);
+ assert.match(ui,/aria-haspopup="dialog"/);
+ assert.match(ui,/aria-expanded=\{open\}/);
+ assert.match(ui,/flagship-account-popover/);
+ assert.match(ui,/href="\/dashboard"/);
+ assert.match(ui,/href="\/billing"/);
+ assert.match(ui,/const \{error:authError\}=await client\.auth\.signOut\(\)/);
+ assert.match(ui,/router\.refresh\(\)/);
+ assert.match(ui,/event\.key==='Escape'/);
+ assert.match(ui,/document\.addEventListener\('pointerdown',outside\)/);
+ assert.match(ui,/role="alert"/);
+ assert.doesNotMatch(ui,/<button className="button outline"/);
+ assert.match(css,/\.flagship-account-popover\{/);
+ assert.match(css,/\.flagship-top \.flagship-account-trigger \.flagship-account-text/);
+ assert.match(css,/\.light \.flagship-account-popover/);
+});
+test('bottom mobile bar uses five well-sized tabs; Admin still available via classic drawer',()=>{
+ const shell=read('components/shell.tsx'),css=read('app/globals.css');
+ const mobile=shell.match(/const mobileNav=(\[[^\]]+\])/);
+ assert.ok(mobile,'mobile navigation routes declared');
+ const entries=[...mobile[1].matchAll(/href:'(\/[^']*)'/g)].map(m=>m[1]);
+ assert.deepEqual(entries,['/','/tools','/studio','/dashboard','/pricing']);
+ assert.doesNotMatch(mobile[1],/\/admin/);
+ assert.match(shell,/href:'\/admin',label:'Admin'/);
+ assert.match(shell,/aria-label="Mobile quick navigation"/);
+ assert.match(shell,/item\.href==='\/studio'&&path\.startsWith\('\/studio\/'\)/);
+ assert.match(css,/\.premium-shell \.premium-mobile-nav\{display:flex;position:fixed;bottom:0/);
+ assert.match(css,/env\(safe-area-inset-bottom\)/);
+ assert.match(css,/@media\(min-width:751px\)\{\.premium-shell \.premium-mobile-nav\{display:none\}\}/);
+ assert.match(css,/\.premium-shell \.premium-mobile-nav>a\.active/);
+});
+test('no backend, quota, source image tools or PayPal entitlements change with header redesign',()=>{
+ const shell=read('components/shell.tsx');
+ assert.match(shell,/FlagshipCommandPalette/);
+ assert.match(shell,/flagship-workspace-drawer/);
+ assert.match(shell,/setMenuOpen\(v=>!v\)/);
+ assert.match(read('lib/usage-limits.ts'),/Free:3/);
+ assert.match(read('app/api/studio/upscale-authorize/route.ts'),/verifyStudioMember\(\)/);
+ const studio=read('components/studio-upscale-panel.tsx');
+ assert.match(studio,/PremiumPlanModal/);
+ assert.match(studio,/purpose:'download'/);
+});
