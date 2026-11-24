@@ -16,7 +16,7 @@ export function PremiumPricing({clientId,plans,enabled,yearlyEnabled,maxEnabled}
 }){
  const [billingPeriod,setBillingPeriod]=useState<BillingPeriod>('monthly');
  const [selected,setSelected]=useState<PaidTier|null>(null);
- const [paymentMethod,setPaymentMethod]=useState<'upi'|'card'|'paypal'>('paypal');
+ const [paymentMethod,setPaymentMethod]=useState<'paypal'|'phonepe'>('paypal');
  useEffect(()=>{
   const chosen=new URLSearchParams(window.location.search).get('plan');
   if(chosen&&paidTiers.includes(chosen as PaidTier)){
@@ -94,9 +94,9 @@ export function PremiumPricing({clientId,plans,enabled,yearlyEnabled,maxEnabled}
   {selected&&<div className="secure-checkout-backdrop" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget)setSelected(null)}}>
    <section id="subscription-checkout" role="dialog" aria-modal="true" aria-labelledby="secure-checkout-title" aria-describedby="secure-checkout-description" className="secure-checkout-dialog">
     <header className="secure-checkout-header">
-     <span className="secure-checkout-lock" aria-hidden="true">♧</span>
+     <span className="secure-checkout-lock" aria-hidden="true">✦</span>
      <div className="secure-checkout-heading">
-      <h2 id="secure-checkout-title">Secure Checkout</h2>
+      <h2 id="secure-checkout-title">ToolNexa AI · Secure Checkout</h2>
       <p id="secure-checkout-description">Plan activation after verified payment · Secure provider checkout</p>
      </div>
      <button id="secure-checkout-close" type="button" className="secure-checkout-close" onClick={()=>setSelected(null)} aria-label="Close secure checkout">×</button>
@@ -105,16 +105,21 @@ export function PremiumPricing({clientId,plans,enabled,yearlyEnabled,maxEnabled}
      <section className="secure-checkout-methods" aria-label="Payment method">
       <h3>Select Payment Method</h3>
       <div className="secure-checkout-tabs" role="group" aria-label="Select payment gateway">
-       <button type="button" aria-pressed={paymentMethod==='upi'} onClick={()=>setPaymentMethod('upi')} className={paymentMethod==='upi'?'is-active':''}><span aria-hidden="true">▣</span><strong>UPI</strong></button>
-       <button type="button" aria-pressed={paymentMethod==='card'} onClick={()=>setPaymentMethod('card')} className={paymentMethod==='card'?'is-active':''}><span aria-hidden="true">▤</span><strong>Card</strong></button>
-       <button type="button" aria-pressed={paymentMethod==='paypal'} onClick={()=>setPaymentMethod('paypal')} className={paymentMethod==='paypal'?'is-active':''}><span aria-hidden="true">◉</span><strong>PayPal</strong></button>
+       <button type="button" aria-pressed={paymentMethod==='paypal'} onClick={()=>setPaymentMethod('paypal')} className={paymentMethod==='paypal'?'is-active':''}>
+        <span className="secure-checkout-gateway-icon" aria-hidden="true">P</span>
+        <strong>PayPal</strong><small>International · USD</small>
+       </button>
+       <button type="button" aria-pressed={paymentMethod==='phonepe'} onClick={()=>setPaymentMethod('phonepe')} className={paymentMethod==='phonepe'?'is-active':''}>
+        <span className="secure-checkout-gateway-icon secure-checkout-phonepe-icon" aria-hidden="true">पे</span>
+        <strong>PhonePe PG</strong><small>India · INR</small>
+       </button>
       </div>
       {paymentMethod==='paypal'?<div className="secure-checkout-method-info" role="status">
-       <strong>PayPal · International</strong>
-       <span>USD · {billingPeriod==='monthly'?'Monthly':'Yearly'} recurring subscription · Payments are completed on PayPal.</span>
+       <strong>PayPal · Active international subscription checkout</strong>
+       <span>USD · {billingPeriod==='monthly'?'Monthly':'Yearly'} recurring billing. Approval happens securely on PayPal.</span>
       </div>:<div className="secure-checkout-method-info" role="status">
-       <strong>PhonePe PG · India · {paymentMethod==='upi'?'UPI AutoPay':'Card'}</strong>
-       <span>PhonePe recurring payments are pending merchant enablement and live integration. Card information will be entered only on PhonePe's secure hosted checkout once enabled.</span>
+       <strong>PhonePe PG · India checkout</strong>
+       <span>UPI and card options will be provided by PhonePe after its recurring subscription integration is enabled. Production credentials, merchant approval and verified callbacks are still required. No payment is taken now.</span>
       </div>}
      </section>
      <section className="secure-checkout-summary" aria-label="Selected subscription">
@@ -131,7 +136,7 @@ export function PremiumPricing({clientId,plans,enabled,yearlyEnabled,maxEnabled}
       {paymentMethod==='paypal'?(available?
         <PayPalSubscribe key={selected+'-'+billingPeriod} clientId={clientId} planId={planId} tier={selected} billingPeriod={billingPeriod} singleAction/>:
         <button type="button" className="secure-checkout-primary" disabled>PayPal checkout is not available for this plan</button>):
-       <button type="button" className="secure-checkout-primary" disabled>PhonePe {paymentMethod==='upi'?'UPI':'Card'} · Activation pending</button>}
+       <button type="button" className="secure-checkout-primary" disabled>PhonePe PG · Activation pending</button>}
       <p className="secure-checkout-note">{paymentMethod==='paypal'?'Secure PayPal approval · No payment is taken until you confirm.':'PhonePe checkout is unavailable until approved. No card or UPI information is collected here.'}</p>
      </div>
     </div>
