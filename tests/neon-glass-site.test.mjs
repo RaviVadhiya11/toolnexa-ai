@@ -53,3 +53,15 @@ test('Neon redesign retains checkout, account quota, full navigation and ZIP exp
  assert.match(zip,/fetch\('\/api\/studio\/zip-authorize'/);
  assert.match(zip,/await reserveStudioUsage\('studio-zip-maker'\)/);
 });
+
+test('Android multi-line hero heading uses neon text fill, never rectangle-producing text background',()=>{
+ const css=read('app/neon-glass-3d.css');
+ const span=css.match(/\.premium-shell \.flagship-hero h1 span\{([^}]+)\}/);
+ assert.ok(span,'Shared responsive hero title span style is missing');
+ assert.match(span[1],/background:none!important/);
+ assert.match(span[1],/background-image:none!important/);
+ assert.match(span[1],/-webkit-text-fill-color:#cbb8ff!important/);
+ assert.match(span[1],/background-clip:border-box!important/);
+ assert.doesNotMatch(span[1],/background:linear-gradient|color:transparent/);
+ assert.match(css,/@media\(max-width:750px\)/);
+});
