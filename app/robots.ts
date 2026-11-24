@@ -1,4 +1,5 @@
 import type {MetadataRoute} from 'next';
+import {CANONICAL_SITE_URL} from '@/lib/site-url';
 
 export default function robots():MetadataRoute.Robots {
  if(process.env.SITE_PUBLIC_LAUNCH_ENABLED!=='true')return {rules:[{userAgent:'*',disallow:'/'}]};
@@ -17,7 +18,7 @@ export default function robots():MetadataRoute.Robots {
     '/pro/'
    ]
   }],
-  sitemap:'https://toolnexa-ai.vercel.app/sitemap.xml',
-  host:'https://toolnexa-ai.vercel.app'
+  sitemap:CANONICAL_SITE_URL+'/sitemap.xml',
+  host:CANONICAL_SITE_URL
  };
 }
