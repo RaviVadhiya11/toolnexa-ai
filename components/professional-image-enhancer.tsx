@@ -135,7 +135,8 @@ export function ProfessionalImageEnhancer(){
        ['contrast','Contrast',75,165],
        ['saturation','Colour',70,160],
        ['denoise','Reduce Noise',0,75],
-       ['sharpness','Sharpen Details',0,85]
+       ['sharpness','Sharpen Details',0,85],
+       ['warmth','Warmth / Temperature',-40,40]
       ] as const).map(([key,label,min,max])=><label key={key} htmlFor={'photo-adjust-'+key}>
        <span>{label}<b>{settings[key]}{key==='denoise'||key==='sharpness'?'':key==='warmth'?'°':'%'}</b></span>
        <input id={'photo-adjust-'+key} type="range" min={min} max={max} value={settings[key]}
