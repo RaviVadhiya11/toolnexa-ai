@@ -9,11 +9,14 @@ export type PhotoPreset={id:string;name:string;detail:string;unit:SizeUnit;w:num
 export type PhotoAdjust={
  zoom:number;brightness:number;contrast:number;saturation:number;rotation:number;
  panX:number;panY:number;color:string;gradient:boolean;
+ flipH?:boolean;flipV?:boolean;warmth?:number;
 };
 export const passportPresets:PhotoPreset[]=[
  {id:'35x45',name:'35 × 45 mm',detail:'Common ID example',unit:'mm',w:35,h:45},
  {id:'2x2',name:'2 × 2 inch',detail:'Square photo example',unit:'in',w:2,h:2},
  {id:'50x70',name:'50 × 70 mm',detail:'Large portrait example',unit:'mm',w:50,h:70},
+ {id:'25x35',name:'25 × 35 mm',detail:'Small ID / PAN-style example',unit:'mm',w:25,h:35},
+ {id:'exam',name:'Exam / Application 200 × 230',detail:'Digital application example',unit:'px',w:200,h:230},
  {id:'custom',name:'Custom size',detail:'15–150 mm',unit:'mm',w:35,h:45}
 ];
 export const socialPresets:PhotoPreset[]=[
@@ -28,10 +31,12 @@ export const socialPresets:PhotoPreset[]=[
  {id:'facebook',name:'Facebook Cover',detail:'Wide cover example',unit:'px',w:820,h:312},
  {id:'xheader',name:'X / Twitter Header',detail:'3:1 banner',unit:'px',w:1500,h:500},
  {id:'youtubeavatar',name:'YouTube Avatar',detail:'Square icon',unit:'px',w:800,h:800},
+ {id:'whatsapp',name:'WhatsApp Display Photo',detail:'Square profile crop',unit:'px',w:800,h:800},
+ {id:'linkedinprofile',name:'LinkedIn Profile Photo',detail:'Square profile crop',unit:'px',w:800,h:800},
  {id:'custom-social',name:'Custom pixels',detail:'320–4096 px',unit:'px',w:1080,h:1080}
 ];
 export const defaultAdjust:PhotoAdjust={zoom:100,brightness:100,contrast:100,saturation:100,
- rotation:0,panX:0,panY:0,color:'#ffffff',gradient:false};
+ rotation:0,panX:0,panY:0,color:'#ffffff',gradient:false,flipH:false,flipV:false,warmth:0};
 const safe=(n:number,min:number,max:number)=>Math.max(min,Math.min(max,n));
 export function outputPixels(preset:PhotoPreset,ppi=300){
  if(!Number.isFinite(ppi)||ppi<72||ppi>600)throw Error('Unsupported print density');
@@ -69,7 +74,8 @@ export function renderPhoto(
  const y=(height-ih)/2+safe(adjust.panY,-100,100)/100*Math.max(0,ih-height)/2;
  ctx.save();
  ctx.translate(width/2,height/2);
- ctx.rotate(safe(adjust.rotation,-20,20)*Math.PI/180);
+ ctx.rotate(safe(adjust.rotation,-45,45)*Math.PI/180);
+ ctx.scale(adjust.flipH?-1:1,adjust.flipV?-1:1);
  ctx.translate(-width/2,-height/2);
  ctx.filter='brightness('+safe(adjust.brightness,60,150)+'%) contrast('+safe(adjust.contrast,60,160)+
   '%) saturate('+safe(adjust.saturation,0,200)+'%)';
@@ -77,6 +83,11 @@ export function renderPhoto(
  ctx.imageSmoothingQuality='high';
  ctx.drawImage(src,x,y,iw,ih);
  ctx.restore();
+ if(adjust.warmth){
+  ctx.save();ctx.globalCompositeOperation='soft-light';
+  ctx.fillStyle=adjust.warmth>0?'rgba(255,150,66,'+(Math.min(40,adjust.warmth)/100)+')':'rgba(72,153,255,'+(Math.min(40,-adjust.warmth)/100)+')';
+  ctx.fillRect(0,0,width,height);ctx.restore();
+ }
  // The color backdrop becomes visible under genuine transparent cutout edges;
  // a solid original photo is never represented as if AI cutout succeeded.
  void withCutout;
