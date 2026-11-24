@@ -124,9 +124,19 @@ html.dark body {
  color:#ded2ff;padding:9px 13px;border-radius:99px;box-shadow:inset 0 1px #e4caff25;
 }
 .premium-shell .flagship-hero h1{font-size:clamp(32px,3.7vw,59px)!important;line-height:1.09;letter-spacing:-.048em;max-width:720px}
+/* Android Chrome may paint multi-line background-clip:text as solid rectangles.
+   Use explicit neon text color, no inline gradient background, for readable wraps. */
 .premium-shell .flagship-hero h1 span{
- background:linear-gradient(105deg,#b4a4ff,#fc9eff 47%,#43e2ff)!important;
- color:transparent!important;-webkit-background-clip:text;background-clip:text;
+ display:inline!important;
+ background:none!important;
+ background-image:none!important;
+ -webkit-background-clip:border-box!important;
+ background-clip:border-box!important;
+ -webkit-text-fill-color:#cbb8ff!important;
+ color:#cbb8ff!important;
+ text-shadow:0 0 20px rgba(150,93,255,.36),0 0 2px rgba(211,221,255,.16);
+ box-decoration-break:clone;
+ -webkit-box-decoration-break:clone;
 }
 .premium-shell .flagship-hero-copy>p{color:#b7c6e5;max-width:640px}
 .premium-shell .flagship-hero-points{color:#bfcceb}
