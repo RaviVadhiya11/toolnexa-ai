@@ -110,7 +110,8 @@ export default function Dashboard(){
      ['/studio/image-to-vector','◇ Vectorize Image'],
      ['/studio/vector','✧ Logo Studio'],
      ['/studio/batch','⚡ Batch Pro+'],
-     ['/studio/passport-social','▧ Passport / Social Photo']
+     ['/studio/passport-social','▧ Passport / Social Photo'],
+     ['/studio/zip-maker','▤ Advanced ZIP Maker']
     ] as const).map(([href,title])=><Link href={href} key={href}>{title}<span aria-hidden="true">→</span></Link>)}
    </div>
   </section>
