@@ -14,7 +14,7 @@ const tiers=[
 export function PremiumPlanModal({
  open,onClose,feature='High-resolution download',requiredTier='Pro',currentPlan='Free',onRetry,busy=false
 }:{
- open:boolean;onClose:()=>void;feature?:string;requiredTier?:'Starter'|'Pro'|'Premium';
+ open:boolean;onClose:()=>void;feature?:string;requiredTier?:'Starter'|'Pro'|'Premium'|'Max';
  currentPlan?:UpscalePlan|string;onRetry:()=>void|Promise<void>;busy?:boolean;
 }){
  const closeRef=useRef<HTMLButtonElement|null>(null);
