@@ -1116,3 +1116,18 @@ h1,h2,h3,h4,.flagship-brand-link{font-family:"Plus Jakarta Sans",Inter,ui-sans-s
 .light .flagship-compare-table-wrap td:last-child{color:#087754}
 .light .flagship-home .flagship-trust{background:linear-gradient(130deg,#f0f4ff,#e8f9ff);border-color:#b3baff}
 @media(prefers-reduced-motion:reduce){.premium-shell>.premium-sidebar.flagship-workspace-drawer{transition:none}}
+
+
+/* Classic shortcuts, presented as subtle pills in the unchanged flagship theme */
+.flagship-classic-shortcuts{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:0 0 22px}
+.flagship-classic-shortcuts>span{font-size:10px;letter-spacing:.1em;font-weight:900;color:#fbbf24;margin-right:3px}
+.flagship-classic-shortcuts a{display:inline-flex;align-items:center;gap:7px;text-decoration:none;
+ color:#dbeafe;font-size:11px;font-weight:800;min-height:36px;padding:8px 11px;border-radius:99px;
+ background:#111827cf;border:1px solid #818cf849;transition:background .15s,border-color .15s}
+.flagship-classic-shortcuts a svg{color:#67e8f9}
+.flagship-classic-shortcuts a:hover{border-color:#67e8f9;background:#25314c}
+.light .flagship-classic-shortcuts a{color:#344765;background:#fff;border-color:#c9d3e8}
+.light .flagship-classic-shortcuts a:hover{background:#e5edff;border-color:#8c9af4}
+@media(max-width:750px){.flagship-classic-shortcuts{margin:0 0 20px;gap:7px}
+.flagship-classic-shortcuts>span{flex-basis:100%;text-align:center}
+.flagship-classic-shortcuts a{font-size:10px;padding:8px 9px;flex-grow:1;justify-content:center}}
