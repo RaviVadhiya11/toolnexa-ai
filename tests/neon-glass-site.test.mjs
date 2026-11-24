@@ -31,7 +31,7 @@ test('Neon 3D home art links to working routes without inventing external produc
  assert.match(home,/FlagshipHomeExperience mode="compare"/);
  assert.match(home,/FlagshipHomeExperience mode="upload"/);
  assert.match(home,/60\+ AI &amp; Utility Tools/);
- assert.match(home,/href='?\/studio\/zip-maker/);
+ assert.ok(home.includes("href:'/studio/zip-maker'"));
  assert.equal([...tools.matchAll(/\bslug:\s*["']([a-z0-9-]+)["']/g)].length,60);
  assert.doesNotMatch(home,/100K\+|10M\+|99\.9%/);
 });
