@@ -5,12 +5,13 @@ import {reserveStudioUsage,StudioQuotaNotice} from '@/components/studio-quota';
 import {StudioUpscalePanel} from '@/components/studio-upscale-panel';
 
 type Mode='vector'|'image';
-type Design='diamond'|'flower'|'orbit';
+type Design='diamond'|'flower'|'orbit'|'hex'|'waves'|'star';
+type Backdrop='white'|'transparent'|'dark';
 const validColor=(color:string)=>/^#[a-f0-9]{6}$/i.test(color)?color:'#2563eb';
 
-function art(design:Design,primary:string,accent:string){
+function art(design:Design,primary:string,accent:string,background:Backdrop='white'){
  const blue=validColor(primary),cyan=validColor(accent);
- const back='<rect width="800" height="800" fill="#fff"/>';
+ const back=background==='transparent'?'':'<rect width="800" height="800" fill="'+(background==='dark'?'#10182e':'#fff')+'"/>';
  let shape='';
  if(design==='diamond'){
   shape='<circle r="238" fill="#eaf2ff"/><path d="M0 -220 L205 100 L0 218 L-205 100 Z" fill="'+blue+'"/>'+
@@ -20,11 +21,26 @@ function art(design:Design,primary:string,accent:string){
   shape='<circle r="236" fill="#eaf2ff"/>';
   for(let n=0;n<8;n++)shape+='<ellipse cx="0" cy="-114" rx="57" ry="130" transform="rotate('+(n*45)+')" fill="'+(n%2===0?blue:cyan)+'" opacity=".94"/>';
   shape+='<circle r="60" fill="#fff"/><circle r="35" fill="'+blue+'"/>';
- }else{
+ }else if(design==='orbit'){
   shape='<circle r="218" stroke="'+blue+'" stroke-width="28" fill="#f1f8ff"/>'+
    '<circle r="158" stroke="'+cyan+'" stroke-width="45" fill="none"/>'+
    '<path d="M-45 -140 L115 0 L-45 140 L-120 77 L-45 0 L-120 -77 Z" fill="'+blue+'"/>'+
    '<circle cx="183" cy="-176" r="39" fill="'+cyan+'"/>';
+ }else if(design==='hex'){
+  shape='<path d="M0 -250 L216 -125 L216 125 L0 250 L-216 125 L-216 -125 Z" fill="'+blue+'"/>'+
+   '<path d="M0 -181 L155 -90 L155 90 L0 181 L-155 90 L-155 -90 Z" fill="'+cyan+'"/>'+
+   '<path d="M0 -105 L91 -52 L91 52 L0 105 L-91 52 L-91 -52 Z" fill="#fff"/>'+
+   '<circle r="43" fill="'+blue+'"/>';
+ }else if(design==='waves'){
+  shape='<circle r="242" fill="'+blue+'"/>'+
+   '<path d="M-230 -48 Q-90 -180 45 -70 T244 -67 L244 20 Q130 -60 5 41 T-233 50Z" fill="'+cyan+'"/>'+
+   '<path d="M-233 81 Q-85 -40 44 80 T233 72 L233 146 Q95 67 0 163 T-219 156Z" fill="#fff"/>';
+ }else{
+  let points='';
+  for(let i=0;i<10;i++){const angle=-Math.PI/2+i*Math.PI/5,r=i%2?95:248;
+   points+=(400+Math.cos(angle)*r).toFixed(2)+','+(400+Math.sin(angle)*r).toFixed(2)+' '}
+  shape='<polygon points="'+points.trim()+'" transform="translate(-400 -400)" fill="'+blue+'"/>'+
+   '<circle r="84" fill="'+cyan+'"/><circle r="44" fill="#fff"/>';
  }
  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">'+
   back+'<g transform="translate(400 400)">'+shape+'</g></svg>';
@@ -65,6 +81,7 @@ export function StudioWorkspace({mode}:{mode:Mode}){
  const [fileUrl,setFileUrl]=useState('');
  const [fileName,setFileName]=useState('');
  const [design,setDesign]=useState<Design>('diamond');
+ const [background,setBackground]=useState<Backdrop>('white');
  const [primary,setPrimary]=useState('#2563eb');
  const [accent,setAccent]=useState('#06b6d4');
  const [brightness,setBrightness]=useState(100);
@@ -74,7 +91,14 @@ export function StudioWorkspace({mode}:{mode:Mode}){
  const [plan,setPlan]=useState('Checking');
  const [working,setWorking]=useState(false);
  const [message,setMessage]=useState('');
- const svg=art(design,primary,accent);
+ const svg=art(design,primary,accent,background);
+ const palettePresets=[
+  {label:'Ocean',a:'#2563eb',b:'#06b6d4'},
+  {label:'Sunset',a:'#f97316',b:'#e11d48'},
+  {label:'Emerald',a:'#059669',b:'#a3e635'},
+  {label:'Royal',a:'#7c3aed',b:'#f59e0b'},
+  {label:'Mono',a:'#111827',b:'#94a3b8'}
+ ];
  useEffect(()=>{
   let active=true;
   const refresh=()=>void fetch('/api/usage/quota',{cache:'no-store'})
@@ -155,7 +179,26 @@ export function StudioWorkspace({mode}:{mode:Mode}){
     {mode==='vector'?<>
      <label htmlFor="studio-shape">Design preset</label>
      <select id="studio-shape" value={design} onChange={event=>setDesign(event.target.value as Design)}>
-      <option value="diamond">Geometric logo</option><option value="flower">Flower icon</option><option value="orbit">Orbit badge</option>
+      <option value="diamond">Geometric logo</option><option value="flower">Flower icon</option><option value="orbit">Orbit badge</option><option value="hex">Hex emblem</option><option value="waves">Wave mark</option><option value="star">Star badge</option>
+     </select>
+     <div className="studio-logo-presets">
+      {(['diamond','flower','orbit','hex','waves','star'] as const).map(item=>
+       <button type="button" key={item} className={design===item?'active':''} aria-pressed={design===item}
+        onClick={()=>setDesign(item)} title={'Select '+item+' logo'} aria-label={'Select '+item+' logo'}>
+        <div dangerouslySetInnerHTML={{__html:art(item,primary,accent,background)}}/><span>{item}</span>
+       </button>)}
+     </div>
+     <h2>Brand colours</h2>
+     <div className="studio-premium-palette">
+      {palettePresets.map(item=><button type="button" key={item.label} title={item.label}
+       aria-label={'Apply '+item.label+' palette'}
+       style={{background:'linear-gradient(120deg,'+item.a+' 50%,'+item.b+' 50%)'}}
+       onClick={()=>{setPrimary(item.a);setAccent(item.b)}}/>)}
+     </div>
+     <label htmlFor="studio-background">Artboard background</label>
+     <select id="studio-background" value={background} onChange={e=>setBackground(e.target.value as Backdrop)}>
+      <option value="white">White canvas</option><option value="transparent">Transparent</option>
+      <option value="dark">Dark canvas</option>
      </select>
      <label htmlFor="studio-primary">Primary color</label>
      <input id="studio-primary" type="color" value={primary} onChange={event=>setPrimary(event.target.value)}/>
