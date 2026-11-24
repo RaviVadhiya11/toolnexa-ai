@@ -10,7 +10,7 @@ test('all eight Studio tools use same upload/design area for live preview',()=>{
  const formats=read('components/studio-vector-formats.tsx');
  const vector=read('components/studio-workspace.tsx');
  assert.match(enhancer,/StudioUploadPreview/);
- assert.match(enhancer,/outputUrl=\{previewUrl\}/);
+ assert.match(enhancer,/outputUrl=\{upscaledPreview\|\|previewUrl\}/);
  assert.match(suite,/StudioUploadPreview/);
  assert.match(suite,/outputUrl=\{mode==='retouch'\?resultUrl\|\|originalUrl:resultUrl\}/);
  assert.match(toVector,/StudioUploadPreview/);
