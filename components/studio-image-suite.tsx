@@ -32,6 +32,7 @@ export function StudioImageSuite({mode}:{mode:Mode}){
  const [fileName,setFileName]=useState('');
  const [originalUrl,setOriginalUrl]=useState('');
  const [resultUrl,setResultUrl]=useState('');
+ const [upscaledPreview,setUpscaledPreview]=useState('');
  const [dims,setDims]=useState({w:800,h:600});
  const [status,setStatus]=useState('Upload JPG, PNG or WebP to begin.');
  const [working,setWorking]=useState(false);
@@ -285,11 +286,11 @@ export function StudioImageSuite({mode}:{mode:Mode}){
    <div className="studio-panel suite-controls">
     <h2>1. Upload &amp; Preview</h2>
     <StudioUploadPreview id={'suite-upload-'+mode} accept="image/png,image/jpeg,image/webp"
-      name={fileName} sourceUrl={originalUrl} outputUrl={mode==='retouch'?resultUrl||originalUrl:resultUrl}
+      name={fileName} sourceUrl={originalUrl} outputUrl={upscaledPreview||(mode==='retouch'?resultUrl||originalUrl:resultUrl)}
       onFile={upload} busy={working} transparent={mode==='background'&&bgFill==='transparent'}
       beforeLabel="Original" afterLabel={mode==='background'?'Background removed':mode==='retouch'?'Retouched':'Restored'}
       onReset={resetPreview}
-      editor={mode==='background'&&resultUrl?<canvas ref={bgCanvas} className="studio-bg-edit-canvas"
+      editor={mode==='background'&&resultUrl&&!upscaledPreview?<canvas ref={bgCanvas} className="studio-bg-edit-canvas"
         style={{touchAction:'none'}} onPointerDown={e=>{recordBG();bgDrawing.current=true;e.currentTarget.setPointerCapture(e.pointerId);paintBG(e)}}
         onPointerMove={e=>{if(bgDrawing.current)paintBG(e)}}
         onPointerUp={finishBgBrush} onPointerCancel={finishBgBrush}/>:
@@ -392,7 +393,7 @@ export function StudioImageSuite({mode}:{mode:Mode}){
       onClick={()=>void hd()}>{premium.checking?'Checking subscription…':'🔒 Download Pro HD · Unlock'}</button>
     {premium.error&&<p className="studio-note" role="status">{premium.error}</p>}
     {premium.modal}
-    <StudioUpscalePanel getCanvas={async()=>exportCanvas()} format={mode==='background'?'cutout':'photo'} disabled={!resultUrl} sourceKey={[resultUrl,bgFill,bgColor,bgSize,bgOffsetX,bgOffsetY,bgShadow,bgShadowStrength,bgPhotoUrl].join(':')} usageSlug={mode==='background'?'studio-background':mode==='retouch'?'studio-retouch':'studio-restore'}/>
+    <StudioUpscalePanel getCanvas={async()=>exportCanvas()} format={mode==='background'?'cutout':'photo'} disabled={!resultUrl} sourceKey={[resultUrl,bgFill,bgColor,bgSize,bgOffsetX,bgOffsetY,bgShadow,bgShadowStrength,bgPhotoUrl].join(':')} usageSlug={mode==='background'?'studio-background':mode==='retouch'?'studio-retouch':'studio-restore'} onPreviewChange={setUpscaledPreview}/>
     <p className="studio-note">AI cutout may have imperfect edges. Retouching works best on small marks, and resizing does not reconstruct missing photograph detail.</p>
    </div>
   </div>
