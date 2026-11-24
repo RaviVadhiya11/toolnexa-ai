@@ -156,3 +156,16 @@ Existing business rules are unchanged: Free has three shared daily uses, and dow
 
 ### Premium export popup UX (November 24, 2026)
 All eight Studio workflows use the same resolution-gated premium upscaler. Its Download button stays clickable even without a generated preview; Free and insufficient-plan accounts are shown a Starter/Pro/Premium/Max selection modal, with eligible plans linked to `/pricing?plan=<tier>` in a new tab so local image state survives PayPal checkout. After subscription activation, return to the unchanged editor tab and press Verify & Download or Download again. The server checks ACTIVE PayPal membership each time. Existing Pro HD exports for Logo Studio, vector tracing, and Background Remover/Retouch/Restore also use the shared modal; standard exports remain free as before. A low-memory browser may still be unable to allocate the paid high-resolution canvas even after verification, and that case reports an error rather than silently handing out a lower-resolution file.
+
+
+## Studio V4 reference-inspired interface, applied site-wide (24 November 2026)
+
+The creator supplied an HTML *demo*, which has been used as a visual/interaction reference—not installed as an insecure, standalone payment or image-processing backend. The production code keeps the existing real image-processing engines and PayPal checks.
+
+- **All 60 utilities**: shared responsive dark glass panels, cyan/violet controls, clear quota indicators, modern tool cards, and a new private local image/file preview in both the basic and advanced utility runners.
+- **All eight Studio tools**: consistent dark workspace with the same drag/drop file stage, split before/after comparison, press-and-hold original, Fit and 2× Inspect, canvas grids, upgraded two-column desktop and stacked mobile layouts. When supported by an uploaded-file stage, a successful upscale also appears in that original stage as a watermarked preview.
+- **Image Enhancer**: reference-inspired large sticky preview at left, presets, real Auto Analyze and tone/sharpen sliders at right, three clearly labelled *procedural illustration* samples and real processing controls.
+- **Shared upscale**: actual 2× / 4× / 4K / 8K resolution cards, on-device AI Detail / classic engine choices, real JPEG/PNG/WebP output formats, quality slider, and non-fake asynchronous phase display. Full-resolution pixels are generated only after server verification of the right active PayPal membership. Ineligible accounts see a real plan popup rather than a fake local unlock.
+- **Privacy and limitations**: the uploaded demo's “Cloud AI GPU (Real-ESRGAN v4)”, unlimited usage, local Pro-unlock, and Indian UPI options are **not** functioning paid backend services and are **not claimed** or enabled here. This website uses its existing on-device browser model (experimental), signed-in PayPal subscriptions, and the established 3 Free shared daily uses. 8K output may require a high-memory browser.
+
+Run automated tests and Next.js builds before releasing. Mobile/browser behavior and a real paid customer checkout–webhook–download sequence still require separate end-to-end acceptance testing.
