@@ -39,6 +39,15 @@ export default function Home(){return <div className="premium-home flagship-home
   </div>
   <FlagshipHomeExperience mode="compare"/>
  </section>
+ <nav className="flagship-classic-shortcuts" aria-label="Quick access to the original tool categories and editors">
+  <span>QUICK ACCESS</span>
+  <Link href="/studio/enhance"><Sparkles size={16}/> Enhance Image</Link>
+  <Link href="/studio/background-remove"><ImageIcon size={16}/> Remove BG</Link>
+  <Link href="/studio/image-to-vector"><PenTool size={16}/> Image to SVG</Link>
+  <Link href="/tools?category=PDF"><FileText size={16}/> PDF Tools</Link>
+  <Link href="/tools?category=Developer"><Code2 size={16}/> Developer Tools</Link>
+  <Link href="/dashboard"><Crown size={16}/> My Workspace</Link>
+ </nav>
  <section className="flagship-metrics" aria-label="ToolNexa product features">
   <div><strong>69</strong><span>Working tool pages</span></div>
   <div><strong>Up to 8K</strong><span>Plan-gated export resolution</span></div>

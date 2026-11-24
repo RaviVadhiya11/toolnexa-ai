@@ -37,7 +37,7 @@ test('single flagship navbar, working search modal, keyboard commands, mobile me
  assert.match(shell,/flagship-top/);
  assert.match(shell,/flagship-nav-links/);
  assert.match(shell,/FlagshipCommandPalette/);
- assert.match(shell,/setMenuOpen\(true\)/);
+ assert.match(shell,/setMenuOpen\(v=>!v\)/);
  assert.match(cmd,/e.ctrlKey\|\|e.metaKey/);
  assert.match(cmd,/e.key.toLowerCase\(\)==='k'/);
  assert.match(cmd,/e.key==='Escape'/);
