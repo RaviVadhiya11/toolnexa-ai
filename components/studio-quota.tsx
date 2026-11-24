@@ -4,7 +4,7 @@ import Link from 'next/link';
 import type {StudioRunSlug} from '@/lib/studio-run-slugs';
 import {quotaKey,readUsage,consumeUsage,dailyLimits,isUsagePlan,type UsagePlan} from '@/lib/usage-limits';
 
-// A single shared daily balance covers the existing 60 tools and all eight Studio workflows.
+// A single shared daily balance covers the existing 60 tools and the active Studio workflows.
 type Quota={plan:UsagePlan;limit:number;used:number;mode:'browser'|'account';userId:string|null};
 export async function currentStudioQuota():Promise<Quota>{
  const res=await fetch('/api/usage/quota',{cache:'no-store'});
@@ -48,6 +48,6 @@ export function StudioQuotaNotice(){
  },[]);
  return <div className="studio-quota" aria-live="polite">{error||(!quota?'Checking daily allowance…':
   <>{quota.plan} plan: <strong>{Math.max(0,quota.limit-quota.used)} of {quota.limit} daily runs left.</strong>
-   {' '}Free quota is shared across all 68 tools and resets at 00:00 UTC.
+   {' '}Free quota is shared across all utility and Studio tools and resets at 00:00 UTC.
    {quota.plan==='Free'&&<>{' '}<Link href="/pricing">Upgrade</Link></>}</>)}</div>;
 }
