@@ -1,0 +1,2147 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ToolNexa AI — Passport & Social Photo Studio</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            obsidian: '#060913',
+            glass: 'rgba(15, 23, 42, 0.62)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* Base obsidian styling & subtle ambient glow */
+    body {
+      background-color: #060913;
+      color: #f8fafc;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Glassmorphism surface */
+    .glass-card {
+      background: linear-gradient(145deg, rgba(17, 25, 45, 0.78), rgba(10, 15, 30, 0.68));
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    /* Checkered transparency pattern behind canvas */
+    .canvas-checker {
+      background-color: #0b1120;
+      background-image:
+        linear-gradient(45deg, rgba(255,255,255,0.035) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(255,255,255,0.035) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.035) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.035) 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    }
+
+    /* Custom premium range slider */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: rgba(148, 163, 184, 0.18);
+      height: 6px;
+      border-radius: 9999px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #22d3ee, #8b5cf6);
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 12px rgba(139, 92, 246, 0.65);
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.12);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #22d3ee, #8b5cf6);
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 12px rgba(139, 92, 246, 0.65);
+      cursor: pointer;
+    }
+
+    /* Subtle custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.4);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.25);
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(148, 163, 184, 0.45);
+    }
+
+    /* Animated drag-over ring */
+    .drop-active {
+      border-color: #22d3ee !important;
+      background: rgba(34, 211, 238, 0.08) !important;
+      box-shadow: 0 0 35px rgba(34, 211, 238, 0.25) !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen relative selection:bg-violet-500/30 selection:text-cyan-200">
+
+  <!-- Ambient Background Glow Orbs -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+    <div class="absolute -top-32 -left-24 w-96 h-96 bg-violet-600/20 rounded-full blur-[120px]"></div>
+    <div class="absolute top-1/4 -right-24 w-[28rem] h-[28rem] bg-cyan-500/15 rounded-full blur-[130px]"></div>
+    <div class="absolute bottom-0 left-1/3 w-96 h-96 bg-indigo-600/15 rounded-full blur-[120px]"></div>
+  </div>
+
+  <!-- Toast Notification Container (No alert/confirm) -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-xs w-full pointer-events-none"></div>
+
+  <!-- Hidden File Input (supports gallery & camera on mobile) -->
+  <input type="file" id="fileInput" accept="image/*" class="hidden" />
+
+  <!-- Top Navigation Header -->
+  <header class="sticky top-0 z-40 border-b border-white/10 bg-obsidian/80 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+      <!-- Brand -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 via-indigo-500 to-cyan-400 p-[1px] shadow-lg shadow-violet-500/25">
+          <div class="w-full h-full rounded-[11px] bg-slate-950/90 flex items-center justify-center">
+            <i data-lucide="sparkles" class="w-5 h-5 text-cyan-300"></i>
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-display font-extrabold text-base sm:text-lg tracking-tight bg-gradient-to-r from-white via-slate-100 to-cyan-200 bg-clip-text text-transparent">
+              ToolNexa AI
+            </h1>
+            <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wider uppercase bg-violet-500/20 text-violet-300 border border-violet-400/20">
+              Studio Pro
+            </span>
+          </div>
+          <p class="text-[11px] sm:text-xs text-slate-400">Passport & Social Photo Studio</p>
+        </div>
+      </div>
+
+      <!-- Mode Switcher (Desktop/Tablet) -->
+      <div class="hidden md:flex items-center p-1 rounded-2xl bg-slate-900/90 border border-white/10">
+        <button data-mode="passport" class="mode-tab-btn px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all">
+          <i data-lucide="id-card" class="w-4 h-4"></i>
+          Passport & ID Studio
+        </button>
+        <button data-mode="social" class="mode-tab-btn px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all">
+          <i data-lucide="instagram" class="w-4 h-4"></i>
+          Social Media Studio
+        </button>
+      </div>
+
+      <!-- Privacy Badge -->
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+          <span class="hidden sm:inline">100% On-Device</span>
+          <span class="sm:hidden">Private</span>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-5 space-y-5">
+
+    <!-- =========================================================
+         TOP HERO UPLOAD ZONE (ABOVE THE FOLD - ALWAYS FIRST!)
+         ========================================================= -->
+    <section id="uploadHeroSection" class="transition-all duration-300">
+      <!-- Expanded Upload Card (Shown before image is loaded) -->
+      <div id="uploadExpandedCard" class="glass-card rounded-3xl p-5 sm:p-8 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-violet-600/10 via-transparent to-cyan-500/10 pointer-events-none"></div>
+
+        <div id="dropZone" class="relative border-2 border-dashed border-slate-700/90 hover:border-cyan-400/70 rounded-2xl p-6 sm:p-9 text-center transition-all cursor-pointer bg-slate-950/40">
+          <div class="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/20 to-cyan-500/20 border border-white/10 flex items-center justify-center mb-4 shadow-lg shadow-cyan-500/10">
+            <i data-lucide="upload-cloud" class="w-8 h-8 text-cyan-300"></i>
+          </div>
+
+          <h2 class="font-display text-xl sm:text-2xl font-bold text-white mb-2">
+            Upload Your Photo to Begin
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-400 max-w-lg mx-auto mb-6">
+            Drag & drop a portrait here, or tap to choose from gallery / camera. Create studio-grade Passport IDs, 300 DPI Print Sheets, and Social DPs in seconds.
+          </p>
+
+          <div class="flex flex-wrap items-center justify-center gap-3">
+            <button type="button" id="btnUploadPrimary" class="px-6 py-3 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-violet-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400 shadow-lg shadow-violet-600/30 transition-all active:scale-95 flex items-center gap-2">
+              <i data-lucide="image-plus" class="w-4 h-4"></i>
+              Choose Photo / Camera
+            </button>
+
+            <button type="button" id="btnTryDemo" class="px-5 py-3 rounded-xl font-semibold text-sm text-cyan-200 bg-white/5 hover:bg-white/10 border border-white/15 transition-all active:scale-95 flex items-center gap-2">
+              <i data-lucide="wand-2" class="w-4 h-4 text-cyan-300"></i>
+              Try Demo Portrait
+            </button>
+          </div>
+
+          <div class="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] text-slate-400">
+            <span class="flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-cyan-400"></i> JPG, PNG, WebP</span>
+            <span class="flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-cyan-400"></i> 300-PPI pixel dimensions (confirm print size)</span>
+            <span class="flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-cyan-400"></i> Zero Server Uploads</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compact Top Bar (Shown once a photo is loaded) -->
+      <div id="uploadCompactBar" class="hidden glass-card rounded-2xl p-3 sm:px-5 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <img id="loadedThumb" alt="Uploaded photo thumbnail" class="w-11 h-11 rounded-xl object-cover border border-white/15 bg-slate-900 shrink-0" />
+          <div class="min-w-0">
+            <p id="loadedFileName" class="text-sm font-semibold text-white truncate max-w-[180px] sm:max-w-xs">portrait.jpg</p>
+            <p id="loadedFileMeta" class="text-xs text-slate-400">900 × 1100 px • Ready</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button type="button" id="btnChangePhoto" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400 shadow-md shadow-violet-600/25 transition-all active:scale-95 flex items-center gap-2">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+            Change Photo / Upload New
+          </button>
+          <button type="button" id="btnCompactDemo" title="Load Demo Portrait" class="p-2.5 rounded-xl text-xs font-semibold text-cyan-200 bg-white/5 hover:bg-white/10 border border-white/10 transition-all">
+            <i data-lucide="wand-2" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mobile Mode Switcher -->
+    <div class="md:hidden grid grid-cols-2 gap-2 p-1.5 rounded-2xl glass-card">
+      <button data-mode="passport" class="mode-tab-btn py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all">
+        <i data-lucide="id-card" class="w-4 h-4"></i>
+        Passport & ID
+      </button>
+      <button data-mode="social" class="mode-tab-btn py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all">
+        <i data-lucide="instagram" class="w-4 h-4"></i>
+        Social Media
+      </button>
+    </div>
+
+    <!-- =========================================================
+         MAIN STUDIO GRID: LEFT/CENTER CANVAS + RIGHT CONTROLS
+         ========================================================= -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+      <!-- LEFT COLUMN (7 cols on desktop): Preset Bar + Interactive Canvas + Transform Toolbar -->
+      <div class="lg:col-span-7 space-y-4">
+
+        <!-- Dimension Presets Card -->
+        <div class="glass-card rounded-2xl p-4">
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <h3 id="presetSectionTitle" class="font-display text-sm font-bold text-white flex items-center gap-2">
+              <i data-lucide="ruler" class="w-4 h-4 text-cyan-400"></i>
+              Passport & ID Presets
+            </h3>
+            <span id="activeDimBadge" class="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
+              35×45 mm (413×531 px)
+            </span>
+          </div>
+
+          <!-- Dynamic Preset Chips -->
+          <div id="presetGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+
+          <!-- Custom Dimensions Row (Visible only when Custom is selected) -->
+          <div id="customDimPanel" class="hidden mt-3 pt-3 border-t border-white/10 grid grid-cols-3 gap-2 items-end">
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">Width</label>
+              <input id="customWInput" type="number" min="50" max="4000" value="400" class="w-full px-3 py-2 rounded-xl bg-slate-950/80 border border-white/10 text-sm text-white focus:border-cyan-400 outline-none" />
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">Height</label>
+              <input id="customHInput" type="number" min="50" max="4000" value="500" class="w-full px-3 py-2 rounded-xl bg-slate-950/80 border border-white/10 text-sm text-white focus:border-cyan-400 outline-none" />
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">Unit</label>
+              <select id="customUnitSelect" class="w-full px-3 py-2 rounded-xl bg-slate-950/80 border border-white/10 text-sm text-white focus:border-cyan-400 outline-none">
+                <option value="px">Pixels (px)</option>
+                <option value="mm">Millimeters (mm @ 300 DPI)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive Studio Canvas Card -->
+        <div class="glass-card rounded-3xl p-4 sm:p-5 space-y-4">
+          <!-- Canvas Top Bar: View Toggle & Overlays -->
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <!-- Single vs Print Sheet View Toggle (Passport Mode) -->
+            <div id="viewModeWrapper" class="inline-flex p-1 rounded-xl bg-slate-950/80 border border-white/10">
+              <button id="btnViewSingle" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-violet-600 text-white shadow">
+                Single Photo
+              </button>
+              <button id="btnViewSheet" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white flex items-center gap-1.5">
+                <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+                Print Sheet
+              </button>
+            </div>
+
+            <!-- Overlay Toggles -->
+            <div class="flex items-center gap-2">
+              <button id="btnToggleBiometric" class="px-3 py-1.5 rounded-xl text-xs font-medium border transition-all flex items-center gap-1.5 bg-cyan-500/15 border-cyan-400/40 text-cyan-200">
+                <i data-lucide="scan-face" class="w-3.5 h-3.5"></i>
+                <span>Face Guide</span>
+              </button>
+
+              <button id="btnToggleCircleMask" class="hidden px-3 py-1.5 rounded-xl text-xs font-medium border transition-all flex items-center gap-1.5 bg-violet-500/15 border-violet-400/40 text-violet-200">
+                <i data-lucide="circle" class="w-3.5 h-3.5"></i>
+                <span>Circle Mask</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Canvas Viewport Container -->
+          <div id="canvasStage" class="relative w-full h-[360px] sm:h-[440px] rounded-2xl overflow-hidden border border-white/10 canvas-checker flex items-center justify-center select-none touch-none">
+            <canvas id="studioCanvas" class="max-w-full max-h-full cursor-grab active:cursor-grabbing"></canvas>
+
+            <!-- Empty State Hint Overlay -->
+            <div id="canvasEmptyHint" class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 pointer-events-none">
+              <div class="w-14 h-14 rounded-2xl bg-slate-900/90 border border-white/10 flex items-center justify-center mb-3">
+                <i data-lucide="camera" class="w-7 h-7 text-slate-400"></i>
+              </div>
+              <p class="text-sm font-semibold text-slate-300">Live Studio Preview</p>
+              <p class="text-xs text-slate-500 mt-1 max-w-xs">Upload a photo above or tap "Try Demo Portrait" to start framing and retouching.</p>
+            </div>
+
+            <!-- Drag/Pan Hint Pill -->
+            <div id="panHintPill" class="hidden absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-slate-950/75 backdrop-blur-md border border-white/10 text-[11px] text-slate-300 pointer-events-none flex items-center gap-1.5">
+              <i data-lucide="move" class="w-3 h-3 text-cyan-400"></i>
+              Drag to pan • Pinch or scroll to zoom
+            </div>
+          </div>
+
+          <!-- Interactive Transform Controls -->
+          <div class="space-y-3 pt-1">
+            <!-- Zoom & Fine Rotate Sliders -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <div class="flex justify-between text-xs mb-1.5">
+                  <span class="text-slate-300 font-medium flex items-center gap-1.5">
+                    <i data-lucide="zoom-in" class="w-3.5 h-3.5 text-cyan-400"></i> Zoom
+                  </span>
+                  <span id="zoomVal" class="font-mono text-cyan-300">100%</span>
+                </div>
+                <input id="sliderZoom" type="range" min="30" max="400" value="100" class="w-full" />
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1.5">
+                  <span class="text-slate-300 font-medium flex items-center gap-1.5">
+                    <i data-lucide="rotate-cw" class="w-3.5 h-3.5 text-violet-400"></i> Straighten
+                  </span>
+                  <span id="rotateVal" class="font-mono text-violet-300">0°</span>
+                </div>
+                <input id="sliderRotate" type="range" min="-45" max="45" value="0" class="w-full" />
+              </div>
+            </div>
+
+            <!-- Quick Transform Action Buttons -->
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <button id="btnRotate90" class="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 flex items-center gap-1.5 transition-all active:scale-95">
+                  <i data-lucide="rotate-cw" class="w-3.5 h-3.5 text-cyan-300"></i> 90°
+                </button>
+                <button id="btnFlipH" class="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 flex items-center gap-1.5 transition-all active:scale-95">
+                  <i data-lucide="flip-horizontal-2" class="w-3.5 h-3.5 text-cyan-300"></i> Flip H
+                </button>
+                <button id="btnFlipV" class="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 flex items-center gap-1.5 transition-all active:scale-95">
+                  <i data-lucide="flip-vertical-2" class="w-3.5 h-3.5 text-cyan-300"></i> Flip V
+                </button>
+                <button id="btnAutoCenter" class="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 flex items-center gap-1.5 transition-all active:scale-95">
+                  <i data-lucide="maximize-2" class="w-3.5 h-3.5 text-violet-300"></i> Fit
+                </button>
+              </div>
+
+              <button id="btnResetTransform" class="px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-xs font-medium text-rose-300 flex items-center gap-1.5 transition-all active:scale-95">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Print Sheet Configuration Panel (Visible in Passport Mode) -->
+        <div id="printSheetCard" class="glass-card rounded-2xl p-4 sm:p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-display text-sm font-bold text-white flex items-center gap-2">
+              <i data-lucide="printer" class="w-4 h-4 text-cyan-400"></i>
+              300 DPI Print Sheet Generator
+            </h3>
+            <span id="sheetInfoBadge" class="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-violet-500/15 text-violet-300 border border-violet-500/20">
+              4×6 in • 6 Copies
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Paper Size -->
+            <div>
+              <label class="block text-xs text-slate-400 mb-1.5">Paper Size</label>
+              <div class="grid grid-cols-2 gap-2">
+                <button data-sheet="4x6" class="sheet-size-btn py-2 px-3 rounded-xl text-xs font-semibold border transition-all bg-violet-600/25 border-violet-400 text-white">
+                  4×6 inch
+                </button>
+                <button data-sheet="a4" class="sheet-size-btn py-2 px-3 rounded-xl text-xs font-semibold border transition-all bg-slate-900/70 border-white/10 text-slate-300 hover:border-white/25">
+                  A4 Sheet
+                </button>
+              </div>
+            </div>
+
+            <!-- Copies Count -->
+            <div>
+              <label class="block text-xs text-slate-400 mb-1.5">Number of Copies</label>
+              <div id="copiesBtnGroup" class="grid grid-cols-3 gap-2"></div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center pt-1">
+            <div>
+              <div class="flex justify-between text-xs mb-1.5">
+                <span class="text-slate-300">Photo Spacing</span>
+                <span id="spacingVal" class="font-mono text-cyan-300">24 px</span>
+              </div>
+              <input id="sliderSpacing" type="range" min="8" max="64" value="24" class="w-full" />
+            </div>
+
+            <label class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-white/10 cursor-pointer">
+              <span class="text-xs font-medium text-slate-200 flex items-center gap-2">
+                <i data-lucide="scissors" class="w-3.5 h-3.5 text-cyan-400"></i>
+                Dashed Cut Lines
+              </span>
+              <input id="toggleCutLines" type="checkbox" checked class="w-4 h-4 accent-cyan-400 rounded cursor-pointer" />
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN (5 cols on desktop): Pro Adjustments, Background/Frame, Smart Export -->
+      <div class="lg:col-span-5 space-y-4">
+
+        <!-- Pro Studio Adjustments Card -->
+        <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-display text-sm font-bold text-white flex items-center gap-2">
+              <i data-lucide="sliders-horizontal" class="w-4 h-4 text-violet-400"></i>
+              Pro Studio Adjustments
+            </h3>
+            <button id="btnResetAdjustments" class="text-[11px] font-medium text-slate-400 hover:text-cyan-300 transition-colors">
+              Reset Filters
+            </button>
+          </div>
+
+          <!-- One-Click Studio Presets -->
+          <div>
+            <p class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold mb-2">One-Click Studio Presets</p>
+            <div id="filterPresetGrid" class="flex flex-wrap gap-2"></div>
+          </div>
+
+          <!-- Fine-Tune Sliders -->
+          <div class="space-y-3 pt-1">
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-slate-300">Brightness</span>
+                <span id="brightnessVal" class="font-mono text-cyan-300">100%</span>
+              </div>
+              <input id="sliderBrightness" type="range" min="60" max="150" value="100" class="w-full" />
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-slate-300">Contrast</span>
+                <span id="contrastVal" class="font-mono text-cyan-300">100%</span>
+              </div>
+              <input id="sliderContrast" type="range" min="60" max="160" value="100" class="w-full" />
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-slate-300">Saturation</span>
+                <span id="saturationVal" class="font-mono text-cyan-300">100%</span>
+              </div>
+              <input id="sliderSaturation" type="range" min="0" max="180" value="100" class="w-full" />
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-slate-300">Warmth / Exposure Tint</span>
+                <span id="warmthVal" class="font-mono text-cyan-300">0</span>
+              </div>
+              <input id="sliderWarmth" type="range" min="-40" max="40" value="0" class="w-full" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Background & Frame Controls Card -->
+        <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4">
+          <h3 class="font-display text-sm font-bold text-white flex items-center gap-2">
+            <i data-lucide="palette" class="w-4 h-4 text-cyan-400"></i>
+            Background & Frame Studio
+          </h3>
+
+          <!-- Solid Swatches + Custom Color -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs text-slate-400">Backdrop Swatches</span>
+              <label class="flex items-center gap-1.5 text-[11px] text-cyan-300 cursor-pointer">
+                <span>Custom</span>
+                <input id="bgColorPicker" type="color" value="#ffffff" class="w-6 h-6 rounded-md border border-white/20 bg-transparent cursor-pointer" />
+              </label>
+            </div>
+
+            <div id="bgSwatchGrid" class="flex flex-wrap gap-2"></div>
+          </div>
+
+          <!-- Social Gradient Ring Frame (Highlighted in Social Mode) -->
+          <div id="socialRingSection" class="pt-2 border-t border-white/10 space-y-2">
+            <span class="text-xs text-slate-300 font-medium flex items-center gap-1.5">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-violet-400"></i>
+              Social Gradient Ring Frame
+            </span>
+            <div id="socialRingGrid" class="flex flex-wrap gap-2"></div>
+          </div>
+
+          <!-- Photo Border Thickness & Color -->
+          <div class="pt-2 border-t border-white/10 grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
+            <div class="sm:col-span-2">
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-slate-300">Border Thickness</span>
+                <span id="borderWidthVal" class="font-mono text-cyan-300">0 px</span>
+              </div>
+              <input id="sliderBorderWidth" type="range" min="0" max="24" value="0" class="w-full" />
+            </div>
+            <div class="flex items-center justify-between sm:justify-end gap-2">
+              <span class="text-xs text-slate-400">Color</span>
+              <input id="borderColorPicker" type="color" value="#0f172a" class="w-8 h-8 rounded-lg border border-white/20 bg-transparent cursor-pointer" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Smart Export Panel -->
+        <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4 border border-cyan-500/20">
+          <div class="flex items-center justify-between">
+            <h3 class="font-display text-sm font-bold text-white flex items-center gap-2">
+              <i data-lucide="download" class="w-4 h-4 text-cyan-400"></i>
+              Smart Export Studio
+            </h3>
+            <span id="estSizeBadge" class="text-xs font-mono font-semibold px-2.5 py-1 rounded-lg bg-slate-900 border border-white/10 text-cyan-300">
+              ~ -- KB
+            </span>
+          </div>
+
+          <!-- Format Selector -->
+          <div class="grid grid-cols-3 gap-2">
+            <button data-format="image/jpeg" class="format-btn py-2 rounded-xl text-xs font-semibold border transition-all bg-cyan-500/20 border-cyan-400 text-white">JPG</button>
+            <button data-format="image/png" class="format-btn py-2 rounded-xl text-xs font-semibold border transition-all bg-slate-900/70 border-white/10 text-slate-300 hover:border-white/25">PNG</button>
+            <button data-format="image/webp" class="format-btn py-2 rounded-xl text-xs font-semibold border transition-all bg-slate-900/70 border-white/10 text-slate-300 hover:border-white/25">WebP</button>
+          </div>
+
+          <!-- Quality Slider & Govt Form <50KB Helper -->
+          <div id="qualityControlGroup" class="space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-300">Compression Quality</span>
+              <span id="qualityVal" class="font-mono text-cyan-300">90%</span>
+            </div>
+            <input id="sliderQuality" type="range" min="10" max="100" value="90" class="w-full" />
+
+            <div class="flex items-center justify-between gap-2 pt-1">
+              <span id="govtReadyHint" class="text-[11px] text-slate-400">Adjust quality for exam/govt portals</span>
+              <button id="btnAuto50KB" type="button" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 transition-all shrink-0">
+                Fit &lt; 50 KB
+              </button>
+            </div>
+          </div>
+
+          <div class="rounded-xl border border-amber-400/25 bg-amber-400/10 px-3 py-3 text-xs text-slate-200 space-y-1">
+            <p class="font-semibold text-amber-200">✦ Secure Premium Exports</p>
+            <p>600 PPI passport &amp; print PDF, Pro 2× social export, and 4K/8K tools use your verified subscription.</p>
+            <a href="/studio/passport-social/pro" target="_top" class="inline-block mt-2 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold">Open Pro HD Studio ↗</a>
+          </div>
+          <!-- Download Action Buttons -->
+          <div class="space-y-2.5 pt-1">
+            <button id="btnDownloadSingle" class="w-full py-3.5 px-4 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400 shadow-lg shadow-violet-600/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              <span>Download Single Photo</span>
+            </button>
+
+            <button id="btnDownloadSheet" class="w-full py-3 px-4 rounded-xl font-semibold text-sm text-cyan-100 bg-white/5 hover:bg-white/10 border border-cyan-400/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+              <i data-lucide="printer" class="w-4 h-4 text-cyan-300"></i>
+              <span>Download Print Sheet (300 DPI)</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="max-w-7xl mx-auto px-4 sm:px-6 py-8 mt-4 border-t border-white/5 text-center text-xs text-slate-500">
+    <p>ToolNexa AI — Passport & Social Photo Studio • 100% Client-Side Processing • Zero Watermarks</p>
+  </footer>
+
+  <!-- =========================================================
+       CORE STUDIO JAVASCRIPT ENGINE
+       ========================================================= -->
+  <script>
+    (function () {
+      'use strict';
+
+      /* -------------------------------------------------------
+         1. PRESETS & CONFIGURATION DATA
+         ------------------------------------------------------- */
+      const PASSPORT_PRESETS = [
+        { id: 'in_passport', name: 'Indian Passport', sub: '35×45 mm', w: 413, h: 531, circleDefault: false },
+        { id: 'pan_card',    name: 'PAN Card',        sub: '25×35 mm', w: 295, h: 413, circleDefault: false },
+        { id: 'us_visa',     name: 'US Visa / OCI',   sub: '2×2 in',   w: 600, h: 600, circleDefault: false },
+        { id: 'schengen_uk', name: 'Schengen / UK',   sub: '35×45 mm', w: 413, h: 531, circleDefault: false },
+        { id: 'exam_form',   name: 'Exam Form',       sub: '200×230 px', w: 200, h: 230, circleDefault: false },
+        { id: 'custom',      name: 'Custom Size',     sub: 'Any W×H',  w: 400, h: 500, circleDefault: false }
+      ];
+
+      const SOCIAL_PRESETS = [
+        { id: 'ig_dp',       name: 'Instagram DP',      sub: '1:1 • Circle', w: 1080, h: 1080, circleDefault: true },
+        { id: 'ig_post',     name: 'Instagram Post',    sub: '4:5 Portrait', w: 1080, h: 1350, circleDefault: false },
+        { id: 'ig_reel',     name: 'Reel Cover',        sub: '9:16 Story',   w: 1080, h: 1920, circleDefault: false },
+        { id: 'yt_thumb',    name: 'YouTube Thumb',     sub: '16:9 HD',      w: 1280, h: 720,  circleDefault: false },
+        { id: 'linkedin_dp', name: 'LinkedIn Profile',  sub: '1:1 • Circle', w: 800,  h: 800,  circleDefault: true },
+        { id: 'wa_dp',       name: 'WhatsApp DP',       sub: '1:1 • Circle', w: 800,  h: 800,  circleDefault: true }
+      ];
+
+      const FILTER_PRESETS = [
+        { id: 'natural', name: 'Natural',       brightness: 100, contrast: 100, saturation: 100, warmth: 0 },
+        { id: 'bright',  name: 'Studio Bright', brightness: 112, contrast: 106, saturation: 104, warmth: 4 },
+        { id: 'crisp',   name: 'Crisp HD',      brightness: 104, contrast: 118, saturation: 112, warmth: -2 },
+        { id: 'soft',    name: 'Soft Portrait', brightness: 108, contrast: 92,  saturation: 95,  warmth: 10 },
+        { id: 'bw',      name: 'B&W Classic',   brightness: 105, contrast: 122, saturation: 0,   warmth: 0 }
+      ];
+
+      const BG_SWATCHES = [
+        { id: 'white',   label: 'Pure White',    type: 'solid',    value: '#ffffff' },
+        { id: 'pblue',   label: 'Passport Blue', type: 'solid',    value: '#2563eb' },
+        { id: 'skyblue', label: 'Sky Blue',      type: 'solid',    value: '#7dd3fc' },
+        { id: 'lgrey',   label: 'Light Grey',    type: 'solid',    value: '#e2e8f0' },
+        { id: 'cream',   label: 'Soft Cream',    type: 'solid',    value: '#fef3c7' },
+        { id: 'g_violet',label: 'Neon Violet',   type: 'gradient', value: ['#6d28d9', '#06b6d4'] },
+        { id: 'g_sunset',label: 'Sunset Glow',   type: 'gradient', value: ['#f43f5e', '#f59e0b'] },
+        { id: 'g_aurora',label: 'Emerald Glow',  type: 'gradient', value: ['#059669', '#0ea5e9'] }
+      ];
+
+      const SOCIAL_RINGS = [
+        { id: 'none',      label: 'None',      colors: null },
+        { id: 'instagram', label: 'Insta',     colors: ['#f59e0b', '#ec4899', '#8b5cf6'] },
+        { id: 'cyber',     label: 'Cyber',     colors: ['#06b6d4', '#6366f1', '#ec4899'] },
+        { id: 'gold',      label: 'Gold Pro',  colors: ['#fde047', '#f59e0b', '#b45309'] },
+        { id: 'emerald',   label: 'Verified',  colors: ['#34d399', '#06b6d4', '#3b82f6'] }
+      ];
+
+      const SHEET_CONFIG = {
+        '4x6': { label: '4×6 in', w: 1200, h: 1800, copyOptions: [4, 6, 8] },
+        'a4':  { label: 'A4 Sheet', w: 2480, h: 3508, copyOptions: [12, 20, 30] }
+      };
+
+      /* -------------------------------------------------------
+         2. APPLICATION STATE
+         ------------------------------------------------------- */
+      const state = {
+        image: null,
+        fileName: 'toolnexa-photo',
+        mode: 'passport', // 'passport' | 'social'
+        viewMode: 'single', // 'single' | 'sheet'
+        presetId: 'in_passport',
+        customW: 400,
+        customH: 500,
+        customUnit: 'px',
+
+        // Interactive Transform
+        zoom: 1,
+        offsetX: 0, // normalized relative to output width
+        offsetY: 0, // normalized relative to output height
+        rotation: 0, // -45 to +45
+        baseRotation: 0, // 0, 90, 180, 270
+        flipH: false,
+        flipV: false,
+
+        // Overlays
+        showBiometricGuide: true,
+        showCircleMask: false,
+
+        // Adjustments
+        activeFilterPreset: 'natural',
+        brightness: 100,
+        contrast: 100,
+        saturation: 100,
+        warmth: 0,
+
+        // Background & Frame
+        bgType: 'solid',
+        bgColor: '#ffffff',
+        bgGradient: ['#6d28d9', '#06b6d4'],
+        borderWidth: 0,
+        borderColor: '#0f172a',
+        socialRing: 'none',
+
+        // Print Sheet
+        sheetSize: '4x6',
+        sheetCopies: 6,
+        sheetSpacing: 24,
+        showCutLines: true,
+
+        // Export
+        exportFormat: 'image/jpeg',
+        exportQuality: 0.90
+      };
+
+      /* -------------------------------------------------------
+         3. DOM REFERENCES
+         ------------------------------------------------------- */
+      const el = {
+        fileInput: document.getElementById('fileInput'),
+        dropZone: document.getElementById('dropZone'),
+        uploadExpandedCard: document.getElementById('uploadExpandedCard'),
+        uploadCompactBar: document.getElementById('uploadCompactBar'),
+        loadedThumb: document.getElementById('loadedThumb'),
+        loadedFileName: document.getElementById('loadedFileName'),
+        loadedFileMeta: document.getElementById('loadedFileMeta'),
+        btnUploadPrimary: document.getElementById('btnUploadPrimary'),
+        btnTryDemo: document.getElementById('btnTryDemo'),
+        btnChangePhoto: document.getElementById('btnChangePhoto'),
+        btnCompactDemo: document.getElementById('btnCompactDemo'),
+
+        presetSectionTitle: document.getElementById('presetSectionTitle'),
+        activeDimBadge: document.getElementById('activeDimBadge'),
+        presetGrid: document.getElementById('presetGrid'),
+        customDimPanel: document.getElementById('customDimPanel'),
+        customWInput: document.getElementById('customWInput'),
+        customHInput: document.getElementById('customHInput'),
+        customUnitSelect: document.getElementById('customUnitSelect'),
+
+        viewModeWrapper: document.getElementById('viewModeWrapper'),
+        btnViewSingle: document.getElementById('btnViewSingle'),
+        btnViewSheet: document.getElementById('btnViewSheet'),
+        btnToggleBiometric: document.getElementById('btnToggleBiometric'),
+        btnToggleCircleMask: document.getElementById('btnToggleCircleMask'),
+
+        canvasStage: document.getElementById('canvasStage'),
+        studioCanvas: document.getElementById('studioCanvas'),
+        canvasEmptyHint: document.getElementById('canvasEmptyHint'),
+        panHintPill: document.getElementById('panHintPill'),
+
+        sliderZoom: document.getElementById('sliderZoom'),
+        zoomVal: document.getElementById('zoomVal'),
+        sliderRotate: document.getElementById('sliderRotate'),
+        rotateVal: document.getElementById('rotateVal'),
+        btnRotate90: document.getElementById('btnRotate90'),
+        btnFlipH: document.getElementById('btnFlipH'),
+        btnFlipV: document.getElementById('btnFlipV'),
+        btnAutoCenter: document.getElementById('btnAutoCenter'),
+        btnResetTransform: document.getElementById('btnResetTransform'),
+
+        printSheetCard: document.getElementById('printSheetCard'),
+        sheetInfoBadge: document.getElementById('sheetInfoBadge'),
+        copiesBtnGroup: document.getElementById('copiesBtnGroup'),
+        sliderSpacing: document.getElementById('sliderSpacing'),
+        spacingVal: document.getElementById('spacingVal'),
+        toggleCutLines: document.getElementById('toggleCutLines'),
+
+        filterPresetGrid: document.getElementById('filterPresetGrid'),
+        btnResetAdjustments: document.getElementById('btnResetAdjustments'),
+        sliderBrightness: document.getElementById('sliderBrightness'),
+        brightnessVal: document.getElementById('brightnessVal'),
+        sliderContrast: document.getElementById('sliderContrast'),
+        contrastVal: document.getElementById('contrastVal'),
+        sliderSaturation: document.getElementById('sliderSaturation'),
+        saturationVal: document.getElementById('saturationVal'),
+        sliderWarmth: document.getElementById('sliderWarmth'),
+        warmthVal: document.getElementById('warmthVal'),
+
+        bgSwatchGrid: document.getElementById('bgSwatchGrid'),
+        bgColorPicker: document.getElementById('bgColorPicker'),
+        socialRingSection: document.getElementById('socialRingSection'),
+        socialRingGrid: document.getElementById('socialRingGrid'),
+        sliderBorderWidth: document.getElementById('sliderBorderWidth'),
+        borderWidthVal: document.getElementById('borderWidthVal'),
+        borderColorPicker: document.getElementById('borderColorPicker'),
+
+        estSizeBadge: document.getElementById('estSizeBadge'),
+        qualityControlGroup: document.getElementById('qualityControlGroup'),
+        sliderQuality: document.getElementById('sliderQuality'),
+        qualityVal: document.getElementById('qualityVal'),
+        govtReadyHint: document.getElementById('govtReadyHint'),
+        btnAuto50KB: document.getElementById('btnAuto50KB'),
+        btnDownloadSingle: document.getElementById('btnDownloadSingle'),
+        btnDownloadSheet: document.getElementById('btnDownloadSheet'),
+        toastContainer: document.getElementById('toastContainer')
+      };
+
+      const ctx = el.studioCanvas.getContext('2d');
+
+      /* -------------------------------------------------------
+         4. TOAST NOTIFICATION SYSTEM
+         ------------------------------------------------------- */
+      function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        const styles = {
+          success: 'bg-emerald-950/90 border-emerald-500/40 text-emerald-200',
+          error:   'bg-rose-950/90 border-rose-500/40 text-rose-200',
+          info:    'bg-slate-900/95 border-cyan-500/35 text-cyan-100'
+        };
+        toast.className = `pointer-events-auto px-4 py-3 rounded-2xl border backdrop-blur-xl shadow-xl text-xs font-medium flex items-center gap-2 transition-all duration-300 translate-y-2 opacity-0 ${styles[type] || styles.info}`;
+        toast.textContent = message;
+        el.toastContainer.appendChild(toast);
+
+        requestAnimationFrame(() => {
+          toast.classList.remove('translate-y-2', 'opacity-0');
+        });
+
+        setTimeout(() => {
+          toast.classList.add('translate-y-2', 'opacity-0');
+          setTimeout(() => toast.remove(), 300);
+        }, 2800);
+      }
+
+      /* -------------------------------------------------------
+         5. HELPER: CURRENT TARGET OUTPUT DIMENSIONS
+         ------------------------------------------------------- */
+      function getTargetDimensions() {
+        const list = state.mode === 'passport' ? PASSPORT_PRESETS : SOCIAL_PRESETS;
+        const preset = list.find(p => p.id === state.presetId) || list[0];
+
+        if (preset.id === 'custom') {
+          let w = Math.max(50, Math.min(4000, parseInt(state.customW, 10) || 400));
+          let h = Math.max(50, Math.min(4000, parseInt(state.customH, 10) || 500));
+          if (state.customUnit === 'mm') {
+            // Convert mm to px at 300 DPI (1 inch = 25.4 mm)
+            w = Math.round((w / 25.4) * 300);
+            h = Math.round((h / 25.4) * 300);
+          }
+          return { w, h, label: `${state.customW}×${state.customH} ${state.customUnit} (${w}×${h} px)` };
+        }
+        return { w: preset.w, h: preset.h, label: `${preset.sub} (${preset.w}×${preset.h} px)` };
+      }
+
+      /* -------------------------------------------------------
+         6. DEMO STUDIO PORTRAIT GENERATOR (100% CLIENT-SIDE)
+         ------------------------------------------------------- */
+      function generateDemoPortrait() {
+        const c = document.createElement('canvas');
+        c.width = 900;
+        c.height = 1100;
+        const g = c.getContext('2d');
+
+        // Soft studio backdrop gradient
+        const bg = g.createRadialGradient(450, 420, 80, 450, 550, 750);
+        bg.addColorStop(0, '#eef2f6');
+        bg.addColorStop(1, '#cbd5e1');
+        g.fillStyle = bg;
+        g.fillRect(0, 0, c.width, c.height);
+
+        // Subtle studio key light glow
+        const keyLight = g.createRadialGradient(340, 260, 20, 340, 260, 400);
+        keyLight.addColorStop(0, 'rgba(255,255,255,0.65)');
+        keyLight.addColorStop(1, 'rgba(255,255,255,0)');
+        g.fillStyle = keyLight;
+        g.fillRect(0, 0, c.width, c.height);
+
+        // Shoulders & Navy Blazer
+        g.fillStyle = '#1e293b';
+        g.beginPath();
+        g.moveTo(110, 1100);
+        g.quadraticCurveTo(140, 820, 340, 775);
+        g.lineTo(560, 775);
+        g.quadraticCurveTo(760, 820, 790, 1100);
+        g.closePath();
+        g.fill();
+
+        // Crisp White Shirt V-Neck
+        g.fillStyle = '#f8fafc';
+        g.beginPath();
+        g.moveTo(355, 775);
+        g.lineTo(450, 965);
+        g.lineTo(545, 775);
+        g.closePath();
+        g.fill();
+
+        // Subtle Tie
+        g.fillStyle = '#0284c7';
+        g.beginPath();
+        g.moveTo(434, 820);
+        g.lineTo(466, 820);
+        g.lineTo(476, 985);
+        g.lineTo(450, 1020);
+        g.lineTo(424, 985);
+        g.closePath();
+        g.fill();
+
+        // Blazer Lapels
+        g.fillStyle = '#0f172a';
+        g.beginPath();
+        g.moveTo(340, 775);
+        g.lineTo(420, 955);
+        g.lineTo(310, 920);
+        g.closePath();
+        g.fill();
+        g.beginPath();
+        g.moveTo(560, 775);
+        g.lineTo(480, 955);
+        g.lineTo(590, 920);
+        g.closePath();
+        g.fill();
+
+        // Neck
+        const neckGrad = g.createLinearGradient(390, 650, 510, 800);
+        neckGrad.addColorStop(0, '#d69e72');
+        neckGrad.addColorStop(1, '#e8b68c');
+        g.fillStyle = neckGrad;
+        g.beginPath();
+        g.roundRect(392, 650, 116, 165, 36);
+        g.fill();
+
+        // Neck shadow under chin
+        g.fillStyle = 'rgba(120, 65, 35, 0.22)';
+        g.beginPath();
+        g.ellipse(450, 692, 62, 24, 0, 0, Math.PI * 2);
+        g.fill();
+
+        // Ears
+        g.fillStyle = '#dfaa80';
+        g.beginPath();
+        g.ellipse(290, 500, 24, 46, -0.1, 0, Math.PI * 2);
+        g.ellipse(610, 500, 24, 46, 0.1, 0, Math.PI * 2);
+        g.fill();
+
+        // Head Shape
+        const faceGrad = g.createRadialGradient(420, 440, 40, 450, 500, 220);
+        faceGrad.addColorStop(0, '#f3c69f');
+        faceGrad.addColorStop(1, '#dc9e72');
+        g.fillStyle = faceGrad;
+        g.beginPath();
+        g.ellipse(450, 485, 162, 208, 0, 0, Math.PI * 2);
+        g.fill();
+
+        // Styled Hair
+        g.fillStyle = '#1c1917';
+        g.beginPath();
+        g.moveTo(286, 465);
+        g.bezierCurveTo(272, 300, 350, 225, 460, 225);
+        g.bezierCurveTo(575, 225, 628, 310, 614, 465);
+        g.quadraticCurveTo(595, 370, 560, 345);
+        g.quadraticCurveTo(475, 315, 350, 355);
+        g.quadraticCurveTo(308, 385, 286, 465);
+        g.closePath();
+        g.fill();
+
+        // Eyebrows
+        g.strokeStyle = '#292524';
+        g.lineWidth = 11;
+        g.lineCap = 'round';
+        g.beginPath();
+        g.moveTo(352, 442);
+        g.quadraticCurveTo(386, 428, 418, 440);
+        g.moveTo(482, 440);
+        g.quadraticCurveTo(514, 428, 548, 442);
+        g.stroke();
+
+        // Eyes (White + Iris + Pupil + Catchlight)
+        [385, 515].forEach(ex => {
+          g.fillStyle = '#ffffff';
+          g.beginPath();
+          g.ellipse(ex, 478, 25, 14, 0, 0, Math.PI * 2);
+          g.fill();
+
+          g.fillStyle = '#3b2417';
+          g.beginPath();
+          g.arc(ex, 478, 11, 0, Math.PI * 2);
+          g.fill();
+
+          g.fillStyle = '#0f0a08';
+          g.beginPath();
+          g.arc(ex, 478, 5.5, 0, Math.PI * 2);
+          g.fill();
+
+          g.fillStyle = '#ffffff';
+          g.beginPath();
+          g.arc(ex - 3.5, 474, 2.5, 0, Math.PI * 2);
+          g.fill();
+        });
+
+        // Nose subtle contour
+        g.strokeStyle = 'rgba(130, 72, 40, 0.35)';
+        g.lineWidth = 4.5;
+        g.beginPath();
+        g.moveTo(450, 478);
+        g.lineTo(445, 548);
+        g.quadraticCurveTo(450, 560, 464, 550);
+        g.stroke();
+
+        // Gentle confident smile
+        g.strokeStyle = '#9a4f3b';
+        g.lineWidth = 6;
+        g.beginPath();
+        g.moveTo(404, 598);
+        g.quadraticCurveTo(450, 622, 496, 598);
+        g.stroke();
+
+        // Convert to Image element
+        const img = new Image();
+        img.onload = () => {
+          loadImageIntoStudio(img, 'demo-studio-portrait.png');
+          showToast('Demo studio portrait loaded!', 'success');
+        };
+        img.src = c.toDataURL('image/png');
+      }
+
+      /* -------------------------------------------------------
+         7. IMAGE LOADING & UPLOAD HANDLING
+         ------------------------------------------------------- */
+      function loadImageIntoStudio(img, name) {
+        state.image = img;
+        state.fileName = name.replace(/\.[^/.]+$/, '') || 'toolnexa-photo';
+
+        // Switch Hero Upload Zone to Compact Top Bar
+        el.uploadExpandedCard.classList.add('hidden');
+        el.uploadCompactBar.classList.remove('hidden');
+        el.loadedThumb.src = img.src;
+        el.loadedFileName.textContent = name;
+        el.loadedFileMeta.textContent = `${img.naturalWidth} × ${img.naturalHeight} px • Studio Ready`;
+
+        el.canvasEmptyHint.classList.add('hidden');
+        el.panHintPill.classList.remove('hidden');
+
+        // Auto-fit zoom to cover target cleanly
+        resetTransform(true);
+        renderStudio();
+        scheduleSizeEstimate();
+      }
+
+      function handleFileSelection(file) {
+        if (!file) return;
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+          showToast('Please select a valid image file (JPG, PNG, WebP).', 'error');
+          return;
+        }
+        if (file.size > 10 * 1024 * 1024 || file.size === 0) {
+          showToast('Please choose a non-empty photo smaller than 10 MB.', 'error');
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const img = new Image();
+          img.onload = () => {
+            if (img.naturalWidth * img.naturalHeight > 24000000) {
+              showToast('Please use a photo under 24 megapixels.', 'error');
+              return;
+            }
+            loadImageIntoStudio(img, file.name);
+            showToast('Photo uploaded! Drag or zoom to frame.', 'success');
+          };
+          img.onerror = () => showToast('Could not decode that image file.', 'error');
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      /* -------------------------------------------------------
+         8. CORE RENDERING ENGINE (SINGLE PHOTO & PRINT SHEET)
+         ------------------------------------------------------- */
+      function renderSinglePhotoToCanvas(targetCanvas, targetW, targetH, includeOverlays = false) {
+        targetCanvas.width = targetW;
+        targetCanvas.height = targetH;
+        const c = targetCanvas.getContext('2d');
+        c.clearRect(0, 0, targetW, targetH);
+
+        // 1. Draw Background Fill (Solid or Gradient)
+        if (state.bgType === 'gradient') {
+          const grad = c.createLinearGradient(0, 0, targetW, targetH);
+          grad.addColorStop(0, state.bgGradient[0]);
+          grad.addColorStop(1, state.bgGradient[1]);
+          c.fillStyle = grad;
+        } else {
+          c.fillStyle = state.bgColor;
+        }
+        c.fillRect(0, 0, targetW, targetH);
+
+        // 2. Draw User Image with Transforms & Filters
+        if (state.image) {
+          c.save();
+
+          // Optional circular clipping if Social Mode + Circle Mask is active (for export or preview)
+          const isCircle = state.mode === 'social' && state.showCircleMask;
+          if (isCircle && !includeOverlays) {
+            // Keep square background or clip for PNG transparency
+            if (state.exportFormat === 'image/png' || state.exportFormat === 'image/webp') {
+              c.clearRect(0, 0, targetW, targetH);
+              c.beginPath();
+              c.arc(targetW / 2, targetH / 2, Math.min(targetW, targetH) / 2, 0, Math.PI * 2);
+              c.clip();
+              // Re-fill background inside circle
+              if (state.bgType === 'gradient') {
+                const grad = c.createLinearGradient(0, 0, targetW, targetH);
+                grad.addColorStop(0, state.bgGradient[0]);
+                grad.addColorStop(1, state.bgGradient[1]);
+                c.fillStyle = grad;
+              } else {
+                c.fillStyle = state.bgColor;
+              }
+              c.fillRect(0, 0, targetW, targetH);
+            }
+          }
+
+          // Compute base cover scale
+          const radTotal = ((state.baseRotation + state.rotation) * Math.PI) / 180;
+          const isSwapped = Math.abs(state.baseRotation) % 180 === 90;
+          const imgW = isSwapped ? state.image.naturalHeight : state.image.naturalWidth;
+          const imgH = isSwapped ? state.image.naturalWidth : state.image.naturalHeight;
+          const baseScale = Math.max(targetW / imgW, targetH / imgH);
+          const finalScale = baseScale * state.zoom;
+
+          // Apply CSS-style Canvas Filter
+          c.filter = `brightness(${state.brightness}%) contrast(${state.contrast}%) saturate(${state.saturation}%)`;
+
+          c.translate(targetW / 2 + state.offsetX * targetW, targetH / 2 + state.offsetY * targetH);
+          c.rotate(radTotal);
+          c.scale(state.flipH ? -1 : 1, state.flipV ? -1 : 1);
+
+          const drawW = state.image.naturalWidth * finalScale;
+          const drawH = state.image.naturalHeight * finalScale;
+          c.drawImage(state.image, -drawW / 2, -drawH / 2, drawW, drawH);
+
+          c.filter = 'none';
+          c.restore();
+
+          // Warmth / Cool Exposure Tint Overlay
+          if (state.warmth !== 0) {
+            c.save();
+            const alpha = Math.abs(state.warmth) / 160;
+            c.globalCompositeOperation = state.warmth > 0 ? 'soft-light' : 'color';
+            c.fillStyle = state.warmth > 0
+              ? `rgba(255, 165, 65, ${alpha})`
+              : `rgba(70, 160, 255, ${alpha})`;
+            c.fillRect(0, 0, targetW, targetH);
+            c.restore();
+          }
+        }
+
+        // 3. Draw Optional Border Frame
+        if (state.borderWidth > 0) {
+          const bw = (state.borderWidth / 400) * Math.min(targetW, targetH);
+          c.save();
+          c.strokeStyle = state.borderColor;
+          c.lineWidth = bw * 2;
+          if (state.mode === 'social' && state.showCircleMask) {
+            c.beginPath();
+            c.arc(targetW / 2, targetH / 2, Math.min(targetW, targetH) / 2 - bw / 2, 0, Math.PI * 2);
+            c.stroke();
+          } else {
+            c.strokeRect(0, 0, targetW, targetH);
+          }
+          c.restore();
+        }
+
+        // 4. Draw Social Gradient Ring Frame
+        if (state.socialRing !== 'none') {
+          const ringObj = SOCIAL_RINGS.find(r => r.id === state.socialRing);
+          if (ringObj && ringObj.colors) {
+            const ringThickness = Math.max(8, Math.round(Math.min(targetW, targetH) * 0.042));
+            const grad = c.createLinearGradient(0, 0, targetW, targetH);
+            ringObj.colors.forEach((col, i) => grad.addColorStop(i / (ringObj.colors.length - 1), col));
+
+            c.save();
+            c.strokeStyle = grad;
+            c.lineWidth = ringThickness;
+            if (state.mode === 'social' && state.showCircleMask) {
+              c.beginPath();
+              c.arc(targetW / 2, targetH / 2, Math.min(targetW, targetH) / 2 - ringThickness / 2, 0, Math.PI * 2);
+              c.stroke();
+            } else {
+              c.strokeRect(ringThickness / 2, ringThickness / 2, targetW - ringThickness, targetH - ringThickness);
+            }
+            c.restore();
+          }
+        }
+
+        // 5. Preview-only Overlays (Biometric Face Guide & Circle Mask Dimming)
+        if (includeOverlays) {
+          // Circular Mask Preview Dimming (Social Mode)
+          if (state.mode === 'social' && state.showCircleMask) {
+            c.save();
+            c.fillStyle = 'rgba(6, 9, 19, 0.65)';
+            c.beginPath();
+            c.rect(0, 0, targetW, targetH);
+            c.arc(targetW / 2, targetH / 2, Math.min(targetW, targetH) / 2, 0, Math.PI * 2, true);
+            c.fill();
+
+            c.strokeStyle = 'rgba(34, 211, 238, 0.85)';
+            c.lineWidth = Math.max(2, targetW * 0.004);
+            c.setLineDash([8, 6]);
+            c.beginPath();
+            c.arc(targetW / 2, targetH / 2, Math.min(targetW, targetH) / 2 - 1, 0, Math.PI * 2);
+            c.stroke();
+            c.restore();
+          }
+
+          // Biometric Face Guide Overlay (Passport Mode or toggled ON)
+          if (state.showBiometricGuide) {
+            c.save();
+            const lw = Math.max(1.5, targetW * 0.0045);
+
+            // Center vertical alignment line
+            c.strokeStyle = 'rgba(34, 211, 238, 0.45)';
+            c.lineWidth = lw;
+            c.setLineDash([6, 6]);
+            c.beginPath();
+            c.moveTo(targetW / 2, targetH * 0.06);
+            c.lineTo(targetW / 2, targetH * 0.94);
+            c.stroke();
+
+            // Eye-level horizontal line (~42% from top)
+            const eyeY = targetH * 0.42;
+            c.strokeStyle = 'rgba(34, 211, 238, 0.75)';
+            c.beginPath();
+            c.moveTo(targetW * 0.14, eyeY);
+            c.lineTo(targetW * 0.86, eyeY);
+            c.stroke();
+
+            // Head Oval Guide
+            c.setLineDash([]);
+            c.strokeStyle = 'rgba(34, 211, 238, 0.85)';
+            c.lineWidth = lw * 1.25;
+            c.beginPath();
+            c.ellipse(targetW / 2, targetH * 0.43, targetW * 0.27, targetH * 0.28, 0, 0, Math.PI * 2);
+            c.stroke();
+
+            // Crown & Chin tick labels
+            c.fillStyle = 'rgba(34, 211, 238, 0.9)';
+            const fontSize = Math.max(10, Math.round(targetW * 0.032));
+            c.font = `600 ${fontSize}px Inter, sans-serif`;
+            c.textAlign = 'center';
+            c.fillText('EYE LINE', targetW * 0.76, eyeY - fontSize * 0.4);
+            c.restore();
+          }
+        }
+      }
+
+      function renderPrintSheetToCanvas(targetCanvas, scaleDown = 1) {
+        const sheet = SHEET_CONFIG[state.sheetSize];
+        const sheetW = Math.round(sheet.w * scaleDown);
+        const sheetH = Math.round(sheet.h * scaleDown);
+        targetCanvas.width = sheetW;
+        targetCanvas.height = sheetH;
+        const c = targetCanvas.getContext('2d');
+
+        // Crisp white photographic paper background
+        c.fillStyle = '#ffffff';
+        c.fillRect(0, 0, sheetW, sheetH);
+
+        // Render single photo first at target resolution
+        const dim = getTargetDimensions();
+        const singleCanvas = document.createElement('canvas');
+        renderSinglePhotoToCanvas(singleCanvas, dim.w, dim.h, false);
+
+        // Compute optimal grid layout (cols × rows) for selected copies
+        const copies = state.sheetCopies;
+        const spacing = Math.round(state.sheetSpacing * scaleDown);
+        const margin = Math.round(48 * scaleDown);
+
+        // Find best cols/rows maximizing photo size while respecting aspect ratio
+        let bestLayout = { cols: 2, rows: Math.ceil(copies / 2), drawW: 100, drawH: 100 };
+        let bestArea = 0;
+
+        for (let cols = 1; cols <= copies; cols++) {
+          const rows = Math.ceil(copies / cols);
+          const availW = sheetW - margin * 2 - spacing * (cols - 1);
+          const availH = sheetH - margin * 2 - spacing * (rows - 1);
+          if (availW <= 0 || availH <= 0) continue;
+
+          const cellW = availW / cols;
+          const cellH = availH / rows;
+          const ratio = dim.w / dim.h;
+
+          let drawW = cellW;
+          let drawH = drawW / ratio;
+          if (drawH > cellH) {
+            drawH = cellH;
+            drawW = drawH * ratio;
+          }
+
+          // Cap at true 300 DPI size (scaled) so photos don't stretch beyond physical mm
+          const maxPhysW = dim.w * scaleDown;
+          const maxPhysH = dim.h * scaleDown;
+          if (drawW > maxPhysW) {
+            drawW = maxPhysW;
+            drawH = maxPhysH;
+          }
+
+          const area = drawW * drawH;
+          if (area > bestArea) {
+            bestArea = area;
+            bestLayout = { cols, rows, drawW, drawH };
+          }
+        }
+
+        const { cols, rows, drawW, drawH } = bestLayout;
+        const totalGridW = cols * drawW + (cols - 1) * spacing;
+        const totalGridH = rows * drawH + (rows - 1) * spacing;
+        const startX = (sheetW - totalGridW) / 2;
+        const startY = (sheetH - totalGridH) / 2;
+
+        let drawn = 0;
+        for (let r = 0; r < rows; r++) {
+          for (let col = 0; col < cols; col++) {
+            if (drawn >= copies) break;
+            const x = startX + col * (drawW + spacing);
+            const y = startY + r * (drawH + spacing);
+
+            c.drawImage(singleCanvas, x, y, drawW, drawH);
+
+            // Subtle outline around each photo
+            c.strokeStyle = 'rgba(15, 23, 42, 0.25)';
+            c.lineWidth = Math.max(1, 1.5 * scaleDown);
+            c.strokeRect(x, y, drawW, drawH);
+
+            // Dashed cut lines
+            if (state.showCutLines) {
+              c.save();
+              c.strokeStyle = 'rgba(100, 116, 139, 0.65)';
+              c.lineWidth = Math.max(1, 1.5 * scaleDown);
+              c.setLineDash([6 * scaleDown, 5 * scaleDown]);
+              const pad = spacing / 2;
+              c.strokeRect(x - pad, y - pad, drawW + pad * 2, drawH + pad * 2);
+              c.restore();
+            }
+            drawn++;
+          }
+        }
+
+        // Subtle footer label on print sheet
+        c.fillStyle = '#94a3b8';
+        c.font = `500 ${Math.max(10, Math.round(22 * scaleDown))}px Inter, sans-serif`;
+        c.textAlign = 'center';
+        c.fillText(`ToolNexa AI Studio • ${sheet.label} (300 DPI) • ${dim.label}`, sheetW / 2, sheetH - Math.round(16 * scaleDown));
+      }
+
+      /* -------------------------------------------------------
+         9. DISPLAY CANVAS RENDERER (RESPONSIVE DPR)
+         ------------------------------------------------------- */
+      function renderStudio() {
+        const stageRect = el.canvasStage.getBoundingClientRect();
+        const maxW = Math.max(240, stageRect.width - 28);
+        const maxH = Math.max(240, stageRect.height - 28);
+
+        let aspectW, aspectH;
+        if (state.mode === 'passport' && state.viewMode === 'sheet') {
+          const sheet = SHEET_CONFIG[state.sheetSize];
+          aspectW = sheet.w;
+          aspectH = sheet.h;
+        } else {
+          const dim = getTargetDimensions();
+          aspectW = dim.w;
+          aspectH = dim.h;
+        }
+
+        const ratio = aspectW / aspectH;
+        let dispW = maxW;
+        let dispH = dispW / ratio;
+        if (dispH > maxH) {
+          dispH = maxH;
+          dispW = dispH * ratio;
+        }
+
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        el.studioCanvas.style.width = `${Math.round(dispW)}px`;
+        el.studioCanvas.style.height = `${Math.round(dispH)}px`;
+
+        if (state.mode === 'passport' && state.viewMode === 'sheet') {
+          const scaleDown = (dispW * dpr) / aspectW;
+          renderPrintSheetToCanvas(el.studioCanvas, scaleDown);
+        } else {
+          renderSinglePhotoToCanvas(
+            el.studioCanvas,
+            Math.round(dispW * dpr),
+            Math.round(dispH * dpr),
+            true
+          );
+        }
+      }
+
+      /* -------------------------------------------------------
+         10. LIVE FILE SIZE ESTIMATOR & AUTO <50KB OPTIMIZER
+         ------------------------------------------------------- */
+      let sizeTimer = null;
+      function scheduleSizeEstimate() {
+        clearTimeout(sizeTimer);
+        sizeTimer = setTimeout(updateEstimatedFileSize, 160);
+      }
+
+      function updateEstimatedFileSize() {
+        if (!state.image) {
+          el.estSizeBadge.textContent = '~ -- KB';
+          return;
+        }
+        const dim = getTargetDimensions();
+        const off = document.createElement('canvas');
+        renderSinglePhotoToCanvas(off, dim.w, dim.h, false);
+
+        off.toBlob((blob) => {
+          if (!blob) return;
+          const kb = blob.size / 1024;
+          const formatted = kb >= 1024 ? `${(kb / 1024).toFixed(2)} MB` : `${Math.round(kb)} KB`;
+          el.estSizeBadge.textContent = `~ ${formatted}`;
+
+          if (kb <= 50) {
+            el.govtReadyHint.textContent = 'Under 50 KB — Under 50 KB — check portal requirements ✓';
+            el.govtReadyHint.className = 'text-[11px] text-emerald-400 font-medium';
+          } else {
+            el.govtReadyHint.textContent = 'Adjust quality for exam/govt portals';
+            el.govtReadyHint.className = 'text-[11px] text-slate-400';
+          }
+        }, state.exportFormat, state.exportQuality);
+      }
+
+      async function autoFitUnder50KB() {
+        if (!state.image) {
+          showToast('Upload a photo first to optimize file size.', 'info');
+          return;
+        }
+        // Switch to JPG if PNG was selected (PNG ignores quality slider)
+        if (state.exportFormat === 'image/png') {
+          state.exportFormat = 'image/jpeg';
+          syncFormatButtons();
+        }
+
+        const dim = getTargetDimensions();
+        const off = document.createElement('canvas');
+        renderSinglePhotoToCanvas(off, dim.w, dim.h, false);
+
+        const getSizeAtQ = (q) => new Promise(resolve => {
+          off.toBlob(b => resolve(b ? b.size / 1024 : 999), state.exportFormat, q);
+        });
+
+        let low = 0.1, high = 0.95, bestQ = 0.1;
+        for (let i = 0; i < 7; i++) {
+          const mid = (low + high) / 2;
+          const kb = await getSizeAtQ(mid);
+          if (kb <= 48) {
+            bestQ = mid;
+            low = mid;
+          } else {
+            high = mid;
+          }
+        }
+
+        state.exportQuality = Math.round(bestQ * 100) / 100;
+        el.sliderQuality.value = Math.round(state.exportQuality * 100);
+        el.qualityVal.textContent = `${Math.round(state.exportQuality * 100)}%`;
+        updateEstimatedFileSize();
+        const finalKB = await getSizeAtQ(state.exportQuality);
+        showToast(finalKB <= 50 ? 'JPG quality fitted under 50 KB.' : 'Could not reach 50 KB at this size. Try a smaller preset.', finalKB <= 50 ? 'success' : 'info');
+      }
+
+      /* -------------------------------------------------------
+         11. EXPORT / DOWNLOAD ACTIONS
+         ------------------------------------------------------- */
+      function triggerBlobDownload(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+      }
+
+      // Quotas are reserved by the parent Next.js application, not by this
+      // standalone visual editor. Direct opening is intentionally not an
+      // unmetered download path.
+      let exportRequestSequence = 0;
+      function reserveAccountRun() {
+        if (window.parent === window) {
+          showToast('Open this Studio from the ToolNexa AI website to download.', 'error');
+          return Promise.reject(new Error('Open this studio from the website'));
+        }
+        const id = 'passport-' + (++exportRequestSequence);
+        return new Promise((resolve, reject) => {
+          const timer = setTimeout(() => {
+            window.removeEventListener('message', onMessage);
+            reject(new Error('Subscription/usage check timed out. Please retry.'));
+          }, 18000);
+          function onMessage(event) {
+            if (event.origin !== window.location.origin || event.source !== window.parent) return;
+            const data = event.data;
+            if (data?.type !== 'toolnexa-photo-usage-result' || data.id !== id) return;
+            clearTimeout(timer);
+            window.removeEventListener('message', onMessage);
+            if (data.ok) resolve();
+            else reject(new Error(data.error || 'Daily limit reached. Please upgrade.'));
+          }
+          window.addEventListener('message', onMessage);
+          window.parent.postMessage({type:'toolnexa-photo-usage',id}, window.location.origin);
+        });
+      }
+
+      async function downloadSinglePhoto() {
+        if (!state.image) {
+          showToast('Please upload a photo or try the demo portrait first.', 'error');
+          return;
+        }
+        try { await reserveAccountRun(); }
+        catch (error) { showToast(error.message, 'error'); return; }
+        const dim = getTargetDimensions();
+        const off = document.createElement('canvas');
+        renderSinglePhotoToCanvas(off, dim.w, dim.h, false);
+        const ext = state.exportFormat === 'image/png' ? 'png' : state.exportFormat === 'image/webp' ? 'webp' : 'jpg';
+
+        off.toBlob((blob) => {
+          if (!blob) return;
+          triggerBlobDownload(blob, `${state.fileName}-${state.presetId}-${dim.w}x${dim.h}.${ext}`);
+          showToast(`Downloaded ${dim.w}×${dim.h} ${ext.toUpperCase()} (${Math.round(blob.size / 1024)} KB)`, 'success');
+        }, state.exportFormat, state.exportQuality);
+      }
+
+      async function downloadPrintSheet() {
+        if (!state.image) {
+          showToast('Please upload a photo or try the demo portrait first.', 'error');
+          return;
+        }
+        try { await reserveAccountRun(); }
+        catch (error) { showToast(error.message, 'error'); return; }
+        const off = document.createElement('canvas');
+        renderPrintSheetToCanvas(off, 1); // Full 300 DPI
+        const ext = state.exportFormat === 'image/png' ? 'png' : state.exportFormat === 'image/webp' ? 'webp' : 'jpg';
+
+        off.toBlob((blob) => {
+          if (!blob) return;
+          triggerBlobDownload(blob, `${state.fileName}-print-sheet-${state.sheetSize}-${state.sheetCopies}x-300dpi.${ext}`);
+          showToast(`300 DPI Print Sheet (${state.sheetSize.toUpperCase()}) downloaded!`, 'success');
+        }, state.exportFormat, Math.max(0.9, state.exportQuality));
+      }
+
+      /* -------------------------------------------------------
+         12. UI BUILDERS & SYNC FUNCTIONS
+         ------------------------------------------------------- */
+      function renderPresetChips() {
+        const list = state.mode === 'passport' ? PASSPORT_PRESETS : SOCIAL_PRESETS;
+        el.presetSectionTitle.innerHTML = state.mode === 'passport'
+          ? '<i data-lucide="ruler" class="w-4 h-4 text-cyan-400"></i> Passport & ID Presets'
+          : '<i data-lucide="smartphone" class="w-4 h-4 text-violet-400"></i> Social Media Presets';
+
+        el.presetGrid.innerHTML = '';
+        list.forEach(p => {
+          const active = p.id === state.presetId;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `p-2.5 rounded-xl border text-left transition-all active:scale-95 ${
+            active
+              ? 'bg-gradient-to-br from-violet-600/30 to-cyan-500/20 border-cyan-400/70 text-white shadow-md shadow-cyan-500/10'
+              : 'bg-slate-900/60 border-white/10 text-slate-300 hover:border-white/25 hover:bg-slate-800/60'
+          }`;
+          btn.innerHTML = `
+            <div class="text-xs font-semibold truncate">${p.name}</div>
+            <div class="text-[10px] ${active ? 'text-cyan-200' : 'text-slate-400'} mt-0.5">${p.sub}</div>
+          `;
+          btn.addEventListener('click', () => {
+            state.presetId = p.id;
+            if (state.mode === 'social') {
+              state.showCircleMask = !!p.circleDefault;
+            }
+            syncAllUI();
+            renderStudio();
+            scheduleSizeEstimate();
+          });
+          el.presetGrid.appendChild(btn);
+        });
+
+        el.customDimPanel.classList.toggle('hidden', state.presetId !== 'custom');
+        el.activeDimBadge.textContent = getTargetDimensions().label;
+        lucide.createIcons();
+      }
+
+      function renderFilterPresetChips() {
+        el.filterPresetGrid.innerHTML = '';
+        FILTER_PRESETS.forEach(fp => {
+          const active = fp.id === state.activeFilterPreset;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all active:scale-95 ${
+            active
+              ? 'bg-violet-600/30 border-violet-400 text-white'
+              : 'bg-slate-900/70 border-white/10 text-slate-300 hover:border-white/25'
+          }`;
+          btn.textContent = fp.name;
+          btn.addEventListener('click', () => {
+            state.activeFilterPreset = fp.id;
+            state.brightness = fp.brightness;
+            state.contrast = fp.contrast;
+            state.saturation = fp.saturation;
+            state.warmth = fp.warmth;
+            syncAdjustmentSliders();
+            renderFilterPresetChips();
+            renderStudio();
+            scheduleSizeEstimate();
+          });
+          el.filterPresetGrid.appendChild(btn);
+        });
+      }
+
+      function renderBgSwatches() {
+        el.bgSwatchGrid.innerHTML = '';
+        BG_SWATCHES.forEach(sw => {
+          const isSelected = (sw.type === 'solid' && state.bgType === 'solid' && state.bgColor.toLowerCase() === sw.value.toLowerCase()) ||
+                             (sw.type === 'gradient' && state.bgType === 'gradient' && state.bgGradient[0] === sw.value[0]);
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.title = sw.label;
+          btn.className = `w-9 h-9 rounded-xl border-2 transition-all active:scale-90 ${
+            isSelected ? 'border-cyan-400 scale-105 shadow-lg shadow-cyan-500/30' : 'border-white/15 hover:border-white/40'
+          }`;
+          btn.style.background = sw.type === 'gradient'
+            ? `linear-gradient(135deg, ${sw.value[0]}, ${sw.value[1]})`
+            : sw.value;
+
+          btn.addEventListener('click', () => {
+            state.bgType = sw.type;
+            if (sw.type === 'solid') {
+              state.bgColor = sw.value;
+              el.bgColorPicker.value = sw.value;
+            } else {
+              state.bgGradient = sw.value;
+            }
+            renderBgSwatches();
+            renderStudio();
+            scheduleSizeEstimate();
+          });
+          el.bgSwatchGrid.appendChild(btn);
+        });
+      }
+
+      function renderSocialRings() {
+        el.socialRingGrid.innerHTML = '';
+        SOCIAL_RINGS.forEach(ring => {
+          const active = state.socialRing === ring.id;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 active:scale-95 ${
+            active
+              ? 'bg-cyan-500/20 border-cyan-400 text-white'
+              : 'bg-slate-900/70 border-white/10 text-slate-300 hover:border-white/25'
+          }`;
+          const dot = ring.colors
+            ? `<span class="w-3 h-3 rounded-full inline-block" style="background: linear-gradient(135deg, ${ring.colors.join(',')})"></span>`
+            : `<span class="w-3 h-3 rounded-full border border-slate-500 inline-block"></span>`;
+          btn.innerHTML = `${dot} ${ring.label}`;
+          btn.addEventListener('click', () => {
+            state.socialRing = ring.id;
+            renderSocialRings();
+            renderStudio();
+            scheduleSizeEstimate();
+          });
+          el.socialRingGrid.appendChild(btn);
+        });
+      }
+
+      function renderCopiesButtons() {
+        const sheet = SHEET_CONFIG[state.sheetSize];
+        if (!sheet.copyOptions.includes(state.sheetCopies)) {
+          state.sheetCopies = sheet.copyOptions[1];
+        }
+        el.copiesBtnGroup.innerHTML = '';
+        sheet.copyOptions.forEach(cnt => {
+          const active = state.sheetCopies === cnt;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `py-2 rounded-xl text-xs font-semibold border transition-all ${
+            active
+              ? 'bg-cyan-500/25 border-cyan-400 text-white'
+              : 'bg-slate-900/70 border-white/10 text-slate-300 hover:border-white/25'
+          }`;
+          btn.textContent = `${cnt}x`;
+          btn.addEventListener('click', () => {
+            state.sheetCopies = cnt;
+            renderCopiesButtons();
+            el.sheetInfoBadge.textContent = `${sheet.label} • ${cnt} Copies`;
+            renderStudio();
+          });
+          el.copiesBtnGroup.appendChild(btn);
+        });
+        el.sheetInfoBadge.textContent = `${sheet.label} • ${state.sheetCopies} Copies`;
+      }
+
+      function syncAdjustmentSliders() {
+        el.sliderBrightness.value = state.brightness;
+        el.brightnessVal.textContent = `${state.brightness}%`;
+        el.sliderContrast.value = state.contrast;
+        el.contrastVal.textContent = `${state.contrast}%`;
+        el.sliderSaturation.value = state.saturation;
+        el.saturationVal.textContent = `${state.saturation}%`;
+        el.sliderWarmth.value = state.warmth;
+        el.warmthVal.textContent = state.warmth > 0 ? `+${state.warmth}` : `${state.warmth}`;
+      }
+
+      function syncFormatButtons() {
+        document.querySelectorAll('.format-btn').forEach(btn => {
+          const active = btn.dataset.format === state.exportFormat;
+          btn.className = `format-btn py-2 rounded-xl text-xs font-semibold border transition-all ${
+            active
+              ? 'bg-cyan-500/20 border-cyan-400 text-white'
+              : 'bg-slate-900/70 border-white/10 text-slate-300 hover:border-white/25'
+          }`;
+        });
+        el.qualityControlGroup.classList.toggle('opacity-50', state.exportFormat === 'image/png');
+      }
+
+      function syncAllUI() {
+        // Mode tabs
+        document.querySelectorAll('.mode-tab-btn').forEach(btn => {
+          const active = btn.dataset.mode === state.mode;
+          btn.className = btn.className.includes('py-2.5')
+            ? `mode-tab-btn py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all ${active ? 'bg-gradient-to-r from-violet-600 to-cyan-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`
+            : `mode-tab-btn px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all ${active ? 'bg-gradient-to-r from-violet-600 to-cyan-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`;
+        });
+
+        // Show/Hide Passport-only vs Social-only controls
+        const isPassport = state.mode === 'passport';
+        el.viewModeWrapper.classList.toggle('hidden', !isPassport);
+        el.printSheetCard.classList.toggle('hidden', !isPassport);
+        el.btnDownloadSheet.classList.toggle('hidden', !isPassport);
+        el.btnToggleCircleMask.classList.toggle('hidden', isPassport);
+
+        // Single vs Sheet button styles
+        el.btnViewSingle.className = state.viewMode === 'single'
+          ? 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-violet-600 text-white shadow'
+          : 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white';
+        el.btnViewSheet.className = state.viewMode === 'sheet'
+          ? 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-violet-600 text-white shadow flex items-center gap-1.5'
+          : 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white flex items-center gap-1.5';
+
+        // Overlay toggle styles
+        el.btnToggleBiometric.className = state.showBiometricGuide
+          ? 'px-3 py-1.5 rounded-xl text-xs font-medium border transition-all flex items-center gap-1.5 bg-cyan-500/15 border-cyan-400/40 text-cyan-200'
+          : 'px-3 py-1.5 rounded-xl text-xs font-medium border transition-all flex items-center gap-1.5 bg-slate-900/70 border-white/10 text-slate-400';
+
+        el.btnToggleCircleMask.className = `${isPassport ? 'hidden ' : ''}px-3 py-1.5 rounded-xl text-xs font-medium border transition-all flex items-center gap-1.5 ${
+          state.showCircleMask
+            ? 'bg-violet-500/20 border-violet-400/50 text-violet-200'
+            : 'bg-slate-900/70 border-white/10 text-slate-400'
+        }`;
+
+        renderPresetChips();
+        renderCopiesButtons();
+        syncFormatButtons();
+      }
+
+      function resetTransform(silent = false) {
+        state.zoom = 1;
+        state.offsetX = 0;
+        state.offsetY = 0;
+        state.rotation = 0;
+        state.baseRotation = 0;
+        state.flipH = false;
+        state.flipV = false;
+        el.sliderZoom.value = 100;
+        el.zoomVal.textContent = '100%';
+        el.sliderRotate.value = 0;
+        el.rotateVal.textContent = '0°';
+        if (!silent) {
+          renderStudio();
+          scheduleSizeEstimate();
+        }
+      }
+
+      /* -------------------------------------------------------
+         13. INTERACTIVE MOUSE & TOUCH DRAG / PINCH-ZOOM
+         ------------------------------------------------------- */
+      let isDragging = false;
+      let dragStartX = 0, dragStartY = 0;
+      let startOffX = 0, startOffY = 0;
+      let lastPinchDist = null;
+
+      function getCanvasPoint(clientX, clientY) {
+        const rect = el.studioCanvas.getBoundingClientRect();
+        return { x: clientX - rect.left, y: clientY - rect.top, w: rect.width, h: rect.height };
+      }
+
+      // Mouse Drag
+      el.studioCanvas.addEventListener('mousedown', (e) => {
+        if (!state.image || (state.mode === 'passport' && state.viewMode === 'sheet')) return;
+        isDragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        startOffX = state.offsetX;
+        startOffY = state.offsetY;
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const rect = el.studioCanvas.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        state.offsetX = startOffX + (e.clientX - dragStartX) / rect.width;
+        state.offsetY = startOffY + (e.clientY - dragStartY) / rect.height;
+        renderStudio();
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (isDragging) {
+          isDragging = false;
+          scheduleSizeEstimate();
+        }
+      });
+
+      // Mouse Wheel Zoom
+      el.studioCanvas.addEventListener('wheel', (e) => {
+        if (!state.image || (state.mode === 'passport' && state.viewMode === 'sheet')) return;
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 0.08 : -0.08;
+        state.zoom = Math.max(0.3, Math.min(4.0, state.zoom + delta));
+        el.sliderZoom.value = Math.round(state.zoom * 100);
+        el.zoomVal.textContent = `${Math.round(state.zoom * 100)}%`;
+        renderStudio();
+        scheduleSizeEstimate();
+      }, { passive: false });
+
+      // Touch Drag & Pinch-to-Zoom
+      el.studioCanvas.addEventListener('touchstart', (e) => {
+        if (!state.image || (state.mode === 'passport' && state.viewMode === 'sheet')) return;
+        if (e.touches.length === 1) {
+          isDragging = true;
+          dragStartX = e.touches[0].clientX;
+          dragStartY = e.touches[0].clientY;
+          startOffX = state.offsetX;
+          startOffY = state.offsetY;
+        } else if (e.touches.length === 2) {
+          isDragging = false;
+          lastPinchDist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+        }
+      }, { passive: true });
+
+      el.studioCanvas.addEventListener('touchmove', (e) => {
+        if (!state.image || (state.mode === 'passport' && state.viewMode === 'sheet')) return;
+        if (e.touches.length === 1 && isDragging) {
+          e.preventDefault();
+          const rect = el.studioCanvas.getBoundingClientRect();
+          state.offsetX = startOffX + (e.touches[0].clientX - dragStartX) / rect.width;
+          state.offsetY = startOffY + (e.touches[0].clientY - dragStartY) / rect.height;
+          renderStudio();
+        } else if (e.touches.length === 2 && lastPinchDist) {
+          e.preventDefault();
+          const dist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+          const scaleFactor = dist / lastPinchDist;
+          lastPinchDist = dist;
+          state.zoom = Math.max(0.3, Math.min(4.0, state.zoom * scaleFactor));
+          el.sliderZoom.value = Math.round(state.zoom * 100);
+          el.zoomVal.textContent = `${Math.round(state.zoom * 100)}%`;
+          renderStudio();
+        }
+      }, { passive: false });
+
+      el.studioCanvas.addEventListener('touchend', () => {
+        if (isDragging || lastPinchDist) {
+          isDragging = false;
+          lastPinchDist = null;
+          scheduleSizeEstimate();
+        }
+      });
+
+      /* -------------------------------------------------------
+         14. EVENT LISTENERS WIRING
+         ------------------------------------------------------- */
+      // Upload triggers
+      el.btnUploadPrimary.addEventListener('click', (e) => { e.stopPropagation(); el.fileInput.click(); });
+      el.btnChangePhoto.addEventListener('click', () => el.fileInput.click());
+      el.dropZone.addEventListener('click', () => el.fileInput.click());
+      el.fileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+          handleFileSelection(e.target.files[0]);
+          e.target.value = '';
+        }
+      });
+
+      // Drag & Drop on Upload Card
+      ['dragenter', 'dragover'].forEach(evt => {
+        el.dropZone.addEventListener(evt, (e) => {
+          e.preventDefault();
+          el.dropZone.classList.add('drop-active');
+        });
+      });
+      ['dragleave', 'drop'].forEach(evt => {
+        el.dropZone.addEventListener(evt, (e) => {
+          e.preventDefault();
+          el.dropZone.classList.remove('drop-active');
+        });
+      });
+      el.dropZone.addEventListener('drop', (e) => {
+        const file = e.dataTransfer.files && e.dataTransfer.files[0];
+        if (file) handleFileSelection(file);
+      });
+
+      // Demo portrait triggers
+      el.btnTryDemo.addEventListener('click', (e) => { e.stopPropagation(); generateDemoPortrait(); });
+      el.btnCompactDemo.addEventListener('click', generateDemoPortrait);
+
+      // Mode Switcher Tabs
+      document.querySelectorAll('.mode-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const newMode = btn.dataset.mode;
+          if (state.mode === newMode) return;
+          state.mode = newMode;
+          if (newMode === 'passport') {
+            state.presetId = 'in_passport';
+            state.showBiometricGuide = true;
+            state.showCircleMask = false;
+          } else {
+            state.presetId = 'ig_dp';
+            state.viewMode = 'single';
+            state.showBiometricGuide = false;
+            state.showCircleMask = true;
+          }
+          syncAllUI();
+          renderStudio();
+          scheduleSizeEstimate();
+        });
+      });
+
+      // Custom Dimensions inputs
+      [el.customWInput, el.customHInput, el.customUnitSelect].forEach(inp => {
+        inp.addEventListener('input', () => {
+          state.customW = el.customWInput.value;
+          state.customH = el.customHInput.value;
+          state.customUnit = el.customUnitSelect.value;
+          el.activeDimBadge.textContent = getTargetDimensions().label;
+          renderStudio();
+          scheduleSizeEstimate();
+        });
+      });
+
+      // Single vs Print Sheet View
+      el.btnViewSingle.addEventListener('click', () => { state.viewMode = 'single'; syncAllUI(); renderStudio(); });
+      el.btnViewSheet.addEventListener('click', () => { state.viewMode = 'sheet'; syncAllUI(); renderStudio(); });
+
+      // Overlays
+      el.btnToggleBiometric.addEventListener('click', () => {
+        state.showBiometricGuide = !state.showBiometricGuide;
+        syncAllUI();
+        renderStudio();
+      });
+      el.btnToggleCircleMask.addEventListener('click', () => {
+        state.showCircleMask = !state.showCircleMask;
+        syncAllUI();
+        renderStudio();
+        scheduleSizeEstimate();
+      });
+
+      // Transform Sliders & Quick Buttons
+      el.sliderZoom.addEventListener('input', (e) => {
+        state.zoom = parseInt(e.target.value, 10) / 100;
+        el.zoomVal.textContent = `${e.target.value}%`;
+        renderStudio();
+        scheduleSizeEstimate();
+      });
+      el.sliderRotate.addEventListener('input', (e) => {
+        state.rotation = parseInt(e.target.value, 10);
+        el.rotateVal.textContent = `${state.rotation}°`;
+        renderStudio();
+        scheduleSizeEstimate();
+      });
+      el.btnRotate90.addEventListener('click', () => {
+        state.baseRotation = (state.baseRotation + 90) % 360;
+        renderStudio();
+        scheduleSizeEstimate();
+      });
+      el.btnFlipH.addEventListener('click', () => { state.flipH = !state.flipH; renderStudio(); scheduleSizeEstimate(); });
+      el.btnFlipV.addEventListener('click', () => { state.flipV = !state.flipV; renderStudio(); scheduleSizeEstimate(); });
+      el.btnAutoCenter.addEventListener('click', () => {
+        state.offsetX = 0;
+        state.offsetY = 0;
+        state.zoom = 1;
+        el.sliderZoom.value = 100;
+        el.zoomVal.textContent = '100%';
+        renderStudio();
+        scheduleSizeEstimate();
+      });
+      el.btnResetTransform.addEventListener('click', () => resetTransform(false));
+
+      // Print Sheet controls
+      document.querySelectorAll('.sheet-size-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.sheetSize = btn.dataset.sheet;
+          document.querySelectorAll('.sheet-size-btn').forEach(b => {
+            const act = b.dataset.sheet === state.sheetSize;
+            b.className = `sheet-size-btn py-2 px-3 rounded-xl text-xs font-semibold border transition-all ${
+              act ? 'bg-violet-600/25 border-violet-400 text-white' : 'bg-slate-900/70 border-white/10 text-slate-300 hover:border-white/25'
+            }`;
+          });
+          renderCopiesButtons();
+          renderStudio();
+        });
+      });
+
+      el.sliderSpacing.addEventListener('input', (e) => {
+        state.sheetSpacing = parseInt(e.target.value, 10);
+        el.spacingVal.textContent = `${state.sheetSpacing} px`;
+        renderStudio();
+      });
+      el.toggleCutLines.addEventListener('change', (e) => {
+        state.showCutLines = e.target.checked;
+        renderStudio();
+      });
+
+      // Adjustment Sliders
+      el.sliderBrightness.addEventListener('input', (e) => {
+        state.brightness = parseInt(e.target.value, 10);
+        state.activeFilterPreset = '';
+        el.brightnessVal.textContent = `${state.brightness}%`;
+        renderFilterPresetChips();
+        renderStudio();
+        scheduleSizeEstimate();
+      });
+      el.sliderContrast.addEventListener('input', (e) => {
+        state.contrast = parseInt(e.target.value, 10);
+        state.activeFilterPreset = '';
+        el.contrastVal.textContent = `${state.contrast}%`;
+        renderFilterPresetChips();
+        renderStudio();
+        scheduleSizeEstimate();
+      });
+      el.sliderSaturation.addEventListener('input', (e) => {
+        state.saturation = parseInt(e.target.value, 10);
+        state.activeFilterPreset = '';
+        el.saturationVal.textContent = `${state.saturation}%`;
+        renderFilterPresetChips();
+        renderStudio();
+        scheduleSizeEstimate();
+      });
+      el.sliderWarmth.addEventListener('input', (e) => {
+        state.warmth = parseInt(e.target.value, 10);
+        state.activeFilterPreset = '';
+        el.warmthVal.textContent = state.warmth > 0 ? `+${state.warmth}` : `${state.warmth}`;
+        renderFilterPresetChips();
+        renderStudio();
+        scheduleSizeEstimate();
+      });
+      el.btnResetAdjustments.addEventListener('click', () => {
+        state.activeFilterPreset = 'natural';
+        state.brightness = 100;
+        state.contrast = 100;
+        state.saturation = 100;
+        state.warmth = 0;
+        syncAdjustmentSliders();
+        renderFilterPresetChips();
+        renderStudio();
+        scheduleSizeEstimate();
+      });
+
+      // Background & Frame Controls
+      el.bgColorPicker.addEventListener('input', (e) => {
+        state.bgType = 'solid';
+        state.bgColor = e.target.value;
+        renderBgSwatches();
+        renderStudio();
+        scheduleSizeEstimate();
+      });
+      el.sliderBorderWidth.addEventListener('input', (e) => {
+        state.borderWidth = parseInt(e.target.value, 10);
+        el.borderWidthVal.textContent = `${state.borderWidth} px`;
+        renderStudio();
+        scheduleSizeEstimate();
+      });
+      el.borderColorPicker.addEventListener('input', (e) => {
+        state.borderColor = e.target.value;
+        renderStudio();
+        scheduleSizeEstimate();
+      });
+
+      // Export Controls
+      document.querySelectorAll('.format-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.exportFormat = btn.dataset.format;
+          syncFormatButtons();
+          scheduleSizeEstimate();
+        });
+      });
+      el.sliderQuality.addEventListener('input', (e) => {
+        state.exportQuality = parseInt(e.target.value, 10) / 100;
+        el.qualityVal.textContent = `${e.target.value}%`;
+        scheduleSizeEstimate();
+      });
+      el.btnAuto50KB.addEventListener('click', autoFitUnder50KB);
+      el.btnDownloadSingle.addEventListener('click', downloadSinglePhoto);
+      el.btnDownloadSheet.addEventListener('click', downloadPrintSheet);
+
+      // Responsive Canvas Resize
+      window.addEventListener('resize', () => renderStudio());
+
+      /* -------------------------------------------------------
+         15. INITIALIZATION
+         ------------------------------------------------------- */
+      function init() {
+        renderFilterPresetChips();
+        renderBgSwatches();
+        renderSocialRings();
+        syncAdjustmentSliders();
+        syncAllUI();
+        renderStudio();
+        lucide.createIcons();
+      }
+
+      window.addEventListener('DOMContentLoaded', init);
+      // Match the exact uploaded layout without an iframe scrollbar.
+      window.addEventListener('DOMContentLoaded', () => {
+        if (window.parent === window) return;
+        const reportHeight = () => window.parent.postMessage({
+          type:'toolnexa-photo-height',
+          height:Math.max(document.documentElement.scrollHeight,document.body.scrollHeight)
+        },window.location.origin);
+        if ('ResizeObserver' in window) new ResizeObserver(reportHeight).observe(document.body);
+        window.addEventListener('load',reportHeight);
+        requestAnimationFrame(reportHeight);
+        document.fonts?.ready?.then(reportHeight).catch(()=>{});
+      });
+    })();
+  </script>
+</body>
+</html>
