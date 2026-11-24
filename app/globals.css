@@ -1131,3 +1131,127 @@ h1,h2,h3,h4,.flagship-brand-link{font-family:"Plus Jakarta Sans",Inter,ui-sans-s
 @media(max-width:750px){.flagship-classic-shortcuts{margin:0 0 20px;gap:7px}
 .flagship-classic-shortcuts>span{flex-basis:100%;text-align:center}
 .flagship-classic-shortcuts a{font-size:10px;padding:8px 9px;flex-grow:1;justify-content:center}}
+
+
+/* Mobile header refinement (24 Nov 2026)
+ * Keeps Pro+ flagship styling, fixes two-row wrap and restores a compact workspace.
+ */
+.premium-shell .flagship-top{
+ display:grid;grid-template-columns:auto minmax(0,1fr) auto;
+ align-items:center;justify-content:space-between;column-gap:14px;row-gap:0;
+ flex-wrap:nowrap;isolation:isolate}
+.flagship-top .flagship-nav-brand,
+.flagship-top .flagship-nav-actions{min-width:0;flex-wrap:nowrap}
+.flagship-top .flagship-nav-links{justify-self:center}
+.flagship-top .flagship-brand-link .brand-icon{margin-right:0}
+.flagship-top .flagship-proplus-badge{flex:none}
+.flagship-top .flagship-nav-actions{justify-self:end}
+.flagship-upgrade-label,.flagship-upgrade-tier{white-space:nowrap}
+/* Signed-in users have a profile dropdown rather than a large Sign out button. */
+.flagship-account{position:relative;flex:none}
+.flagship-account-trigger,.flagship-account-skeleton{
+ display:inline-flex;align-items:center;justify-content:center;gap:7px;
+ min-height:38px;min-width:38px;padding:5px 9px;
+ border:1px solid #818cf851;border-radius:11px;background:#141c2d;color:#dce6ff;
+ font-size:12px;font-weight:800;white-space:nowrap;text-decoration:none}
+.flagship-account-trigger:hover,.flagship-account-trigger[aria-expanded=true]{
+ border-color:#22d3ee8f;background:#1a2841;color:#fff}
+.flagship-account-avatar{display:grid;place-items:center;width:28px;height:28px;flex:none;border-radius:9px;
+ background:linear-gradient(145deg,#6366f1,#06b6d4);color:#fff;
+ font-size:12px;font-weight:950;box-shadow:0 3px 12px #6366f132}
+.flagship-account-text{font-size:12px;font-weight:850}
+.flagship-account-chevron{color:#a5b4fc}
+.flagship-account-skeleton{opacity:.7}
+.flagship-account-popover{
+ position:absolute;z-index:95;top:calc(100% + 12px);right:0;width:min(282px,calc(100vw - 26px));
+ padding:11px;background:#111827;box-shadow:0 18px 55px #000a;
+ border:1px solid #818cf85c;border-radius:16px;color:#eff6ff}
+.flagship-account-kicker{color:#a5b4fc;font-weight:900;font-size:10px;letter-spacing:.12em;margin:5px 9px 5px}
+.flagship-account-email{font-size:12px;font-weight:750;color:#e6f0ff;overflow-wrap:anywhere;
+ padding:0 9px 10px;margin:0 0 6px;border-bottom:1px solid #ffffff1c}
+.flagship-account-popover>a,.flagship-account-popover>button{
+ display:flex;align-items:center;gap:10px;width:100%;padding:12px 11px;
+ border:0;border-radius:10px;background:transparent;color:#e4edff;text-decoration:none;
+ text-align:left;font-size:12px;font-weight:800;min-height:41px}
+.flagship-account-popover>a:hover,.flagship-account-popover>button:hover{background:#818cf624}
+.flagship-account-popover svg{color:#67e8f9;flex:none}
+.flagship-account-popover .flagship-account-logout{color:#fda4af;border-top:1px solid #ffffff1a;border-radius:0 0 10px 10px}
+.flagship-account-popover .flagship-account-logout svg{color:#fda4af}
+.flagship-account-popover .flagship-account-logout:disabled{opacity:.55}
+.flagship-account-error{color:#fda4af;font-size:11px;line-height:1.5;padding:7px;margin:2px}
+.light .flagship-account-trigger,.light .flagship-account-skeleton{
+ color:#223457;background:#fff;border-color:#d7deec}
+.light .flagship-account-popover{background:#fff;border-color:#d6dbee;box-shadow:0 18px 43px #19274324}
+.light .flagship-account-email,.light .flagship-account-popover>a{color:#24344e}
+.light .flagship-account-kicker{color:#6366f1}
+.light .flagship-account-popover .flagship-account-logout{color:#b91c1c}
+.light .flagship-account-popover>a:hover,.light .flagship-account-popover>button:hover{background:#e7ebff}
+@media(max-width:1020px){
+ .premium-shell .flagship-top{grid-template-columns:minmax(0,1fr) auto;column-gap:9px}
+ .premium-shell .flagship-top .flagship-nav-links{display:none}
+ .flagship-top .flagship-nav-brand{justify-self:start}
+ .flagship-top .flagship-nav-actions{gap:6px}
+ .flagship-nav-actions .flagship-search-trigger{min-width:38px}
+}
+@media(max-width:750px){
+ .premium-shell .flagship-top{position:sticky;top:0;z-index:55;
+  margin:-14px -13px 14px;padding:9px 12px;min-height:60px;
+  grid-template-columns:minmax(0,1fr) auto;column-gap:7px;
+  box-shadow:0 7px 26px #0004}
+ .flagship-top .flagship-nav-brand{gap:5px;overflow:hidden}
+ .flagship-top .flagship-brand-link{gap:7px;min-width:0;font-size:15px;letter-spacing:-.04em}
+ .flagship-top .flagship-brand-link .brand-icon{display:grid;place-items:center;
+  width:33px;height:33px;min-width:33px;min-height:33px;padding:6px;border-radius:11px}
+ .flagship-top .flagship-brand-link .brand-icon svg{width:21px;height:21px}
+ .flagship-top .flagship-proplus-badge{font-size:9px;padding:4px 5px;box-shadow:none}
+ .flagship-top .flagship-nav-menu{display:inline-grid;place-items:center;
+  width:36px;height:36px;min-width:36px;padding:0;border-radius:11px}
+ .flagship-top .flagship-nav-actions{gap:5px;flex:none}
+ .flagship-top .flagship-search-trigger,
+ .flagship-top .flagship-account-trigger,
+ .flagship-top .flagship-account-skeleton,
+ .flagship-top .flagship-gold-cta{
+  display:inline-grid;place-items:center;width:36px;height:36px;min-width:36px;min-height:36px;
+  padding:0;margin:0;border-radius:11px}
+ .flagship-top .flagship-search-trigger svg{width:20px;height:20px}
+ .flagship-top .flagship-account-trigger .flagship-account-avatar{width:28px;height:28px}
+ .flagship-top .flagship-account-trigger .flagship-account-text,
+ .flagship-top .flagship-account-trigger .flagship-account-chevron,
+ .flagship-top .flagship-signin span,
+ .flagship-top .flagship-gold-cta .flagship-upgrade-label,
+ .flagship-top .flagship-gold-cta .flagship-upgrade-tier{display:none}
+ .flagship-top .flagship-gold-cta svg{width:19px;height:19px}
+ .flagship-top .flagship-gold-cta{background:linear-gradient(135deg,#f59e0b,#fbbf24)!important}
+ .premium-shell .premium-mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:50;
+  height:auto;min-height:66px;padding:6px 7px calc(7px + env(safe-area-inset-bottom));
+  gap:4px;align-items:stretch;justify-content:space-between;
+  background:#101625f2;border-top:1px solid #818cf84c;backdrop-filter:blur(18px);
+  box-shadow:0 -10px 28px #0004}
+ .premium-shell .premium-mobile-nav>a{display:flex;flex:1 1 0;min-width:0;max-width:none;
+  flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  padding:7px 2px 5px;border-radius:12px;text-align:center;
+  font-size:10px;line-height:1.1;font-weight:750;color:#b6bfd7;text-decoration:none;white-space:nowrap}
+ .premium-shell .premium-mobile-nav>a svg{width:20px;height:20px;flex:none}
+ .premium-shell .premium-mobile-nav>a.active{background:linear-gradient(145deg,#31255b,#271b4c);color:#e4c5ff}
+ .premium-shell .premium-mobile-nav>a.active svg{color:#c4b5fd}
+ .premium-shell .premium-main{padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+ .light .premium-shell .premium-mobile-nav{background:#fffffff2;border-top-color:#d8dfef}
+ .light .premium-shell .premium-mobile-nav>a{color:#51627f}
+ .light .premium-shell .premium-mobile-nav>a.active{color:#5142b2;background:#e9e5ff}
+}
+@media(max-width:410px){
+ .flagship-top .flagship-proplus-badge{display:none}
+ .flagship-top .flagship-brand-link{font-size:14px}
+ .premium-shell .flagship-top{padding-left:9px;padding-right:9px}
+}
+@media(max-width:345px){
+ .flagship-top .flagship-brand-link{font-size:13px}
+ .flagship-top .flagship-brand-link .brand-icon{width:29px;min-width:29px;height:29px;min-height:29px}
+ .flagship-top .flagship-nav-menu{width:33px;min-width:33px}
+ .flagship-top .flagship-nav-actions{gap:3px}
+ .flagship-top .flagship-search-trigger,.flagship-top .flagship-account-trigger,
+ .flagship-top .flagship-account-skeleton,.flagship-top .flagship-gold-cta{width:33px;min-width:33px;height:35px;min-height:35px}
+ .premium-shell .premium-mobile-nav>a{font-size:9px}
+}
+@media(min-width:751px){.premium-shell .premium-mobile-nav{display:none}}
+@media(prefers-reduced-motion:reduce){.flagship-account-popover{transition:none}}
