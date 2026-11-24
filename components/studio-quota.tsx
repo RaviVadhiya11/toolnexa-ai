@@ -3,19 +3,21 @@ import {useEffect,useState} from 'react';
 import Link from 'next/link';
 import {showDownloadGate} from '@/lib/download-access';
 import type {StudioRunSlug} from '@/lib/studio-run-slugs';
-import {quotaKey,readUsage,consumeUsage,dailyLimits,isUsagePlan,type UsagePlan} from '@/lib/usage-limits';
+import {quotaKey,readUsage,consumeUsage,dailyLimits,isUsagePlan,reconcileFreeDeviceUsage,mirrorFreeDeviceUsage,type QuotaMode,type UsagePlan} from '@/lib/usage-limits';
 
 // A single shared daily balance covers the existing 60 tools and the active Studio workflows.
-type Quota={plan:UsagePlan;limit:number;used:number;mode:'browser'|'account';userId:string|null};
+type Quota={plan:UsagePlan;limit:number;used:number;mode:QuotaMode;userId:string|null};
 export async function currentStudioQuota():Promise<Quota>{
  const res=await fetch('/api/usage/quota',{cache:'no-store'});
  const result=await res.json();
  if(!res.ok)throw Error(result.error||'Unable to verify your daily allowance');
- if(!isUsagePlan(result.plan)||!['browser','account'].includes(result.mode))
+ if(!isUsagePlan(result.plan)||!['browser','account','device'].includes(result.mode))
   throw Error('Invalid quota response');
  const plan=result.plan as UsagePlan,limit=dailyLimits[plan];
  const userId=typeof result.userId==='string'?result.userId:null;
- return {plan,limit,mode:result.mode,used:result.mode==='account'?Number(result.used||0):readUsage(quotaKey(userId)),userId};
+ const used=result.mode==='device'?await reconcileFreeDeviceUsage(Number(result.used),userId):
+  result.mode==='account'?Number(result.used||0):readUsage(quotaKey(userId));
+ return {plan,limit,mode:result.mode,used,userId};
 }
 export async function reserveStudioUsage(slug:StudioRunSlug){
  const balance=await currentStudioQuota();
@@ -24,9 +26,9 @@ export async function reserveStudioUsage(slug:StudioRunSlug){
    currentPlan:balance.plan,message:'Your '+balance.plan+' daily run limit is complete. Upgrade for more daily usage or try again after the UTC reset.'});
   throw Error('Daily limit reached. Upgrade for more usage.');
  }
- if(balance.mode==='account'){
+ if(balance.mode!=='browser'){
   const res=await fetch('/api/usage/quota',{method:'POST',
-   headers:{'Content-Type':'application/json'},body:JSON.stringify({slug})});
+   headers:{'Content-Type':'application/json'},body:JSON.stringify({slug,...(balance.mode==='device'?{clientUsed:readUsage(quotaKey(null))}:{})})});
   const json=await res.json();
   if(!res.ok){
    if(res.status===429)showDownloadGate({kind:'limit',feature:'Creator Studio export',
@@ -34,6 +36,7 @@ export async function reserveStudioUsage(slug:StudioRunSlug){
     message:json.error||'Daily allowance exhausted. Upgrade for more runs.'});
    throw Error(json.error||'Cannot reserve the daily tool run');
   }
+  if(balance.mode==='device'&&typeof json.used==='number')mirrorFreeDeviceUsage(json.used);
  }else{
   const used=consumeUsage(quotaKey(balance.userId),balance.limit);
   if(used===null){
