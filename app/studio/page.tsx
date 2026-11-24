@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type {Metadata} from 'next';
-export const metadata:Metadata={title:'11 Creator Studio Workspaces including AI Passport & Social Size Studio',description:'Explore ToolNexa AI Vector Studio, JPG to SVG, vector format conversion, SVG editing, background removal, retouch, enhancement and photo restoration.'};
+export const metadata:Metadata={title:'11 Creator Studio Workspaces including AI Passport & Social Size Studio',description:'Explore 11 ToolNexa AI Creator Studio workspaces for image enhancement, vector conversion, background removal, ZIP Maker and passport photo sizes.',alternates:{canonical:'/studio'}};
 const items=[
  {href:'/studio/zip-maker',icon:'▣',title:'Advanced ZIP Maker Studio',desc:'Create professional ZIP archives from files and folders locally, with real compression, nested paths and Starter–Max limits.',tag:'NEW · Verified ZIP'},
  {href:'/studio/vector',icon:'✦',title:'Real Vector Studio',desc:'Generate editable SVG designs and open the image tracer.',tag:'Vector'},
