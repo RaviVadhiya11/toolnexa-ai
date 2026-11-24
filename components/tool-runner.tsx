@@ -1,5 +1,6 @@
 'use client';
-import {useEffect,useState} from 'react';import Link from 'next/link';import {dailyLimits,isUsagePlan,quotaKey,readUsage,consumeUsage,type UsagePlan} from '@/lib/usage-limits';
+import {useEffect,useState} from 'react';
+import {withPaidDownload,showDownloadGate} from '@/lib/download-access';import Link from 'next/link';import {dailyLimits,isUsagePlan,quotaKey,readUsage,consumeUsage,type UsagePlan} from '@/lib/usage-limits';
 import {ToolUploadPreview} from '@/components/tool-upload-preview';
 import {CopyableResultRows} from '@/components/copyable-result-rows';import QRCode from 'qrcode';import {PDFDocument} from 'pdf-lib';import type {Tool} from '@/lib/tools';import {wordReport,convertCase,reverseText,formatJson,encodeBase64,decodeBase64,transformUrl,securePassword,gstReport,percentageReport,profitReport,parsePageRanges} from '@/lib/tool-operations';
 function download(data:Blob,name:string){const url=URL.createObjectURL(data);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000)}
@@ -69,13 +70,24 @@ useEffect(()=>{
 
 const textSlugs=['word-counter','case-converter','text-reverser','json-formatter','base64-encoder','url-encoder','qr-code-generator','text-to-pdf'];const fileSlugs=['image-resizer','image-to-png','image-to-jpg','image-to-webp','image-to-pdf','merge-pdf','split-pdf'];
 function saveGenerated(blob:Blob,name:string){setLastDownload({blob,name});download(blob,name)}
-async function run(){if(working)return;setWorking(true);setOutput('');setQr('');setDownloaded(false);setLastDownload(null);try{let allowance=await getLiveQuota();if(allowance.limit!==null&&allowance.used>=allowance.limit)throw Error('Daily limit reached. Subscribe or upgrade for more usage.');
+async function run(){
+ if([...fileSlugs,'text-to-pdf'].includes(slug)){
+  await withPaidDownload({slug,feature:tool.title+' file download'},execute);
+ }else await execute();
+}
+async function execute(){if(working)return;setWorking(true);setOutput('');setQr('');setDownloaded(false);setLastDownload(null);try{let allowance=await getLiveQuota();if(allowance.limit!==null&&allowance.used>=allowance.limit){
+  showDownloadGate({kind:'limit',feature:tool.title,requiredTier:'Starter',message:'Your shared daily usage limit is complete. Upgrade for a higher limit or return after the UTC daily reset.'});
+  throw Error('Daily limit reached. Subscribe or upgrade for more usage.');
+ }
  if(allowance.mode==='account'){
   // Atomic reservation before any local operation: concurrent devices cannot exceed the quota.
   // A reservation is charged even if local processing subsequently fails.
   const res=await fetch('/api/usage/quota',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug})});
   const data=await res.json() as {error?:string;used?:number};
-  if(!res.ok){if(res.status===429&&allowance.limit!==null)setQuota({...allowance,used:allowance.limit});throw Error(data.error||'Unable to reserve a daily tool run.')}
+  if(!res.ok){if(res.status===429){
+   if(allowance.limit!==null)setQuota({...allowance,used:allowance.limit});
+   showDownloadGate({kind:'limit',feature:tool.title,requiredTier:'Starter',message:data.error||'Daily limit reached. Upgrade for more daily runs.'});
+  }throw Error(data.error||'Unable to reserve a daily tool run.')}
   if(typeof data.used!=='number')throw Error('Unexpected account quota response');
   allowance={...allowance,used:data.used};setQuota(allowance);
  }
@@ -162,7 +174,8 @@ async function copyResult(){
 }
 function downloadTextResult(){
  if(!output||hasError)return;
- download(new Blob([output],{type:'text/plain;charset=utf-8'}),`toolnexa-${slug}-result.txt`);
+ void withPaidDownload({slug,feature:tool.title+' text download'},()=>
+  download(new Blob([output],{type:'text/plain;charset=utf-8'}),`toolnexa-${slug}-result.txt`));
 }
 const fileAccept=slug==='merge-pdf'||slug==='split-pdf'?'application/pdf,.pdf':'image/png,image/jpeg,image/webp,image/gif,image/bmp';
 return <section className="tool-workspace" aria-label={tool.title+' workspace'}>
@@ -199,14 +212,14 @@ return <section className="tool-workspace" aria-label={tool.title+' workspace'}>
     {quotaError&&<p role="alert" className="tool-quota-error">{quotaError}</p>}
     {quota&&quota.limit!==null&&quota.used>=quota.limit&&<div className="tool-quota-upgrade" role="status"><strong>Daily limit reached</strong><p>New operations are locked until the next daily reset or a higher plan is activated.</p><Link href="/pricing" className="button">View subscription plans →</Link></div>}
    </div>
-   <div className="tool-editor-actions"><button type="button" className="button tool-run-button" onClick={()=>{setCopyMessage('');void run()}} disabled={working||quota===null||!!quotaError||(quota.limit!==null&&quota.used>=quota.limit)}>{quota&&quota.limit!==null&&quota.used>=quota.limit?'Limit reached':runLabel} <span aria-hidden="true">→</span></button></div>
+   <div className="tool-editor-actions"><button type="button" className="button tool-run-button" onClick={()=>{setCopyMessage('');void run()}} disabled={working||quota===null||!!quotaError}>{quota&&quota.limit!==null&&quota.used>=quota.limit?'Limit reached':runLabel} <span aria-hidden="true">→</span></button></div>
   </div>
   <aside className="tool-output" aria-label="Tool result">
    <div className="tool-output-top"><div><p className="tool-workspace-kicker">RESULT</p><h3>Your output</h3></div><span className={'tool-result-status '+(hasError?'is-error':output||qr?'is-ready':'')}>{working?'Processing':hasError?'Error':output||qr?'Ready':'Waiting'}</span></div>
    {working?<p className="tool-empty-result" role="status">Processing your request…</p>:output?<pre className={'tool-output-content '+(hasError?'tool-output-error':'')} role="status">{output}</pre>:<div className="tool-empty-result"><span aria-hidden="true">✦</span><p>Results will appear here after you run the tool.</p></div>}
    {output&&!hasError&&!working&&!qr&&!downloaded&&<CopyableResultRows text={output} slug={slug}/>}
-   {qr&&<div className="tool-qr-result"><img src={qr} alt="Generated QR code" width={240} height={240}/><a className="button" href={qr} download="toolnexa-qr.png">Download QR PNG</a></div>}
-   {lastDownload&&downloaded&&<div className="tool-output-actions"><button type="button" className="button outline" onClick={()=>download(lastDownload.blob,lastDownload.name)}>Download again</button><span className="small-note">{lastDownload.name} · {(lastDownload.blob.size/1024/1024).toFixed(2)} MB</span></div>}
+   {qr&&<div className="tool-qr-result"><img src={qr} alt="Generated QR code" width={240} height={240}/><button type="button" className="button" onClick={()=>void withPaidDownload({slug,feature:"QR code PNG download"},()=>{const a=document.createElement("a");a.href=qr;a.download="toolnexa-qr.png";document.body.appendChild(a);a.click();a.remove()})}>Download QR PNG</button></div>}
+   {lastDownload&&downloaded&&<div className="tool-output-actions"><button type="button" className="button outline" onClick={()=>void withPaidDownload({slug,feature:tool.title+' file download'},()=>download(lastDownload.blob,lastDownload.name))}>Download again</button><span className="small-note">{lastDownload.name} · {(lastDownload.blob.size/1024/1024).toFixed(2)} MB</span></div>}
    {output&&!hasError&&!qr&&!downloaded&&<div className="tool-output-actions"><button type="button" className="button outline" onClick={()=>void copyResult()}>Copy result</button><button type="button" className="button outline" onClick={downloadTextResult}>Download .txt</button></div>}
    {copyMessage&&<p className="small-note mt-3" role="status">{copyMessage}</p>}
    <p className="tool-local-note">Privacy first · Local browser processing</p>
