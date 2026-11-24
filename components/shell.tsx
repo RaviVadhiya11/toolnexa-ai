@@ -40,7 +40,7 @@ export function Shell({children}:{children:React.ReactNode}){
   setMenuOpen(false);
  }
  function toggle(){const value=!dark;setDark(value);document.documentElement.classList.toggle('dark',value);document.documentElement.classList.toggle('light',!value);localStorage.setItem('toolnexa-theme',value?'dark':'light')}
- return <div className="shell premium-shell">
+ return <div className={"shell premium-shell "+(menuOpen?"has-open-drawer":"")}>
   <a className="site-skip-link" href="#main-content">Skip to main content</a>
   <aside id="flagship-workspace-drawer" className={'sidebar premium-sidebar flagship-workspace-drawer '+(menuOpen?'sidebar-open':'')}
    aria-label="Classic workspace navigation and tool categories" aria-hidden={!menuOpen}>
