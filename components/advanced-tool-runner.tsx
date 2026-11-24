@@ -128,7 +128,7 @@ export function AdvancedToolRunner({tool}:{tool:Tool}){
  const [utmTerm,setUtmTerm]=useState('');
  const [utmContent,setUtmContent]=useState('');
  const [option,setOption]=useState(SELECTS[slug]?.[0][0]||'');
- const [aiMode,setAiMode]=useState<'gemini'|'offline'>('gemini');
+ const [aiMode,setAiMode]=useState<'gemini'|'offline'>('offline');
  const [file,setFile]=useState<File|null>(null);
  const [quota,setQuota]=useState<Q|null>(null);
  const [quotaError,setQuotaError]=useState('');
@@ -157,7 +157,11 @@ export function AdvancedToolRunner({tool}:{tool:Tool}){
  // eslint-disable-next-line react-hooks/exhaustive-deps
  },[slug]);
  async function reserve(q:Q):Promise<Q>{
-  if(q.limit!==null&&q.used>=q.limit)throw Error('Daily usage limit reached. See subscription plans.');
+  if(q.limit!==null&&q.used>=q.limit){
+   showDownloadGate({kind:'limit',feature:tool.title,requiredTier:'Starter',currentPlan:q.plan,
+    message:'Your daily runs are used up. Upgrade for a higher limit or return after the UTC reset.'});
+   throw Error('Daily usage limit reached. See subscription plans.');
+  }
   if(q.mode==='browser')return q;
   const response=await fetch('/api/usage/quota',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug}),credentials:'same-origin'});
   const data=await response.json() as {used?:unknown;error?:string};
@@ -290,7 +294,13 @@ export function AdvancedToolRunner({tool}:{tool:Tool}){
    setResult(output||'Completed.');
    if(after.mode==='browser'){
     const used=consumeUsage(after.key,after.limit??0);
-    if(used===null)throw Error('Unable to save local daily usage. Please enable browser storage.');
+    if(used===null){
+     const reached=after.limit!==null&&readUsage(after.key)>=after.limit;
+     showDownloadGate({kind:reached?'limit':'error',feature:tool.title,
+      requiredTier:'Starter',currentPlan:after.plan,
+      message:reached?'Daily usage limit reached. Upgrade or try again after the UTC reset.':'Browser storage is unavailable. Please enable storage and retry.'});
+     throw Error('Unable to save local daily usage. Please enable browser storage.');
+    }
     setQuota({...after,used});
    }
    logUsage(slug);recent(slug);
