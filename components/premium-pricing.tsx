@@ -134,13 +134,13 @@ export function PremiumPricing({clientId,plans,enabled,yearlyEnabled,maxEnabled}
        'PhonePe is not ready to charge yet. INR prices, recurring mandate approval, production keys and payment verification must be configured before checkout can open.'}</p>
       <p className="secure-checkout-promo">Promo codes are not currently configured. No discount is assumed.</p>
      </section>
-     <div className="secure-checkout-action" aria-label="Single secure payment action">
+    </div>
+    <div className="secure-checkout-action" aria-label="Single secure payment action">
       {paymentMethod==='paypal'?(available?
         <PayPalSubscribe key={selected+'-'+billingPeriod} clientId={clientId} planId={planId} tier={selected} billingPeriod={billingPeriod} singleAction/>:
         <button type="button" className="secure-checkout-primary" disabled>PayPal checkout is not available for this plan</button>):
        <button type="button" className="secure-checkout-primary" disabled>PhonePe PG · Activation pending</button>}
       <p className="secure-checkout-note">{paymentMethod==='paypal'?'Secure PayPal approval · No payment is taken until you confirm.':'PhonePe checkout is unavailable until approved. No card or UPI information is collected here.'}</p>
-     </div>
     </div>
    </section>
   </div></div>,document.body)}
