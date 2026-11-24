@@ -137,7 +137,7 @@ test('Same-page Pro HD exports preserve the existing browser studio with server 
  const html=read('public/studio-passport-social-reference.html');
  const parent=read('components/passport-social-exact-experience.tsx');
  assert.doesNotMatch(html,/Open Pro HD Studio ↗|href="\/studio\/passport-social\/pro"/);
- for(const id of ['inlineProStudio','btnProPhoto','btnProSheet','btnProPdf','btnProAi','proUpgradeLink'])
+ for(const id of ['inlineProStudio','btnProPhoto','btnProSheet','btnProPdf','btnPro4k','btnPro8k','proUpgradeLink'])
   assert.ok(html.includes('id="'+id+'"'),id);
  assert.match(html,/premiumExport\('photo'\)/);
  assert.match(html,/premiumExport\('sheet'\)/);
@@ -148,10 +148,19 @@ test('Same-page Pro HD exports preserve the existing browser studio with server 
  assert.match(html,/toolnexa-photo-revision/);
  assert.match(parent,/studio\/upscale-authorize/);
  assert.match(parent,/await reserveStudioUsage\('studio-passport-social'\)/);
- assert.match(parent,/sourceKey=\{photoRevision\}/);
- assert.match(parent,/StudioUpscalePanel/);
- assert.match(parent,/enableAI/);
+ assert.match(parent,/automaticHdDownload/);
+ assert.match(parent,/upscaleDimensions/);
+ assert.match(parent,/neuralEnhance2x/);
+ assert.match(parent,/downloadFile/);
+ assert.doesNotMatch(parent,/StudioUpscalePanel|toolnexa-inline-ai-upscaler|showAi/);
  assert.match(parent,/toolnexa-photo-canvas-result/);
+ assert.match(html,/toolnexa-photo-auto-upscale/);
+ assert.match(html,/autoUpscaleAndDownload/);
+ assert.doesNotMatch(html,/btnProAi|toolnexa-photo-open-ai/);
+ const verify=parent.indexOf("const authorization=await fetch('/api/studio/upscale-authorize'");
+ const run=parent.indexOf("await reserveStudioUsage('studio-passport-social')",parent.indexOf('async function automaticHdDownload'));
+ const file=parent.indexOf("downloadFile(blob",parent.indexOf('async function automaticHdDownload'));
+ assert.ok(verify>=0 && run>verify && file>run,'Premium auth and quota must precede HD download');
  // Next.js does not compile scripts in static public HTML. Validate them here
  // on every production build so bad inline JS cannot silently ship.
  const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)];
