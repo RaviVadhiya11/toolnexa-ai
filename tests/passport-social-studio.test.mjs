@@ -136,25 +136,25 @@ test('mobile Passport Studio avoids nested footer, sticky toolbar and iframe hei
 test('Same-page Pro HD exports preserve the existing browser studio with server PayPal checks',()=>{
  const html=read('public/studio-passport-social-reference.html');
  const parent=read('components/passport-social-exact-experience.tsx');
- assert.doesNotMatch(html,/Open Pro HD Studio ↗|href="\\/studio\\/passport-social\\/pro"/);
+ assert.doesNotMatch(html,/Open Pro HD Studio ↗|href="\/studio\/passport-social\/pro"/);
  for(const id of ['inlineProStudio','btnProPhoto','btnProSheet','btnProPdf','btnProAi','proUpgradeLink'])
   assert.ok(html.includes('id="'+id+'"'),id);
- assert.match(html,/premiumExport\\('photo'\\)/);
- assert.match(html,/premiumExport\\('sheet'\\)/);
- assert.match(html,/premiumExport\\('pdf'\\)/);
+ assert.match(html,/premiumExport\('photo'\)/);
+ assert.match(html,/premiumExport\('sheet'\)/);
+ assert.match(html,/premiumExport\('pdf'\)/);
  assert.match(html,/toolnexa-photo-premium/);
  assert.match(html,/makePhysicalPdf/);
  assert.match(html,/toolnexa-photo-canvas-request/);
  assert.match(html,/toolnexa-photo-revision/);
- assert.match(parent,/studio\\/upscale-authorize/);
- assert.match(parent,/await reserveStudioUsage\\('studio-passport-social'\\)/);
- assert.match(parent,/sourceKey=\\{photoRevision\\}/);
+ assert.match(parent,/studio\/upscale-authorize/);
+ assert.match(parent,/await reserveStudioUsage\('studio-passport-social'\)/);
+ assert.match(parent,/sourceKey=\{photoRevision\}/);
  assert.match(parent,/StudioUpscalePanel/);
  assert.match(parent,/enableAI/);
  assert.match(parent,/toolnexa-photo-canvas-result/);
  // Next.js does not compile scripts in static public HTML. Validate them here
  // on every production build so bad inline JS cannot silently ship.
- const scripts=[...html.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/g)];
+ const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)];
  assert.ok(scripts.length>=2,'Expected Tailwind config and editor scripts');
  for(const match of scripts)if(match[1].trim())assert.doesNotThrow(()=>new vm.Script(match[1]));
 });
