@@ -1,4 +1,7 @@
 import type {Metadata} from 'next';
-import {StudioWorkspace} from '@/components/studio-workspace';
-export const metadata:Metadata={title:'Image Enhancer and HD Upscaler',description:'Improve image color and contrast locally, with Pro-only HD 2x/4x JPEG export.'};
-export default function EnhancePage(){return <StudioWorkspace mode="image"/>}
+import {ProfessionalImageEnhancer} from '@/components/professional-image-enhancer';
+export const metadata:Metadata={
+ title:'AI Detail Image Enhancer & Upscaler — HD, 4K, 8K',
+ description:'Upload a JPG, PNG or WebP photo and enhance sharpness, colours and noise. Optional neural AI Detail, before/after comparison and upscaling up to 8K, with subscription-gated full-size downloads.'
+};
+export default function EnhancePage(){return <ProfessionalImageEnhancer/>}
