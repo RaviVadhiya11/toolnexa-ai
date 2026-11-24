@@ -20,6 +20,7 @@ export function StudioVectorFormats({mode}:{mode:Mode}){
  const [size,setSize]=useState(100);
  const [format,setFormat]=useState<VectorFormat>('svg');
  const [busy,setBusy]=useState(false);
+ const [upscaledPreview,setUpscaledPreview]=useState('');
  const [status,setStatus]=useState('Choose a valid SVG with paths or shapes.');
  const shapeCount=(xml.match(/<(?:path|rect|circle|ellipse|polygon|polyline|line)\b/g)||[]).length;
  function commitSvg(next:string){
@@ -140,7 +141,7 @@ export function StudioVectorFormats({mode}:{mode:Mode}){
    <div className="studio-panel suite-controls">
     <h2>Upload SVG &amp; Live Preview</h2>
     <StudioUploadPreview id="suite-svg-file" accept=".svg,image/svg+xml" name={name}
-      sourceUrl={preview} onFile={upload} hint="Editable SVG · max 2.5 MB"
+      sourceUrl={preview} outputUrl={upscaledPreview} afterLabel="Upscaled preview" onFile={upload} hint="Editable SVG · max 2.5 MB"
       beforeLabel="SVG Vector" busy={busy} onReset={()=>{setXml('');setHistory({past:[],future:[]});setStatus('Preview reset. Upload another SVG or create shapes.')}}/>
     <p className="studio-note">{name||'Use SVG from Image-to-Vector, Illustrator, Inkscape or CorelDRAW.'}</p>
     {mode==='edit'?<><h2>Design Controls</h2>
@@ -189,7 +190,7 @@ export function StudioVectorFormats({mode}:{mode:Mode}){
     <h2>Advanced formats</h2>
     <p className="studio-note">Native Adobe Illustrator .AI, CorelDRAW .CDR, WMF and EMF require verified proprietary/format-specific converters. These file types are **not** produced here. You can import the genuine SVG or EPS into compatible desktop editors.</p>
     <Link className="studio-upgrade" href="/studio/image-to-vector">Turn PNG/JPG into SVG →</Link>
-    <StudioUpscalePanel getCanvas={previewCanvas} format="vector" disabled={!xml} sourceKey={xml} usageSlug={mode==='edit'?'studio-svg-editor':'studio-convert'}/>
+    <StudioUpscalePanel getCanvas={previewCanvas} format="vector" disabled={!xml} sourceKey={xml} usageSlug={mode==='edit'?'studio-svg-editor':'studio-convert'} onPreviewChange={setUpscaledPreview}/>
    </div>
   </div>
  </section>

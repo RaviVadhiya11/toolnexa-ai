@@ -103,6 +103,7 @@ export function ImageToVector(){
  const [paths,setPaths]=useState(0);
  const [sourceSize,setSourceSize]=useState('');
  const [working,setWorking]=useState(false);
+ const [upscaledPreview,setUpscaledPreview]=useState('');
  const [status,setStatus]=useState('Upload an image, then select Trace to Vector.');
  const [plan,setPlan]=useState('Checking');
  const [scale,setScale]=useState<2|4>(2);
@@ -200,8 +201,8 @@ export function ImageToVector(){
    <div className="studio-panel vectorize-settings">
     <h2>1. Upload Image</h2>
     <StudioUploadPreview id="vectorize-upload" accept="image/png,image/jpeg,image/webp"
-      name={fileName} sourceUrl={originalUrl} outputUrl={svgUrl}
-      onFile={selectFile} beforeLabel="Original raster" afterLabel="Real traced SVG"
+      name={fileName} sourceUrl={originalUrl} outputUrl={upscaledPreview||svgUrl}
+      onFile={selectFile} beforeLabel="Original raster" afterLabel={upscaledPreview?"Upscaled preview":"Real traced SVG"}
       hint="PNG / JPG / WebP · max 10 MB" busy={working} onReset={resetTrace}/>
     {fileName&&<p className="vectorize-file">Selected: {fileName}</p>}
     <h2>2. Trace Settings</h2>
@@ -270,7 +271,7 @@ export function ImageToVector(){
       onClick={()=>void downloadHd()}>{premium.checking?'Checking subscription…':'🔒 Download Pro HD PNG · Unlock'}</button>
     {premium.error&&<p className="studio-note" role="status">{premium.error}</p>}
     {premium.modal}
-    <StudioUpscalePanel getCanvas={()=>renderSvg(svg)} format="vector" disabled={!svg} sourceKey={svg} usageSlug="studio-image-to-vector"/>
+    <StudioUpscalePanel getCanvas={()=>renderSvg(svg)} format="vector" disabled={!svg} sourceKey={svg} usageSlug="studio-image-to-vector" onPreviewChange={setUpscaledPreview}/>
     <p className="studio-note">SVG is genuine vector at any zoom. Native AI / CDR / EPS / DXF / WMF / EMF export is not yet implemented; compatible editors can import SVG.</p>
    </div>
   </div>

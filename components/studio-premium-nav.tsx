@@ -17,7 +17,7 @@ export function StudioTopbar(){
   <div className="studio-premium-brand">
    <Link href="/studio"><span className="studio-premium-brand-icon">✦</span>
     <span>ToolNexa <strong>CREATOR STUDIO</strong></span></Link>
-   <span className="studio-premium-version">V3</span>
+   <span className="studio-premium-version">V4</span>
   </div>
   <div className="studio-premium-nav-links">
    {tools.map(tool=><Link href={tool.path} key={tool.path}

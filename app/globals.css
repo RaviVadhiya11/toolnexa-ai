@@ -698,3 +698,81 @@ body{background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,syst
 .copy-lines-list{display:grid;gap:9px;max-height:340px;overflow:auto}
 .copy-lines-list .social-title-text{white-space:pre-wrap;word-break:break-word}
 .copy-lines-panel .social-copy-feedback{min-height:16px}
+
+
+/* ToolNexa V4 · shared design system based on the supplied Studio Enhance demo.
+   Applies to all 60 utilities, homepage, navigation, pricing and Studio. */
+:root.dark{--bg:#0b0f19;--panel:#111827;--text:#f8fafc;--muted:#aab6c9;--border:#27344b;--accent:#8ceaff;--studio-primary:#818cf8;--studio-cyan:#22d3ee;--studio-soft:#161f33}
+:root.light{--studio-primary:#6154e8;--studio-cyan:#087da7;--studio-soft:#f2f5fd}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.005em}
+.dark body{background:radial-gradient(750px circle at 24% -3%,rgba(99,102,241,.11),transparent 65%),radial-gradient(570px circle at 92% 14%,rgba(34,211,238,.075),transparent 68%),#0b0f19;background-attachment:fixed}
+.dark .premium-main{background:transparent;color:var(--text)}
+.premium-shell{align-items:stretch}
+.dark .premium-sidebar{background:rgba(15,21,36,.94);border-color:#ffffff15}
+.dark .premium-top{background:rgba(11,15,25,.4);border-color:#ffffff14}
+.dark .premium-sidebar-upgrade{background:linear-gradient(145deg,#202445,#152139);border:1px solid #7774f059}
+.dark .premium-mobile-brand-row{background:rgba(11,15,25,.89);backdrop-filter:blur(14px)}
+.dark .premium-mobile-nav{background:rgba(15,21,36,.96);border-color:#ffffff19;backdrop-filter:blur(16px)}
+.dark .search,.dark .field,.dark select{background:#101827;border-color:#ffffff22;color:var(--text)}
+.dark .search:focus,.dark .field:focus,.dark select:focus{border-color:#22d3eeb0;outline:2px solid #22d3ee28;outline-offset:1px}
+.dark input::placeholder,.dark textarea::placeholder{color:#8794aa}
+.dark .button:not(.outline),.dark .tool-run-button,.dark .tier-cta,.dark .premium-sidebar-cta,.dark .premium-mobile-pro{
+ background:linear-gradient(110deg,#6366f1,#8b5cf6 58%,#06b6d4);color:#fff;border:1px solid #ffffff14;box-shadow:0 9px 25px #4f46e52a}
+.dark .button.outline,.dark .outline{background:#111b2d;color:#dbeafe;border-color:#ffffff24;box-shadow:none}
+.dark .button:hover,.dark .tier-cta:hover{filter:brightness(1.09)}
+.dark .panel,.dark .stat,.dark .tool-card,.dark .tier-card,.dark .tool-editor,.dark .tool-output,.dark .tool-workspace,
+.dark .tool-detail-hero,.dark .tool-detail-info,.dark .tool-related-card{
+ background:rgba(17,24,39,.87);border-color:#ffffff16;box-shadow:0 12px 38px #0307122c;backdrop-filter:blur(12px)}
+.dark .tool-workspace,.dark .tool-detail-hero,.dark .premium-tools-header{background:linear-gradient(135deg,#172037ed,#111827ef 74%,#111f30de);border-color:#ffffff19}
+.dark .tool-output,.dark .tool-quota-panel{background:linear-gradient(143deg,#101c31ed,#101827ef);border-color:#5655ab6a}
+.dark .tool-quota-track{background:#252f4c}
+.dark .tool-quota-track>span{background:linear-gradient(90deg,#6366f1,#8b5cf6,#22d3ee)}
+.dark .tool-result-status.is-ready{color:#86efac;background:#22c55e20;border:1px solid #22c55e4a}
+.dark .tool-workspace-kicker,.dark .tool-detail-category,.dark .tool-card-category,.dark .premium-section-kicker{color:#67e8f9}
+.dark .tool-output-content,.dark .result,.dark .tool-empty-result{background:#0c1423;color:#e7eefb;border-color:#ffffff13}
+.dark .tool-card-free,.dark .tool-workspace-free{color:#a5f3fc;background:#0891b221;border-color:#22d3ee57}
+.dark .chip.active,.dark .tool-category-tabs .chip.active{background:linear-gradient(110deg,#5557e8,#8060e9);border-color:#818cf8;color:white}
+.dark .chip:not(.active){background:#182136;border-color:#ffffff20;color:#bac6db}
+.dark .premium-home-hero{background:radial-gradient(circle at 80% 0,rgba(34,211,238,.2),transparent 44%),linear-gradient(120deg,#20215e,#353093 48%,#0e506d);border:1px solid #8c9cff64;box-shadow:0 20px 55px #0c133d4d}
+.dark .premium-home-trust{background:linear-gradient(110deg,#142638,#192044);border-color:#818cf85f}
+.dark .premium-tools-header{border:1px solid #ffffff1f}
+.dark .tool-catalogue-card:hover,.dark .tool-related-card:hover,.dark .tier-card:hover,.dark .tool-workspace:focus-within{border-color:#818cf87a;box-shadow:0 15px 34px #050b2570}
+.dark .tool-icon{background:linear-gradient(130deg,#545fd94b,#22d3ee23);border:1px solid #818cf83b}
+.dark .tool-run-button{min-height:51px;font-weight:850}
+.dark .tool-output-top{border-bottom-color:#ffffff19}
+.dark .tool-detail-hero-icon{background:linear-gradient(135deg,#4f46e5,#0891b2);color:#fff;box-shadow:0 9px 24px #5d5cf02a}
+.dark .tool-info-steps>div{background:#141f34;border-color:#ffffff18}
+.dark .tool-related-grid a{background:#111a2b;border-color:#ffffff17}
+.dark .pricing-intro .tier-tag,.dark .tier-tag{color:#67e8f9}
+.dark .tier-card.featured{border-color:#818cf8;box-shadow:0 0 0 1px #8b5cf678,0 19px 49px #4f46e522}
+.dark .tool-reset{border-color:#818cf873;color:#b4d8ff}
+.dark .tool-file-input{border:1px dashed #6474bd;background:linear-gradient(130deg,#121a31,#1b2342);padding:18px;min-height:70px}
+.dark .tool-file-input::file-selector-button{border:1px solid #818cf8a1;border-radius:10px;background:#4f46e52a;color:#dbeafe;padding:9px 12px;margin-right:12px;font-weight:800}
+.dark .tool-file-summary{background:#16253d;border-color:#606ef253}
+.dark .tool-editor-actions,.dark .tool-output-actions{border-color:#ffffff13}
+.tool-card,.tool-related-card,.suite-tile{transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.tool-card:hover,.tool-related-card:hover{transform:translateY(-3px)}
+.tool-workspace,.tool-editor,.tool-output,.panel,.tier-card{min-width:0}
+.tool-workspace input[type=range],.studio-shell input[type=range]{accent-color:#818cf8;cursor:pointer}
+.tool-workspace button:focus-visible,.tool-card:focus-visible,.suite-tile:focus-visible{outline:3px solid #22d3ee;outline-offset:3px}
+.tool-workspace button:disabled,.studio-panel button:disabled{filter:grayscale(.15)}
+/* Live local upload preview for every eligible Image/PDF/Creator utility. */
+.tool-upload-preview{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:11px;margin:8px 0 14px;border:1px solid #6d71ca55;border-radius:12px;background:#818cf60b;min-width:0}
+.tool-upload-preview-art{display:grid;place-items:center;width:92px;height:84px;border-radius:9px;background:#111827;overflow:hidden;flex:none}
+.tool-upload-preview-art img{display:block;max-width:100%;max-height:100%;object-fit:contain}
+.tool-upload-preview-art svg{width:23px;height:23px;color:#818cf8}
+.tool-upload-preview-details{display:grid;gap:3px;min-width:0;flex:1}
+.tool-upload-preview-details strong{font-size:12px;overflow-wrap:anywhere}
+.tool-upload-preview-details small{font-size:11px;color:var(--muted);overflow-wrap:anywhere}
+.tool-upload-preview-details span{font-size:11px;color:var(--accent);font-weight:750}
+.tool-workspace-heading,.tool-editor-header{min-width:0}
+.tool-workspace-heading h2,.tool-editor-header h2,.tool-detail-hero h1{letter-spacing:-.035em}
+@media(min-width:1100px){.tool-workspace-body,.tool-workspace-grid{align-items:start}}
+@media(max-width:670px){
+ .tool-workspace,.tool-detail-hero,.tool-detail-info{border-radius:16px}
+ .tool-editor,.tool-output{padding:17px}
+ .tool-detail-hero{padding:22px 18px}
+ .tool-upload-preview-art{width:74px;height:74px}
+ .premium-main .premium-mobile-brand-row{z-index:20}
+}
+@media(prefers-reduced-motion:reduce){.tool-card,.tool-related-card,.suite-tile{transition:none}.tool-card:hover,.tool-related-card:hover{transform:none}}

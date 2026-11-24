@@ -6,7 +6,7 @@ import {downloadFile,imageBlob} from '@/lib/studio-suite-client';
 import {canUpscale,upscaleDimensions,type UpscalePlan,type UpscaleResolution} from '@/lib/studio-upscale';
 import type {StudioRunSlug} from '@/lib/studio-run-slugs';
 
-export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sourceKey='',usageSlug='studio-enhance',enableAI=false}:{
+export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sourceKey='',usageSlug='studio-enhance',enableAI=false,onPreviewChange}:{
  getCanvas:()=>Promise<HTMLCanvasElement>;
  format?:'photo'|'cutout'|'vector';
  disabled?:boolean;
@@ -16,9 +16,14 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
  usageSlug?:StudioRunSlug;
  /** Real neural inference is opt-in and available for photographic inputs. */
  enableAI?:boolean;
+ /** Optional: mirror the actual watermarked upscale preview in its original upload stage. */
+ onPreviewChange?:(url:string)=>void;
 }){
  const [resolution,setResolution]=useState<UpscaleResolution>('4k');
  const [engine,setEngine]=useState<'classic'|'ai'>('classic');
+ const [exportFormat,setExportFormat]=useState<'webp'|'jpeg'|'png'>(format==='photo'?'jpeg':'png');
+ const [exportQuality,setExportQuality]=useState(92);
+ const [phase,setPhase]=useState<'idle'|'preparing'|'processing'|'preview'|'complete'|'failed'>('idle');
  const [plan,setPlan]=useState<UpscalePlan|null>(null);
  const [planError,setPlanError]=useState(false);
  const [message,setMessage]=useState('');
@@ -28,7 +33,6 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
  const [result,setResult]=useState<Blob|null>(null);
  const [resultUrl,setResultUrl]=useState('');
  const [resultSize,setResultSize]=useState('');
- const [lastFormat,setLastFormat]=useState<'jpg'|'png'>('jpg');
  const prepared=useRef<HTMLCanvasElement|null>(null);
  const [approved,setApproved]=useState(false);
  const generation=useRef(0);
@@ -47,7 +51,8 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
  useEffect(()=>{
   generation.current+=1;
   prepared.current=null;
-  setWorking(false);setResult(null);setResultUrl('');setResultSize('');setMessage('');setApproved(false);setShowPlans(false);
+  setWorking(false);setResult(null);setResultUrl('');setResultSize('');setMessage('');setApproved(false);setShowPlans(false);setPhase('idle');
+  onPreviewChange?.('');
  },[resolution,sourceKey,engine]);
  const requiredTier=resolution==='8k'?'Premium':resolution==='2x'?'Starter':'Pro';
  const entitled=plan!==null&&canUpscale(plan,resolution);
@@ -55,7 +60,7 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
  async function upscale(){
   if(working||disabled)return;
   const id=++generation.current;
-  setWorking(true);setMessage('Preparing upscale preview…');
+  setWorking(true);setPhase('preparing');setMessage('Preparing upscale preview…');
   prepared.current=null;setResult(null);setResultUrl('');setResultSize('');setShowPlans(false);
   try{
    const source=await getCanvas();
@@ -64,6 +69,7 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
    // Everyone can process a preview. Keep the original three shared daily Free runs.
    await reserveStudioUsage(usageSlug);
    if(generation.current!==id)return;
+   setPhase('processing');
    setMessage('Preparing '+(engine==='ai'?'AI detail reconstruction':'high-quality enlargement')+'…');
    await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));
    let renderSource=source;
@@ -72,7 +78,7 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
     renderSource=await neuralEnhance2x(source,setMessage);
    }
    if(generation.current!==id)return;
-   setMessage('Creating a fast '+resolution.toUpperCase()+' preview…');
+   setPhase('preview');setMessage('Creating a fast '+resolution.toUpperCase()+' preview…');
    await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));
    // Preview remains light on mobile. Only paying members are offered full-size
    // rendering after a fresh, server-verified subscription check.
@@ -96,11 +102,11 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
    const url=URL.createObjectURL(blob);
    prepared.current=renderSource;
    setResult(blob);setResultUrl(url);setResultSize(width+' × '+height+' px');
-   setLastFormat(format==='photo'?'jpg':'png');
+   onPreviewChange?.(url);setPhase('complete');
    setMessage('✓ Preview ready ('+width+' × '+height+' px). Tap Download to unlock the high-resolution file. Your preview stays available when you open pricing.');
    preview.width=0;preview.height=0;
   }catch(err){
-   if(generation.current===id)setMessage(err instanceof Error?err.message:'Upscale failed. Try a smaller image.');
+   if(generation.current===id){setPhase('failed');setMessage(err instanceof Error?err.message:'Upscale failed. Try a smaller image.');}
   }finally{
    if(generation.current===id)setWorking(false);
   }
@@ -138,16 +144,18 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
    if(!requested)throw Error('Preview dimensions unavailable. Run Upscale again.');
    const w=Number(requested[1]),h=Number(requested[2]);
    const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
-   const ctx=canvas.getContext('2d',{alpha:format!=='photo'});
+   const ctx=canvas.getContext('2d',{alpha:exportFormat!=='jpeg'});
    if(!ctx)throw Error('Your device cannot allocate a full '+resolution.toUpperCase()+
     ' image. Try 2× or 4K on a device with more memory.');
    ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
-   if(format==='photo'){ctx.fillStyle='#ffffff';ctx.fillRect(0,0,w,h)}
+   if(exportFormat==='jpeg'||format==='photo'){ctx.fillStyle='#ffffff';ctx.fillRect(0,0,w,h)}
    ctx.drawImage(prepared.current,0,0,w,h);
-   const file=await imageBlob(canvas,format==='photo'?'image/jpeg':'image/png',.94);
+   const mime=exportFormat==='jpeg'?'image/jpeg':exportFormat==='webp'?'image/webp':'image/png';
+   const file=await imageBlob(canvas,mime,exportQuality/100);
+   if(file.type!==mime)throw Error('Your browser cannot export '+exportFormat.toUpperCase()+'. Choose PNG or JPG.');
    canvas.width=0;canvas.height=0;
    if(generation.current!==id)return;
-   downloadFile(file,'toolnexa-'+resolution+'-upscaled.'+lastFormat);
+   downloadFile(file,'toolnexa-'+resolution+'-upscaled.'+(exportFormat==='jpeg'?'jpg':exportFormat));
    setMessage('✓ Full-quality '+resultSize+' download started. Your '+data.plan+' subscription is active.');
   }catch(err){setMessage(err instanceof Error?err.message:'Download verification failed. Please retry.')}
   finally{setCheckingDownload(false)}
@@ -155,8 +163,23 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
  return <section className="studio-upscale-panel" aria-label="Image upscaling and subscription-gated download">
   <h2>Upscale Image · HD to 8K</h2>
   <p className="studio-note">Upload your image, select output size and enhance. Preview first; the full-resolution download needs a subscription. Free: 3 shared tool runs per UTC day.</p>
-  <label htmlFor="studio-shared-upscale-resolution">Output resolution</label>
-  <select id="studio-shared-upscale-resolution" value={resolution}
+  <span className="studio-demo-field-label">Output resolution</span>
+  <div className="studio-v4-scale-grid" role="group" aria-label="Choose output resolution">
+   {([
+    {key:'2x',name:'2× HD',desc:'Social & web',tier:'Starter+'},
+    {key:'4x',name:'4× Ultra',desc:'Print & commerce',tier:'Pro+'},
+    {key:'4k',name:'4K UHD',desc:'3840px master',tier:'Pro+'},
+    {key:'8k',name:'8K Max',desc:'High-res master',tier:'Premium+'}
+   ] as const).map(item=><button key={item.key} type="button"
+    className={'studio-v4-scale-card '+(resolution===item.key?'selected':'')}
+    aria-pressed={resolution===item.key}
+    onClick={()=>setResolution(item.key)}>
+     <span className="studio-v4-scale-heading"><strong>{item.name}</strong>
+      <small>{item.tier}</small></span><span>{item.desc}</span>
+   </button>)}
+  </div>
+  <label className="studio-v4-native-label" htmlFor="studio-shared-upscale-resolution">Resolution details</label>
+  <select id="studio-shared-upscale-resolution" className="studio-v4-native-select" value={resolution}
    onChange={event=>setResolution(event.target.value as UpscaleResolution)}>
    <option value="2x">2× HD · Download Starter+</option>
    <option value="4x">4× HD · Download Pro+</option>
@@ -164,8 +187,15 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
    <option value="8k">8K · up to 7680×4320 · Download Premium/Max</option>
   </select>
   {enableAI&&format==='photo'&&<>
-   <label htmlFor="studio-upscale-engine">Enhancement quality</label>
-   <select id="studio-upscale-engine" value={engine} onChange={event=>setEngine(event.target.value as 'classic'|'ai')}>
+   <span className="studio-demo-field-label">Image processing engine</span>
+   <div className="studio-v4-engine-grid" role="group" aria-label="Choose image enhancement engine">
+    <button type="button" className={engine==='classic'?'selected':''} aria-pressed={engine==='classic'}
+     onClick={()=>setEngine('classic')}><strong>⚡ Fast Browser HD</strong><small>Local, quick interpolation</small></button>
+    <button type="button" className={engine==='ai'?'selected':''} aria-pressed={engine==='ai'}
+     onClick={()=>setEngine('ai')}><strong>✦ On-device AI Detail</strong><small>Experimental neural 2× pass</small></button>
+   </div>
+   <label className="studio-v4-native-label" htmlFor="studio-upscale-engine">Engine details</label>
+   <select className="studio-v4-native-select" id="studio-upscale-engine" value={engine} onChange={event=>setEngine(event.target.value as 'classic'|'ai')}>
     <option value="classic">Classic HD · Fast, original colours</option>
     <option value="ai">AI Detail · Neural 2× pass (experimental)</option>
    </select>
@@ -173,11 +203,31 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
     'Uses a trained on-device neural 2× model for edges/textures, then resizes to the selected 4K/8K dimensions. First use downloads model weights; processing may be slow or unsupported on some phones. Details are estimates, not recovered ground truth.':
     'Fast high-quality canvas enlargement. Colour, sharpness and denoise settings are applied before upscaling.'}</p>
   </>}
-  <button type="button" onClick={()=>void upscale()} disabled={working||disabled}>
+  <div className="studio-v4-export-options" aria-label="Image output options">
+   <strong>Export settings</strong>
+   <div className="studio-v4-format-group" role="group" aria-label="Image file format">
+    {(['webp','jpeg','png'] as const).map(item=><button key={item} type="button"
+     aria-pressed={exportFormat===item} className={exportFormat===item?'selected':''}
+     onClick={()=>setExportFormat(item)}>{item==='jpeg'?'JPG':item.toUpperCase()}</button>)}
+   </div>
+   {exportFormat!=='png'&&<label htmlFor="studio-v4-export-quality">Output quality <b>{exportQuality}%</b>
+    <input type="range" id="studio-v4-export-quality" min={60} max={100} step={2}
+     value={exportQuality} onChange={event=>setExportQuality(Number(event.target.value))}/>
+   </label>}
+   <p className="studio-note">Actual download format: <strong>{exportFormat.toUpperCase()}</strong>.
+    {exportFormat==='jpeg'?' JPEG uses a white background for transparency.':' PNG and WebP preserve transparent backgrounds when the source has alpha.'}
+    File size depends on image complexity.</p>
+  </div>
+  {working&&<div className="studio-v4-process" role="status" aria-live="polite">
+   <div className="studio-v4-process-track"><span className="studio-v4-scan-bar"/></div>
+   <strong>{phase==='preparing'?'Preparing your image':phase==='processing'?'Enhancing image details':'Generating preview'}</strong>
+   <p>Original pixels are processed locally. A protected high-resolution download is generated after subscription verification.</p>
+  </div>}
+  <button type="button" className="studio-v4-enhance-cta" onClick={()=>void upscale()} disabled={working||disabled}>
    {working?'Enhancing…':'✦ Enhance & Upscale Image'}
   </button>
   {resultUrl&&<div className="studio-upscale-preview"><img src={resultUrl} alt={'Watermarked low-resolution preview of '+resolution.toUpperCase()+' upscaled artwork'}/></div>}
-  {resultReady&&<p className="studio-upscale-result">✓ Upscale complete — {resultSize}. Preview ready.</p>}
+  {resultReady&&<p className="studio-upscale-result">✓ Upscale complete — {resultSize}. Watermarked preview ready.</p>}
   <button type="button" className="studio-hd studio-premium-download" disabled={checkingDownload||working}
    aria-label={'Download Upscaled '+resolution.toUpperCase()+' image'}
    onClick={()=>void download()}>
