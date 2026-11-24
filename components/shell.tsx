@@ -98,7 +98,7 @@ export function Shell({children}:{children:React.ReactNode}){
     </nav>
     <div className="flagship-nav-actions">
      <button type="button" className="flagship-search-trigger" onClick={()=>window.dispatchEvent(new Event('toolnexa-open-command'))}
-       aria-label="Search all 69 tools"><Search size={18}/><span>Search</span><kbd>⌘K</kbd></button>
+       aria-label="Search tools and Studio workspaces"><Search size={18}/><span>Search</span><kbd>⌘K</kbd></button>
      <Link className="flagship-workspace-link" href="/dashboard"><LayoutDashboard size={17}/><span>Workspace</span></Link>
      <button className="flagship-theme-toggle" onClick={toggle} type="button" aria-label={dark?'Switch to light mode':'Switch to dark mode'}>{dark?<Sun size={18}/>:<Moon size={18}/>}</button>
      <AccountStatus/>
@@ -114,7 +114,7 @@ export function Shell({children}:{children:React.ReactNode}){
       <Link href="/" className="brand premium-brand editorial-footer-brand"><span className="brand-icon"><Sparkles size={23}/></span><span>ToolNexa <em>AI</em></span></Link>
       <h2 id="footer-about-title">ABOUT TOOLNEXA AI</h2>
       <p>All your everyday PDF, image, text, developer, business and creator tools in one smart workspace.</p>
-      <p className="editorial-footer-caption">60 practical utility tools. Optional premium batch text analysis.</p>
+      <p className="editorial-footer-caption">60 practical utility tools and 11 specialist Creator Studio workspaces.</p>
       <Link href="/support" className="editorial-footer-contact"><span className="editorial-footer-contact-icon"><Briefcase size={17}/></span>Report a technical issue <ArrowUpRight size={17}/></Link>
      </section>
      <nav className="editorial-footer-column" aria-labelledby="footer-categories-title">
