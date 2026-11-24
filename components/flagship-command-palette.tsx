@@ -14,6 +14,7 @@ const studio=[
  {href:'/studio/svg-editor',name:'SVG Editor',detail:'Edit colors and shapes',icon:'⌘'},
  {href:'/studio/retouch',name:'Object Remover & Retouch',detail:'Heal selected small spots',icon:'◉'},
  {href:'/studio/restore',name:'Photo Restore & Colorizer',detail:'Clean, sharpen and recolor faded photos',icon:'☀'},
+ {href:'/studio/batch',name:'Batch Pro+ ZIP Engine',detail:'Real Premium / Max multi-image processing',icon:'⚡'},
 ] as const;
 
 export function FlagshipCommandPalette(){
@@ -57,7 +58,7 @@ export function FlagshipCommandPalette(){
       aria-label="Search all 68 tools" placeholder="Search Studio tools, PDF, images, text, developers…"/>
     <button type="button" onClick={()=>setOpen(false)} aria-label="Close search"><X size={20}/></button>
    </div>
-   <div className="flagship-command-meta"><Sparkles size={15}/> 8 Creator Studio workflows · 60 working utility tools</div>
+   <div className="flagship-command-meta"><Sparkles size={15}/> 9 Studio workspaces · 60 working utilities</div>
    <div className="flagship-command-results" role="listbox" aria-label="Tools matching your search">
     {results.length?results.map((item,index)=><button key={item.href} type="button" role="option"
       aria-selected={index===selected} className={index===selected?'active':''}
