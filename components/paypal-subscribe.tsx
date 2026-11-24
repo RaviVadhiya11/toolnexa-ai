@@ -1,5 +1,6 @@
 'use client';
 import {useEffect,useState} from 'react';
+import Link from 'next/link';
 import type {FormEvent} from 'react';
 import type {PaidTier,BillingPeriod} from '@/lib/subscription-pricing';
 import {browserSupabase} from '@/lib/supabase/client';
@@ -59,7 +60,7 @@ function SubscriptionAuth(){
  </div>
 }
 
-export function PayPalSubscribe({planId,tier,billingPeriod}:{clientId?:string;planId:string;tier:PaidTier;billingPeriod:BillingPeriod}){
+export function PayPalSubscribe({planId,tier,billingPeriod,singleAction=false}:{clientId?:string;planId:string;tier:PaidTier;billingPeriod:BillingPeriod;singleAction?:boolean}){
  const [signedIn,setSignedIn]=useState(false);
  const [checking,setChecking]=useState(true);
  const [redirecting,setRedirecting]=useState(false);
@@ -96,7 +97,12 @@ export function PayPalSubscribe({planId,tier,billingPeriod}:{clientId?:string;pl
   }
  }
  if(checking)return <p className="muted mt-7" role="status">Checking your account…</p>;
- if(!signedIn)return <SubscriptionAuth/>;
+ if(!signedIn)return singleAction?<div className="mt-4">
+  <Link className="button w-full" href={'/login?next=pricing&plan='+encodeURIComponent(tier)+'&billing='+billingPeriod}>
+   Sign in & Continue to PayPal
+  </Link>
+  <p className="muted text-sm mt-3">Sign in first. You will return to your selected plan before approving payment.</p>
+ </div>:<SubscriptionAuth/>;
  return <div className="mt-7">
   <p className="muted text-sm mb-3">Your {tier} plan renews {billingPeriod==='yearly'?'every 12 months':'monthly'}.
    The full {billingPeriod==='yearly'?'annual':'monthly'} amount will be shown on PayPal before approval.
