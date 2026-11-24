@@ -26,7 +26,9 @@ test('the new registered domain is the only canonical address',()=>{
 test('legacy domain permanently redirects public pages, with path and query preserved',()=>{
  const middleware=read('middleware.ts');
  assert.match(middleware,/host===LEGACY_SITE_HOST/);
- assert.match(middleware,/new URL\(path\+request\.nextUrl\.search,CANONICAL_SITE_URL\)/);
+ assert.match(middleware,/const destination=new URL\(CANONICAL_SITE_URL\)/);
+ assert.match(middleware,/destination\.pathname=path/);
+ assert.match(middleware,/destination\.search=request\.nextUrl\.search/);
  assert.match(middleware,/NextResponse\.redirect\(destination,308\)/);
  assert.match(middleware,/\/\(\(\?!_next\/static/);
  for(const path of ['/', '/tools', '/pricing','/tools/youtube-thumbnail-downloader','/studio/enhance','/subscribe/return','/robots.txt','/sitemap.xml'])
