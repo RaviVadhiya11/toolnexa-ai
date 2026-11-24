@@ -103,14 +103,14 @@ export function ZipMakerExperience(){
  },[]);
 
  return <div className="zip-maker-experience" style={{background:'#090a14',color:'#eff1ff'}}>
-  <div className="mx-auto max-w-7xl px-4 pt-4 sm:px-6">
-   <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-violet-500/30 bg-slate-900/80 px-4 py-3">
-    <div className="flex items-center gap-2 text-sm font-bold"><Archive className="text-violet-300" size={19}/> Advanced ZIP Maker Studio</div>
-    <div className="flex items-center gap-2 text-xs text-emerald-300"><ShieldCheck size={16}/> Files stay on your device</div>
+  <div className="mx-auto max-w-7xl px-3 pt-3 sm:px-6">
+   <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-300">
+    <span className="flex items-center gap-2"><Archive className="text-violet-300" size={16}/> Creator Studio / Advanced ZIP Maker</span>
+    <span className="flex items-center gap-1 text-emerald-300"><ShieldCheck size={15}/> On-device processing</span>
    </div>
    <StudioQuotaNotice/>
-   <div role="status" aria-live="polite" className="my-2 flex items-start gap-2 text-xs text-slate-300">
-    <CheckCircle2 size={16} className="shrink-0 text-cyan-400"/>{status}
+   <div role="status" aria-live="polite" className="my-2 flex items-start gap-2 rounded-lg border border-indigo-500/20 bg-indigo-500/5 px-3 py-2 text-xs text-slate-300">
+    <CheckCircle2 size={15} className="shrink-0 text-cyan-400"/>{status}
    </div>
   </div>
   <iframe ref={frame} src="/studio-zip-maker.html"
