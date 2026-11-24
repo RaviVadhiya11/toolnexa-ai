@@ -57,8 +57,8 @@ test('Passport & Social tool is actually linked across all page entry points',()
  ];
  for(const path of locations)assert.ok(read(path).includes('/studio/passport-social'),path);
  assert.match(read('app/studio/page.tsx'),/10 Workspaces/);
- assert.match(read('app/layout.tsx'),/10 Creator Studio Workspaces/);
- assert.match(read('app/page.tsx'),/<strong>70<\/strong>/);
+ assert.match(read('app/layout.tsx'),/11 Creator Studio Workspaces/);
+ assert.match(read('app/page.tsx'),/<strong>71<\/strong>/);
  assert.equal([...read('lib/tools.ts').matchAll(/\bslug:\s*["']([a-z0-9-]+)["']/g)].length,60);
 });
 test('Original HTML demo feature set preserved: tabs, crop, background, guide, 4x6 and formats',()=>{
@@ -106,7 +106,7 @@ test('Pro HD and physically sized PDF only export AFTER verified active PayPal m
 test('New tool uses shared server-validated daily quota and never claims automated passport acceptance',()=>{
  const slugs=read('lib/studio-run-slugs.ts');
  assert.match(slugs,/'studio-passport-social'/);
- assert.equal([...slugs.matchAll(/'studio-[\w-]+'/g)].length,9);
+ assert.equal([...slugs.matchAll(/'studio-[\w-]+'/g)].length,10);
  assert.match(read('app/api/usage/quota/route.ts'),/studioRunSlugs/);
  assert.match(read('lib/usage-limits.ts'),/Free:3,Starter:500,Pro:1000,Premium:1500,Max:3000/);
  const ui=read('components/passport-social-studio.tsx');
