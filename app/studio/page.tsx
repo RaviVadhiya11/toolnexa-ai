@@ -12,7 +12,7 @@ const items=[
  {href:'/studio/restore',icon:'☼',title:'Photo Restore & Colorizer',desc:'Denoise, sharpen and colour-grade scanned photographs.',tag:'Photo tools'}
 ] as const;
 export default function StudioHome(){return <main className="studio-home suite-home">
- <span className="studio-eyebrow">TOOLNEXA AI · CREATOR WORKSPACE</span>
+ <span className="studio-eyebrow">TOOLNEXA AI · CREATOR STUDIO V4</span>
  <h1>High-Quality Image &amp; Vector Suite <span className="suite-count">8 Tools</span></h1>
  <p>Create SVG vector paths from your own images, clean photographs, edit designs and export professional files. Free users share 3 daily runs. Starter adds 2× upscale, Pro adds 4×/4K, and Premium/Max add up to 8K.</p>
  <div className="suite-home-grid">{items.map(item=><Link href={item.href} key={item.href} className="suite-tile">
