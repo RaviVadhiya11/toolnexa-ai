@@ -107,7 +107,8 @@ test('Design D Dashboard uses real ZIP session activity and preserves editor act
  assert.match(html,/zipSessionHistory\.push\(\{name:archiveName,input:/);
  assert.match(html,/function renderZipActivity\(\)/);
  assert.match(html,/function updateDashboardStats\(total\)/);
- assert.match(html,/Math\.max\(0,latest\.input-latest\.output\)/);
+ assert.match(html,/const delta=latest\.input-latest\.output/);
+ assert.match(html,/shrunk\?'saved':'larger'/);
  assert.match(html,/data-tier="Max"/);
  assert.match(html,/maxFiles=1000,maxTotal=1024\*1024\*1024/);
  assert.doesNotMatch(html,/Math\.random\(\)/);
