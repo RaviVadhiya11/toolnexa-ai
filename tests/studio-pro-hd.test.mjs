@@ -10,7 +10,7 @@ test('dedicated studio keeps the existing 60 tools and exposes both pages',()=>{
  const vector=read('app/studio/vector/page.tsx');
  const enhance=read('app/studio/enhance/page.tsx');
  assert.match(vector,/StudioWorkspace mode="vector"/);
- assert.match(enhance,/StudioWorkspace mode="image"/);
+ assert.match(enhance,/ProfessionalImageEnhancer/);
  const browser=read('components/studio-workspace.tsx');
  assert.match(browser,/Download SVG/);
  assert.match(browser,/image\/svg\+xml/);
