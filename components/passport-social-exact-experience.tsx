@@ -1,6 +1,5 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
-import Link from 'next/link';
 import {Crown,ShieldCheck} from 'lucide-react';
 import {StudioQuotaNotice,reserveStudioUsage} from '@/components/studio-quota';
 
@@ -24,6 +23,40 @@ export function PassportSocialExactExperience(){
     }
     return;
    }
+
+   // Premium entitlement is verified in Next.js on every request, never in
+   // the sandboxed HTML editor, and usage is reserved only after approval.
+   if(data.type==='toolnexa-photo-premium' &&
+      typeof data.id==='string' && data.id.length<80 &&
+      (data.resolution==='4k'||data.resolution==='8k')){
+    const source=frame.current?.contentWindow;
+    const id=data.id;
+    void (async()=>{
+     try{
+      const res=await fetch('/api/studio/upscale-authorize',{
+       method:'POST',credentials:'same-origin',cache:'no-store',
+       headers:{'Content-Type':'application/json'},
+       body:JSON.stringify({purpose:'download',resolution:data.resolution})
+      });
+      const json=await res.json().catch(()=>({error:'Membership verification failed'})) as {
+       authorized?:boolean;error?:string;plan?:string
+      };
+      if(!res.ok||json.authorized!==true){
+       source?.postMessage({type:'toolnexa-photo-premium-result',id,ok:false,
+        upgrade:res.status===401||res.status===403,
+        error:json.error||'Pro or higher subscription is required.'},'*');
+       return;
+      }
+      await reserveStudioUsage('studio-passport-social');
+      source?.postMessage({type:'toolnexa-photo-premium-result',id,ok:true,
+       plan:json.plan},'*');
+     }catch(error){
+      source?.postMessage({type:'toolnexa-photo-premium-result',id,ok:false,
+       error:error instanceof Error?error.message:'Premium verification unavailable'},'*');
+     }
+    })();
+    return;
+   }
    if(data.type==='toolnexa-photo-usage'&&typeof data.id==='string'&&data.id.length<80){
     const source=frame.current?.contentWindow;
     const id=data.id;
@@ -42,7 +75,7 @@ export function PassportSocialExactExperience(){
   <div className="mx-auto max-w-7xl px-4 pt-4 sm:px-6" style={{color:'#f8fafc'}}>
    <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-cyan-500/20 bg-slate-900/70 px-4 py-3">
     <span className="flex items-center gap-2 text-xs sm:text-sm text-slate-200"><ShieldCheck size={17} className="text-cyan-300"/> Your uploaded Studio layout · Browser-local photo editing</span>
-    <Link href="/studio/passport-social/pro" className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-slate-950 hover:bg-amber-400"><Crown size={16}/> Verified Premium HD</Link>
+    <span className="inline-flex items-center gap-2 rounded-xl bg-amber-500/15 px-4 py-2 text-xs font-bold text-amber-200 border border-amber-400/30"><Crown size={16}/> Pro HD tools in this editor ↓</span>
    </div>
    <StudioQuotaNotice/>
   </div>
