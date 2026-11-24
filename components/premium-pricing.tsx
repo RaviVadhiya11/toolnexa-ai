@@ -1,5 +1,6 @@
 'use client';
 import {useEffect,useState} from 'react';
+import {createPortal} from 'react-dom';
 import {PayPalSubscribe} from '@/components/paypal-subscribe';
 import {billingPeriods,paidTiers,subscriptionPrices,type BillingPeriod,type PaidTier} from '@/lib/subscription-pricing';
 
@@ -91,7 +92,8 @@ export function PremiumPricing({clientId,plans,enabled,yearlyEnabled,maxEnabled}
     </article>;
    })}
   </div>
-  {selected&&<div className="secure-checkout-backdrop" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget)setSelected(null)}}>
+  {selected&&typeof document!=='undefined'&&createPortal(<div className="premium-shell secure-checkout-portal-root">
+  <div className="secure-checkout-backdrop" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget)setSelected(null)}}>
    <section id="subscription-checkout" role="dialog" aria-modal="true" aria-labelledby="secure-checkout-title" aria-describedby="secure-checkout-description" className="secure-checkout-dialog">
     <header className="secure-checkout-header">
      <span className="secure-checkout-lock" aria-hidden="true">✦</span>
@@ -141,7 +143,7 @@ export function PremiumPricing({clientId,plans,enabled,yearlyEnabled,maxEnabled}
      </div>
     </div>
    </section>
-  </div>}
+  </div></div>,document.body)}
   <div className="pricing-trust"><span>✓ Live PayPal subscriptions</span><span>✓ PhonePe PG India option prepared — pending activation</span><span>✓ Server-verified recurring billing only</span></div>
   <p className="small-note mt-6 text-center">Free usage: 3 shared tool runs per UTC day across all 60 utility tools and 11 Studio workspaces. Free users can preview an upscale, but high-resolution downloads require an eligible active paid plan. Each preview operation counts toward daily usage. Starter: 500, Pro: 1,000, Premium: 1,500 daily runs; Max: 3,000 daily runs. Allowances reset at 00:00 UTC. Paid Batch Text Analyzer sizes: Starter 20, Pro 60, Premium 150, Max 300 texts per request. Guests have a per-browser counter. Signed-in usage can sync across devices after server-side account quotas are enabled. Gemini AI preview is separately capped at 3 per signed-in user and 30 site-wide daily, not a paid AI entitlement. Local-only processing cannot be fully abuse-proof.</p>
  </section>;
