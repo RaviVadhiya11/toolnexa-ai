@@ -101,6 +101,18 @@ export default function Dashboard(){
    <div className="member-metric"><span>Daily tool uses left</span><strong>{status==='ready'?Math.max(0,dailyLimits[plan??'Free']-dailyUsed):'—'}</strong><small>{status==='ready'?dailyUsed+' / '+dailyLimits[plan??'Free']+' used today · '+plan+' plan':'Verifying allowance'}</small></div>
    <div className="member-metric"><span>Recent tools</span><strong>{recent.length}</strong><small>Saved on this device</small></div>
   </div>
+  <section className="member-section flagship-dashboard-studio" aria-label="Creator Studio shortcuts">
+   <div className="member-section-title"><div><h2>Creator Studio Workspaces</h2><p className="muted">Direct access to your real editors. Download rights depend on verified plan eligibility.</p></div><Link href="/studio">Browse all →</Link></div>
+   <div className="flagship-dashboard-quick">
+    {([
+     ['/studio/enhance','✦ Enhance & Upscale'],
+     ['/studio/background-remove','✂ Remove Background'],
+     ['/studio/image-to-vector','◇ Vectorize Image'],
+     ['/studio/vector','✧ Logo Studio'],
+     ['/studio/batch','⚡ Batch Pro+']
+    ] as const).map(([href,title])=><Link href={href} key={href}>{title}<span aria-hidden="true">→</span></Link>)}
+   </div>
+  </section>
   <section className="member-section" aria-label="Premium tools">
    <div className="member-section-title"><div><h2>Premium tools</h2><p className="muted">Available features depend on your active subscription.</p></div><Link href="/pricing">Compare plans →</Link></div>
    <div className="member-feature-grid">
@@ -113,11 +125,12 @@ export default function Dashboard(){
      </div>
      <Link href={paid?'/pro/text-batch':'/pricing'} className="button mt-4">{paid?'Launch tool':'Choose a plan'}</Link>
     </article>
-    <article className="member-feature-card member-feature-muted">
-     <div className="member-feature-icon">◇</div>
-     <h3>More premium tools</h3>
-     <p>Additional premium features are planned and are not part of current subscriptions.</p>
-     <span className="member-soon">Coming later</span>
+    <article className="member-feature-card">
+     <div className="member-feature-icon">⚡</div>
+     <h3>Premium Batch Image ZIP Export</h3>
+     <p>Enhance up to eight images locally and export a ZIP file. Premium and Max members can use the feature after a live PayPal entitlement check.</p>
+     <div className="member-plan-limits"><span>Premium: 1,500 daily runs</span><span>Max: 3,000 daily runs</span></div>
+     <Link href="/studio/batch" className="button mt-4">{plan==='Premium'||plan==='Max'?'Open Batch Studio':'View Batch Studio & Plans'}</Link>
     </article>
    </div>
   </section>
