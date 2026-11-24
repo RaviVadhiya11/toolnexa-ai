@@ -418,3 +418,104 @@ html.light .premium-shell .flagship-hero-copy{color:#fff}
  .ng-device,.ng-device-tile,.premium-shell .flagship-bento-card,
  .premium-shell .tier-card,.premium-shell .tool-catalogue-card{transition:none!important}
 }
+
+/* Unified payment sheet — three selection tabs, exactly one payment action.
+   Never collect card credentials on our own site; provider-hosted checkout only. */
+.premium-shell .secure-checkout-backdrop{
+ position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+ padding:22px;overflow:hidden;background:rgba(3,5,17,.75);
+ backdrop-filter:blur(13px);-webkit-backdrop-filter:blur(13px);
+}
+.premium-shell .secure-checkout-dialog{
+ width:min(100%,620px);max-height:min(90dvh,850px);display:flex;flex-direction:column;
+ overflow:hidden;color:#26272f;background:#f7f5f0;border:1px solid #e6ded5;
+ border-radius:28px;box-shadow:0 26px 95px #010315bd,0 0 35px #7f61e64d;
+}
+.premium-shell .secure-checkout-header{display:flex;align-items:center;gap:14px;padding:20px 23px;
+ background:#fff;border-bottom:1px solid #e3dfd8;flex-shrink:0}
+.premium-shell .secure-checkout-lock{display:grid;place-items:center;flex:0 0 43px;width:43px;height:43px;
+ background:#fff1e6;color:#e76713;border-radius:13px;font-size:28px;font-weight:900}
+.premium-shell .secure-checkout-heading{flex:1;min-width:0}
+.premium-shell .secure-checkout-heading h2{font-size:clamp(19px,3vw,25px);font-weight:900;
+ letter-spacing:-.045em;color:#1e2129;line-height:1.16;margin:0}
+.premium-shell .secure-checkout-heading p{font-size:11px;color:#71757d;line-height:1.45;margin:5px 0 0}
+.premium-shell .secure-checkout-close{display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;
+ border:1px solid #dcded9;background:#f8f6f1;border-radius:12px;color:#656976;font-size:26px;cursor:pointer}
+.premium-shell .secure-checkout-close:hover{background:#f1e9e0;color:#161a23}
+.premium-shell .secure-checkout-scroll{overflow-y:auto;overscroll-behavior:contain;min-height:0;padding:23px;
+ display:grid;gap:17px;scrollbar-width:thin}
+.premium-shell .secure-checkout-methods,.premium-shell .secure-checkout-summary{
+ border:1px solid #e1dcd3;border-radius:20px;background:#fff;padding:20px}
+.premium-shell .secure-checkout-methods h3{font-size:12px;letter-spacing:.10em;color:#7b7c82;
+ font-weight:900;text-transform:uppercase;margin:0 0 15px}
+.premium-shell .secure-checkout-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.premium-shell .secure-checkout-tabs button{display:flex;flex-direction:column;align-items:center;
+ justify-content:center;gap:7px;min-width:0;min-height:86px;padding:13px 7px;
+ border:1px solid #e3e0d7;border-radius:16px;background:#f8f6f1;
+ color:#41434c;cursor:pointer;font-size:13px;font-weight:800;transition:transform .16s,background .16s}
+.premium-shell .secure-checkout-tabs button span{font-size:24px;line-height:1}
+.premium-shell .secure-checkout-tabs button strong{font-size:13px;font-weight:900}
+.premium-shell .secure-checkout-tabs button:hover{border-color:#ee9c70;transform:translateY(-1px)}
+.premium-shell .secure-checkout-tabs button.is-active{
+ background:linear-gradient(140deg,#fa741c,#e94d00);color:#fff;border-color:#f77c37;
+ box-shadow:0 7px 17px #f3652040,inset 0 1px #ffffff60}
+.premium-shell .secure-checkout-method-info{display:grid;gap:6px;background:#f9f7f3;border:1px solid #e9e5de;
+ border-radius:12px;padding:13px 15px;margin-top:17px}
+.premium-shell .secure-checkout-method-info strong{color:#252b36;font-size:13px}
+.premium-shell .secure-checkout-method-info span{color:#75767f;font-size:12px;line-height:1.55}
+.premium-shell .secure-checkout-summary-head{display:flex;justify-content:space-between;gap:12px}
+.premium-shell .secure-checkout-eyebrow{display:block;color:#e66a18;font-size:11px;letter-spacing:.10em;
+ font-weight:900;text-transform:uppercase;margin-bottom:8px}
+.premium-shell .secure-checkout-summary-head h3{font-size:26px;font-weight:950;letter-spacing:-.04em;
+ color:#20242c;margin:0 0 2px}
+.premium-shell .secure-checkout-summary-head p{font-size:12px;color:#777982}
+.premium-shell .secure-checkout-price{display:flex;flex-direction:column;align-items:flex-end;gap:4px;max-width:47%}
+.premium-shell .secure-checkout-price strong{font-size:clamp(21px,4vw,31px);font-weight:950;
+ color:#222630;letter-spacing:-.045em;white-space:nowrap}
+.premium-shell .secure-checkout-price small{font-size:11px;color:#686e7c;text-align:right}
+.premium-shell .secure-checkout-disclosure{margin:15px 0 0;padding:13px 0 0;border-top:1px solid #e6e1da;
+ font-size:12px;line-height:1.65;color:#696d75}
+.premium-shell .secure-checkout-promo{font-size:11px;color:#8b8b91;margin:8px 0 0}
+.premium-shell .secure-checkout-action{padding:3px 2px 2px;color:#353945}
+.premium-shell .secure-checkout-action .muted{color:#626875}
+.premium-shell .secure-checkout-action p,.premium-shell .secure-checkout-action label{color:#535964}
+.premium-shell .secure-checkout-action label{display:block;margin:6px 0}
+.premium-shell .secure-checkout-action .field{
+ background:#fff!important;color:#161b27!important;border:1px solid #cbd0d9!important;
+ border-radius:12px;margin:6px 0 12px}
+.premium-shell .secure-checkout-action .button:not(.outline),
+.premium-shell .secure-checkout-primary{
+ display:flex;justify-content:center;align-items:center;width:100%;min-height:53px;
+ border:1px solid #f68b38!important;border-radius:15px!important;
+ background:linear-gradient(115deg,#fb7d26,#ec520a)!important;
+ color:#fff!important;box-shadow:0 9px 24px #ec612d4c,inset 0 1px #ffffff48;
+ padding:12px 16px;font-size:15px;font-weight:850;line-height:1.4;text-align:center;cursor:pointer;
+}
+.premium-shell .secure-checkout-primary:disabled{
+ background:#e7e6e3!important;border-color:#d5d6d9!important;box-shadow:none!important;
+ color:#717783!important;cursor:not-allowed;opacity:1}
+.premium-shell .secure-checkout-action .button.outline{background:#fff!important;border:1px solid #d6d9e5!important;
+ color:#33394c!important;box-shadow:none}
+.premium-shell .secure-checkout-action .button:not(.outline):disabled{opacity:.65;cursor:wait}
+.premium-shell .secure-checkout-note{font-size:11px;color:#7a7c83!important;margin-top:10px;
+ text-align:center;line-height:1.5}
+.premium-shell .secure-checkout-dialog :is(button,input,a):focus-visible{outline:3px solid #337eea;outline-offset:3px}
+@media(max-width:600px){
+ .premium-shell .secure-checkout-backdrop{padding:10px 9px 16px;align-items:center}
+ .premium-shell .secure-checkout-dialog{max-height:calc(100dvh - 30px);border-radius:23px}
+ .premium-shell .secure-checkout-header{gap:10px;padding:16px 14px}
+ .premium-shell .secure-checkout-lock{width:38px;flex-basis:38px;height:38px;font-size:24px}
+ .premium-shell .secure-checkout-heading h2{font-size:21px}
+ .premium-shell .secure-checkout-heading p{font-size:10px}
+ .premium-shell .secure-checkout-close{width:37px;flex-basis:37px;height:37px}
+ .premium-shell .secure-checkout-scroll{padding:14px;gap:12px}
+ .premium-shell .secure-checkout-methods,.premium-shell .secure-checkout-summary{padding:14px;border-radius:16px}
+ .premium-shell .secure-checkout-tabs{gap:7px}
+ .premium-shell .secure-checkout-tabs button{min-height:75px;padding:10px 3px;border-radius:13px}
+ .premium-shell .secure-checkout-tabs button strong{font-size:12px}
+ .premium-shell .secure-checkout-summary-head h3{font-size:22px}
+ .premium-shell .secure-checkout-price strong{font-size:23px}
+}
+@media(prefers-reduced-motion:reduce){
+ .premium-shell .secure-checkout-tabs button{transition:none}
+}
