@@ -2,7 +2,9 @@
 
 ToolNexa AI is a responsive web application built with Next.js 15, React 19, TypeScript, Supabase Auth, PayPal subscriptions, pdf-lib, and qrcode. It has 60 utility tools plus a paid Batch Text Analyzer.
 
-Production site: https://toolnexa-ai.vercel.app
+Production site: https://toolnexaai.com
+
+Legacy Vercel browser URLs permanently redirect to the custom domain. The legacy PayPal webhook (`https://toolnexa-ai.vercel.app/api/paypal/webhook`) must remain available until the PayPal dashboard webhook URL is updated and reverified; the middleware does not redirect `/api/` or `/auth/` paths.
 
 ## Features
 
@@ -86,12 +88,12 @@ Signed-in Free users can use the account-backed Free quota without needing PayPa
 
 ## Links
 
-- [All tools](https://toolnexa-ai.vercel.app/tools)
-- [Pricing](https://toolnexa-ai.vercel.app/pricing)
-- [Support](https://toolnexa-ai.vercel.app/support)
-- [Privacy](https://toolnexa-ai.vercel.app/privacy)
-- [Terms](https://toolnexa-ai.vercel.app/terms)
-- [Billing and cancellation](https://toolnexa-ai.vercel.app/billing)
+- [All tools](https://toolnexaai.com/tools)
+- [Pricing](https://toolnexaai.com/pricing)
+- [Support](https://toolnexaai.com/support)
+- [Privacy](https://toolnexaai.com/privacy)
+- [Terms](https://toolnexaai.com/terms)
+- [Billing and cancellation](https://toolnexaai.com/billing)
 
 
 ## Eight-tool Image & Vector Suite (November 2026)
