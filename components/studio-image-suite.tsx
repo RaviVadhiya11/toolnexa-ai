@@ -23,6 +23,11 @@ export function StudioImageSuite({mode}:{mode:Mode}){
  const drawing=useRef(false);
  const bgCanvas=useRef<HTMLCanvasElement|null>(null);
  const bgDrawing=useRef(false);
+ const bgImageRef=useRef<HTMLImageElement|null>(null);
+ const undoBG=useRef<ImageData[]>([]),redoBG=useRef<ImageData[]>([]);
+ const undoMask=useRef<Uint8Array[]>([]),redoMask=useRef<Uint8Array[]>([]);
+ const [history,setHistory]=useState({undo:0,redo:0});
+ const [maskHistory,setMaskHistory]=useState({undo:0,redo:0});
  const [fileName,setFileName]=useState('');
  const [originalUrl,setOriginalUrl]=useState('');
  const [resultUrl,setResultUrl]=useState('');
@@ -38,6 +43,10 @@ export function StudioImageSuite({mode}:{mode:Mode}){
  const [bgOffsetX,setBgOffsetX]=useState(0);
  const [bgOffsetY,setBgOffsetY]=useState(0);
  const [bgShadow,setBgShadow]=useState(false);
+ const [bgShadowStrength,setBgShadowStrength]=useState(65);
+ const [bgPhotoUrl,setBgPhotoUrl]=useState('');
+ const [restorePreset,setRestorePreset]=useState<'balanced'|'portrait'|'scan'|'vintage'>('balanced');
+ const [autoLevels,setAutoLevels]=useState(false);
  const [bgTool,setBgTool]=useState<BgBrush>('erase');
  const [bgBrushSize,setBgBrushSize]=useState(22);
  const [tolerance,setTolerance]=useState(65);
@@ -56,20 +65,87 @@ export function StudioImageSuite({mode}:{mode:Mode}){
   return()=>{mounted=false;window.removeEventListener('focus',refresh);window.removeEventListener('toolnexa-subscription-changed',refresh)};
  },[]);
  useEffect(()=>()=>{if(originalUrl.startsWith('blob:'))URL.revokeObjectURL(originalUrl)},[originalUrl]);
- const bgOptions={fill:bgFill,color:bgColor,size:bgSize,offsetX:bgOffsetX,offsetY:bgOffsetY,shadow:bgShadow};
+ useEffect(()=>()=>{if(bgPhotoUrl.startsWith('blob:'))URL.revokeObjectURL(bgPhotoUrl)},[bgPhotoUrl]);
+ const bgOptions={fill:bgFill,color:bgColor,size:bgSize,offsetX:bgOffsetX,offsetY:bgOffsetY,shadow:bgShadow,
+  shadowStrength:bgShadowStrength,image:bgImageRef.current};
+ function resetHistory(){
+  undoBG.current=[];redoBG.current=[];undoMask.current=[];redoMask.current=[];
+  setHistory({undo:0,redo:0});setMaskHistory({undo:0,redo:0});
+ }
+ function recordBG(){
+  const canvas=resultRef.current;const ctx=canvas?.getContext('2d',{willReadFrequently:true});
+  if(!canvas||!ctx)return;
+  undoBG.current.push(ctx.getImageData(0,0,canvas.width,canvas.height));
+  if(undoBG.current.length>12)undoBG.current.shift();
+  redoBG.current=[];setHistory({undo:undoBG.current.length,redo:0});
+ }
+ function travelBG(direction:'undo'|'redo'){
+  const canvas=resultRef.current,ctx=canvas?.getContext('2d',{willReadFrequently:true});
+  if(!ctx||!canvas)return;
+  const take=direction==='undo'?undoBG.current:redoBG.current;
+  const give=direction==='undo'?redoBG.current:undoBG.current;
+  const snapshot=take.pop();if(!snapshot)return;
+  give.push(ctx.getImageData(0,0,canvas.width,canvas.height));
+  ctx.putImageData(snapshot,0,0);
+  setResultUrl(canvas.toDataURL('image/png'));
+  setHistory({undo:undoBG.current.length,redo:redoBG.current.length});
+  setStatus(direction==='undo'?'Last cutout brush stroke undone.':'Cutout brush stroke restored.');
+ }
+ async function chooseBackgroundPhoto(file?:File){
+  if(!file)return;
+  try{
+   const image=await readImage(file);
+   bgImageRef.current=image;setBgPhotoUrl(URL.createObjectURL(file));setBgFill('image');
+   setStatus('Your own background image is applied. Adjust the subject size and position.');
+  }catch(error){setStatus(error instanceof Error?error.message:'Could not load background image')}
+ }
+ function refreshMaskCanvas(){
+  const source=sourceRef.current,paint=paintRef.current;
+  if(!source||!paint)return;
+  paint.width=source.width;paint.height=source.height;
+  const src=source.getContext('2d',{willReadFrequently:true})?.getImageData(0,0,source.width,source.height);
+  if(!src)return;
+  const m=maskRef.current;
+  for(let i=0;i<m.length;i++)if(m[i]){
+   const k=i*4;src.data[k]=Math.round(src.data[k]*.57+139*.43);
+   src.data[k+1]=Math.round(src.data[k+1]*.57+92*.43);
+   src.data[k+2]=Math.round(src.data[k+2]*.57+246*.43);
+  }
+  paint.getContext('2d')?.putImageData(src,0,0);
+ }
+ function recordMask(){
+  undoMask.current.push(new Uint8Array(maskRef.current));
+  if(undoMask.current.length>20)undoMask.current.shift();
+  redoMask.current=[];setMaskHistory({undo:undoMask.current.length,redo:0});
+ }
+ function travelMask(direction:'undo'|'redo'){
+  if(!sourceRef.current)return;
+  const take=direction==='undo'?undoMask.current:redoMask.current;
+  const give=direction==='undo'?redoMask.current:undoMask.current;
+  const snapshot=take.pop();if(!snapshot)return;
+  give.push(new Uint8Array(maskRef.current));maskRef.current=new Uint8Array(snapshot);
+  refreshMaskCanvas();setResultUrl('');resultRef.current=null;
+  setMaskHistory({undo:undoMask.current.length,redo:redoMask.current.length});
+  setStatus(direction==='undo'?'Selection stroke undone.':'Selection stroke restored.');
+ }
+ function setRestoration(value:'balanced'|'portrait'|'scan'|'vintage'){
+  setRestorePreset(value);
+  const presets={balanced:[45,45,'original',true],portrait:[65,28,'warm',false],
+   scan:[70,65,'original',true],vintage:[35,25,'sepia',false]} as const;
+  const [d,s,t,auto]=presets[value];setDenoise(d);setSharpness(s);setTint(t);setAutoLevels(auto);
+  setStatus('Applied '+value+' restoration settings. Choose Restore Photo to preview the result.');
+ }
  function exportCanvas(){
   if(!resultRef.current)throw Error('Process the image before exporting.');
   return mode==='background'?composeBackground(resultRef.current,bgOptions):resultRef.current;
  }
  useEffect(()=>{
   if(mode!=='background'||!resultRef.current||!resultUrl||!bgCanvas.current)return;
-  const preview=bgCanvas.current,composed=composeBackground(resultRef.current,{
-   fill:bgFill,color:bgColor,size:bgSize,offsetX:bgOffsetX,offsetY:bgOffsetY,shadow:bgShadow
-  });
+  const preview=bgCanvas.current,composed=composeBackground(resultRef.current,bgOptions);
   preview.width=composed.width;preview.height=composed.height;
   preview.getContext('2d')?.drawImage(composed,0,0);
   composed.width=0;composed.height=0;
- },[mode,resultUrl,bgFill,bgColor,bgSize,bgOffsetX,bgOffsetY,bgShadow]);
+ },[mode,resultUrl,bgFill,bgColor,bgSize,bgOffsetX,bgOffsetY,bgShadow,bgShadowStrength,bgPhotoUrl]);
  function paintBG(event:ReactPointerEvent<HTMLCanvasElement>){
   if(!resultRef.current||!sourceRef.current)return;
   if(bgSize!==100||bgOffsetX!==0||bgOffsetY!==0){
@@ -84,6 +160,7 @@ export function StudioImageSuite({mode}:{mode:Mode}){
   canvas.getContext('2d')?.drawImage(output,0,0);output.width=0;output.height=0;
  }
  function finishBgBrush(){
+  if(!bgDrawing.current)return;
   bgDrawing.current=false;
   if(resultRef.current){
    setResultUrl(resultRef.current.toDataURL('image/png'));
@@ -91,9 +168,9 @@ export function StudioImageSuite({mode}:{mode:Mode}){
   }
  }
  function resetPreview(){
-  resultRef.current=null;setResultUrl('');maskRef.current.fill(0);
+  resultRef.current=null;setResultUrl('');maskRef.current.fill(0);resetHistory();
   if(mode==='background'){setBgFill('transparent');setBgSize(100);setBgOffsetX(0);setBgOffsetY(0);setBgShadow(false)}
-  if(mode==='retouch')clearBrush();
+  if(mode==='retouch')refreshMaskCanvas();
   setStatus('Original image restored. Process it again to create a new result.');
  }
  useEffect(()=>{
@@ -108,11 +185,11 @@ export function StudioImageSuite({mode}:{mode:Mode}){
   try{
    const img=await readImage(file);
    const canvas=cropCanvas(img,800);
-   sourceRef.current=canvas;resultRef.current=null;
+   sourceRef.current=canvas;resultRef.current=null;resetHistory();
    maskRef.current=new Uint8Array(canvas.width*canvas.height);
    setDims({w:canvas.width,h:canvas.height});
    setOriginalUrl(URL.createObjectURL(file));setResultUrl('');
-   if(mode==='background'){setBgFill('transparent');setBgSize(100);setBgOffsetX(0);setBgOffsetY(0);setBgShadow(false)}
+   if(mode==='background'){setBgFill('transparent');setBgSize(100);setBgOffsetX(0);setBgOffsetY(0);setBgShadow(false);setBgPhotoUrl('');bgImageRef.current=null}
    setFileName(file.name);
    setStatus('Image ready. Adjust settings and process it.');
   }catch(e){setStatus(e instanceof Error?e.message:'Cannot open the image')}
@@ -138,7 +215,7 @@ export function StudioImageSuite({mode}:{mode:Mode}){
  function clearBrush(){
   const original=sourceRef.current,canvas=paintRef.current;
   if(!original||!canvas)return;
-  maskRef.current.fill(0);
+  recordMask();maskRef.current.fill(0);
   const ctx=canvas.getContext('2d');ctx?.clearRect(0,0,canvas.width,canvas.height);ctx?.drawImage(original,0,0);
   setStatus('Selection cleared. Paint a new small area.');
  }
@@ -161,7 +238,7 @@ export function StudioImageSuite({mode}:{mode:Mode}){
     }
    }else if(mode==='retouch'){
     output=healMaskedImage(source,maskRef.current);
-   }else output=restorePhoto(source,denoise,sharpness,tint);
+   }else output=restorePhoto(source,denoise,sharpness,tint,autoLevels);
    resultRef.current=output;
    setResultUrl(output.toDataURL('image/png'));
    setStatus(mode==='background'?'Transparent PNG ready. Check fine hair edges before export.':
@@ -213,7 +290,7 @@ export function StudioImageSuite({mode}:{mode:Mode}){
         onPointerMove={e=>{if(bgDrawing.current)paintBG(e)}}
         onPointerUp={finishBgBrush} onPointerCancel={finishBgBrush}/>:
        mode==='retouch'&&!resultUrl&&fileName?<canvas ref={paintRef} className="suite-brush-canvas" style={{touchAction:'none'}}
-        onPointerDown={e=>{drawing.current=true;e.currentTarget.setPointerCapture(e.pointerId);point(e)}}
+        onPointerDown={e=>{recordMask();drawing.current=true;e.currentTarget.setPointerCapture(e.pointerId);point(e)}}
         onPointerMove={e=>{if(drawing.current)point(e)}}
         onPointerUp={()=>{drawing.current=false}} onPointerCancel={()=>{drawing.current=false}}/>:undefined}/>
     <p className="studio-note">{fileName||'JPG, PNG or WebP · up to 12 MB · on-device processing.'}</p>
