@@ -38,7 +38,7 @@ export function outputPixels(preset:PhotoPreset,ppi=300){
  const {unit,w,h}=preset;
  if(!Number.isFinite(w)||!Number.isFinite(h)||w<=0||h<=0)throw Error('Invalid size');
  if(unit==='mm'&&(w<15||h<15||w>150||h>150))throw Error('Custom passport size must be 15–150 mm');
- if(unit==='px'&&(w<320||h<320||w>4096||h>4096))throw Error('Custom social size must be 320–4096 pixels');
+ if(unit==='px'&&(w<128||h<128||w>4096||h>4096))throw Error('Social size must be 128–4096 pixels');
  const ratio=unit==='mm'?ppi/25.4:unit==='in'?ppi:1;
  return {width:Math.round(w*ratio),height:Math.round(h*ratio)};
 }
