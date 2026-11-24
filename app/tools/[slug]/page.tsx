@@ -5,13 +5,15 @@ import {tools} from '@/lib/tools';
 import {ToolRunner} from '@/components/tool-runner';
 import {AdvancedToolRunner} from '@/components/advanced-tool-runner';
 import {YouTubeThumbnailDownloader} from '@/components/youtube-thumbnail-downloader';
+import {SeoJsonLd} from '@/components/seo-json-ld';
+import {CANONICAL_SITE_URL} from '@/lib/site-url';
 export function generateStaticParams(){return tools.map(t=>({slug:t.slug}))}
 export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata>{
  const {slug}=await params;const tool=tools.find(item=>item.slug===slug);
  if(!tool)return {title:'Tool not found',robots:{index:false,follow:false}};
- const description=`Free online ${tool.title.toLowerCase()}. ${tool.description}. Use ToolNexa AI with browser-based processing.`;
+ const description=`Use ${tool.title} online. ${tool.description}. Preview results on ToolNexa AI; downloads and daily runs depend on your plan.`.slice(0,160);
  const url='/tools/'+tool.slug;
- return {title:`${tool.title} — Free Online ${tool.category} Tool`,description,alternates:{canonical:url},openGraph:{title:`Free ${tool.title} | ToolNexa AI`,description,url,type:'website'}};
+ return {title:`${tool.title} Online`,description,alternates:{canonical:url},openGraph:{title:`${tool.title} Online | ToolNexa AI`,description,url,type:'website'}};
 }
 
 export default async function ToolPage({params}:{params:Promise<{slug:string}>}){
@@ -19,7 +21,21 @@ export default async function ToolPage({params}:{params:Promise<{slug:string}>})
  const tool=tools.find(t=>t.slug===slug);
  if(!tool)notFound();
  const related=tools.filter(t=>t.category===tool.category&&t.slug!==tool.slug).slice(0,3);
- return <div className="tool-detail-page">
+ const path='/tools/'+tool.slug;
+ const schema={
+  '@context':'https://schema.org',
+  '@graph':[
+   {'@type':'BreadcrumbList',itemListElement:[
+    {'@type':'ListItem',position:1,name:'Home',item:CANONICAL_SITE_URL},
+    {'@type':'ListItem',position:2,name:'All Tools',item:CANONICAL_SITE_URL+'/tools'},
+    {'@type':'ListItem',position:3,name:tool.title,item:CANONICAL_SITE_URL+path}
+   ]},
+   {'@type':'WebApplication',name:tool.title,url:CANONICAL_SITE_URL+path,
+    description:tool.description,applicationCategory:'UtilitiesApplication',
+    operatingSystem:'Web browser',isAccessibleForFree:true}
+  ]
+ };
+ return <div className="tool-detail-page"><SeoJsonLd data={schema}/>
   <nav className="tool-breadcrumb" aria-label="Breadcrumb"><Link href="/tools">All Tools</Link><span>›</span><span>{tool.category}</span><span>›</span><strong>{tool.title}</strong></nav>
   <header className="tool-detail-hero"><div className="tool-detail-hero-icon">{tool.icon}</div><div className="tool-detail-hero-main"><span className="tool-detail-category">{tool.category} TOOL · FREE DAILY ALLOWANCE</span><h1>{tool.title}</h1><p>{tool.description}. Easy to use with a shared daily allowance and optional higher subscriber limits.</p></div></header>
   {slug==='youtube-thumbnail-downloader'?<YouTubeThumbnailDownloader/>:tools.findIndex(t=>t.slug===slug)<20?<ToolRunner key={slug} tool={tool}/>:<AdvancedToolRunner key={slug} tool={tool}/>}
