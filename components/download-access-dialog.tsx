@@ -3,6 +3,7 @@ import {useEffect,useRef,useState} from 'react';
 import './download-access-dialog.css';
 import Link from 'next/link';
 import {PremiumPlanModal} from '@/components/premium-plan-modal';
+import {StudioModalPortal} from '@/components/studio-modal-portal';
 import {GATE_EVENT,GATE_GRANTED_EVENT,type DownloadGateEvent} from '@/lib/download-access';
 
 // One shared subscription/limit dialog for all 60 utility tools and the Studio.
@@ -35,23 +36,28 @@ export function DownloadAccessDialog(){
    feature={detail.feature} requiredTier={detail.requiredTier}
    currentPlan={detail.currentPlan||'Free'}
    busy={checking} onRetry={()=>void retry()}/>;
- return <div className="studio-paywall-overlay studio-premium-paywall"
-   onMouseDown={event=>{if(event.target===event.currentTarget)close()}}>
+ return <StudioModalPortal open onClose={close}>
   <section className="studio-paywall-dialog" role="dialog" aria-modal="true"
    aria-labelledby="download-access-title" aria-describedby="download-access-message">
-   <button type="button" className="studio-paywall-close" aria-label="Close download message"
-    onClick={close}>×</button>
-   <span className="studio-eyebrow">✦ TOOLNEXA AI</span>
-   <h2 id="download-access-title">{detail.kind==='limit'?'Daily Limit Reached':'Download Verification Unavailable'}</h2>
-   <p id="download-access-message">{detail.message}</p>
-   <p className="studio-note">Your edited files and settings stay on this page. Upgrade for more daily tool runs or retry once the service is available.</p>
-   <div className="studio-paywall-grid">
-    <Link className="studio-paywall-plan-link" href="/pricing" target="_blank"
-     rel="noopener noreferrer">View Subscription Plans</Link>
+   <header className="studio-paywall-header">
+    <span className="studio-eyebrow">✦ TOOLNEXA AI</span>
+    <h2 id="download-access-title">{detail.kind==='limit'?'Daily Limit Reached':'Download Verification Unavailable'}</h2>
+    <button type="button" data-modal-close className="studio-paywall-close"
+     aria-label="Close download message" onClick={close}>×</button>
+   </header>
+   <div className="studio-paywall-body">
+    <p id="download-access-message">{detail.message}</p>
+    <p className="studio-note">Your edited files and settings stay on this page. Upgrade for more daily tool runs or retry once the service is available.</p>
+    <div className="studio-paywall-grid studio-paywall-info-actions">
+     <Link className="studio-paywall-plan-link" href="/pricing" target="_blank"
+      rel="noopener noreferrer">View Subscription Plans</Link>
+    </div>
+   </div>
+   <footer className="studio-paywall-footer">
     {detail.retry&&<button className="studio-paywall-retry" type="button"
      disabled={checking} onClick={()=>void retry()}>{checking?'Checking…':'Retry Download'}</button>}
-   </div>
-   <button type="button" className="studio-paywall-secondary" onClick={close}>Keep My Work</button>
+    <button type="button" className="studio-paywall-secondary" onClick={close}>Keep My Work</button>
+   </footer>
   </section>
- </div>;
+ </StudioModalPortal>;
 }
