@@ -221,7 +221,8 @@ export function PassportSocialExactExperience(){
    const blob=await imageBlob(output,mime,quality);
    if(blob.type!==mime)throw Error('This browser cannot export the chosen format. Select JPG and retry.');
    const ext=mime==='image/jpeg'?'jpg':mime==='image/png'?'png':'webp';
-   downloadFile(blob,'toolnexa-'+request.resolution+'-auto-hd-'+dimensions.width+'x'+dimensions.height+'.'+ext);
+   if(!await downloadFile(blob,'toolnexa-'+request.resolution+'-auto-hd-'+dimensions.width+'x'+dimensions.height+'.'+ext))
+    throw Error('HD download needs a verified active subscription. See the plan popup.');
    reply('✓ '+request.resolution.toUpperCase()+' HD download started ('+
     dimensions.width+' × '+dimensions.height+' px). '+
     (aiApplied?'Neural AI detail pass applied.':'Original details preserved with high-quality enlargement.'),true,true);
