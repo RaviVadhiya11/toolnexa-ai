@@ -9,7 +9,7 @@ import {StudioQuotaNotice,reserveStudioUsage} from '@/components/studio-quota';
  */
 export function PassportSocialExactExperience(){
  const frame=useRef<HTMLIFrameElement|null>(null);
- const [height,setHeight]=useState(2250);
+ const [height,setHeight]=useState(900);
  useEffect(()=>{
   const onMessage=(event:MessageEvent)=>{
    // A sandboxed frame has an opaque 'null' origin; source identity is mandatory.
@@ -18,7 +18,10 @@ export function PassportSocialExactExperience(){
    if(!data||typeof data!=='object')return;
    if(data.type==='toolnexa-photo-height'){
     const size=Number(data.height);
-    if(Number.isFinite(size)&&size>400)setHeight(Math.max(850,Math.min(7000,Math.ceil(size)+10)));
+    if(Number.isFinite(size)&&size>250){
+     const next=Math.max(300,Math.min(9000,Math.ceil(size)+2));
+     setHeight(previous=>Math.abs(previous-next)>3?next:previous);
+    }
     return;
    }
    if(data.type==='toolnexa-photo-usage'&&typeof data.id==='string'&&data.id.length<80){
@@ -35,7 +38,7 @@ export function PassportSocialExactExperience(){
   window.addEventListener('message',onMessage);
   return()=>window.removeEventListener('message',onMessage);
  },[]);
- return <div style={{background:'#060913',minHeight:'100vh'}}>
+ return <div style={{background:'#060913',minHeight:0,overflow:'hidden'}}>
   <div className="mx-auto max-w-7xl px-4 pt-4 sm:px-6" style={{color:'#f8fafc'}}>
    <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-cyan-500/20 bg-slate-900/70 px-4 py-3">
     <span className="flex items-center gap-2 text-xs sm:text-sm text-slate-200"><ShieldCheck size={17} className="text-cyan-300"/> Your uploaded Studio layout · Browser-local photo editing</span>
