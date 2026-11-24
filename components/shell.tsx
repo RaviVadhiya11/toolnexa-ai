@@ -11,6 +11,7 @@ const mobileNav=[{href:'/',label:'Home',icon:Home},{href:'/tools',label:'Tools',
 const groups=[{name:'Text',icon:Type},{name:'Image',icon:ImageIcon},{name:'PDF',icon:FileText},{name:'Developer',icon:Code2},{name:'Business',icon:Briefcase},{name:'Creator',icon:Clapperboard}] as const;
 export function Shell({children}:{children:React.ReactNode}){
  const path=usePathname(),router=useRouter();
+ const isPassportEditor=path==='/studio/passport-social';
  const [dark,setDark]=useState(true),[menuOpen,setMenuOpen]=useState(false);
  const [drawerSearch,setDrawerSearch]=useState('');
  const drawerClose=useRef<HTMLButtonElement|null>(null);
@@ -106,7 +107,7 @@ export function Shell({children}:{children:React.ReactNode}){
     </div>
    </header>
    {children}
-   <footer className="premium-footer editorial-footer">
+   {!isPassportEditor&&<footer className="premium-footer editorial-footer">
     <div className="editorial-footer-main">
      <section className="editorial-footer-about" aria-labelledby="footer-about-title">
       <Link href="/" className="brand premium-brand editorial-footer-brand"><span className="brand-icon"><Sparkles size={23}/></span><span>ToolNexa <em>AI</em></span></Link>
@@ -148,7 +149,7 @@ export function Shell({children}:{children:React.ReactNode}){
      </nav>
      <p>© {new Date().getFullYear()} ToolNexa AI. All rights reserved.</p>
     </div>
-   </footer>
+   </footer>}
   </main>
   <FlagshipCommandPalette/>
   <nav className="mobile-nav premium-mobile-nav" aria-label="Mobile quick navigation">
