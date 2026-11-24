@@ -61,7 +61,7 @@ test('SVG editor supports undo redo opacity palettes three shapes and group mirr
 });
 test('Image to Vector offers real changes to tracing palette and path smoothing',()=>{
  const ui=read('components/image-to-vector.tsx');
- for(const x of ['tracePreset','chooseTracePreset','value={900}','value={48}',
+ for(const x of ['tracePreset','chooseTracePreset','value={900}','value="48"',
   'smoothness/100','Path smoothness','MAX_FILE=10*1024*1024',
   'ImageTracer.imagedataToSVG','reserveStudioUsage'])assert.ok(ui.includes(x),x);
 });
