@@ -13,7 +13,7 @@ const plans=[
  {name:'Max',quality:'Up to 8K',description:'For high-volume image exports'}
 ] as const;
 
-export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sourceKey='',usageSlug='studio-enhance'}:{
+export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sourceKey='',usageSlug='studio-enhance',enableAI=false}:{
  getCanvas:()=>Promise<HTMLCanvasElement>;
  format?:'photo'|'cutout'|'vector';
  disabled?:boolean;
@@ -21,8 +21,11 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
  sourceKey?:string;
  /** Charge one shared daily run when an image preview is actually processed. */
  usageSlug?:StudioRunSlug;
+ /** Real neural inference is opt-in and available for photographic inputs. */
+ enableAI?:boolean;
 }){
  const [resolution,setResolution]=useState<UpscaleResolution>('4k');
+ const [engine,setEngine]=useState<'classic'|'ai'>('classic');
  const [plan,setPlan]=useState<UpscalePlan|null>(null);
  const [planError,setPlanError]=useState(false);
  const [message,setMessage]=useState('');
@@ -50,7 +53,7 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
  useEffect(()=>{
   generation.current+=1;
   setWorking(false);setResult(null);setResultUrl('');setResultSize('');setMessage('');setShowPlans(false);
- },[resolution,sourceKey]);
+ },[resolution,sourceKey,engine]);
  useEffect(()=>{
   if(!showPlans)return;
   closePlans.current?.focus();
@@ -73,7 +76,15 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
    // Everyone can process a preview. Keep the original three shared daily Free runs.
    await reserveStudioUsage(usageSlug);
    if(generation.current!==id)return;
-   setMessage('Upscaling '+source.width+' × '+source.height+' to '+width+' × '+height+' pixels…');
+   setMessage('Preparing '+(engine==='ai'?'AI detail reconstruction':'high-quality enlargement')+'…');
+   await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));
+   let renderSource=source;
+   if(enableAI&&engine==='ai'&&format==='photo'){
+    const {neuralEnhance2x}=await import('@/lib/studio-neural-upscale');
+    renderSource=await neuralEnhance2x(source,setMessage);
+   }
+   if(generation.current!==id)return;
+   setMessage('Rendering '+width+' × '+height+' pixels…');
    await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));
    const canvas=document.createElement('canvas');
    canvas.width=width;canvas.height=height;
@@ -81,7 +92,8 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
    if(!context)throw Error('This device cannot allocate '+resolution.toUpperCase()+'. Try a smaller resolution.');
    context.imageSmoothingEnabled=true;context.imageSmoothingQuality='high';
    if(format==='photo'){context.fillStyle='#ffffff';context.fillRect(0,0,width,height)}
-   context.drawImage(source,0,0,width,height);
+   context.drawImage(renderSource,0,0,width,height);
+   if(renderSource!==source){renderSource.width=0;renderSource.height=0}
    // Keep the full-resolution Blob private to component state. Only show a reduced
    // watermarked preview; never expose the full-resolution Blob through an image URL.
    const type=format==='photo'?'image/jpeg':'image/png';
@@ -105,7 +117,7 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
    const url=URL.createObjectURL(previewBlob);
    setResult(blob);setResultUrl(url);setResultSize(width+' × '+height+' px');
    setLastFormat(type==='image/png'?'png':'jpg');
-   setMessage('✓ Upscale complete ('+width+' × '+height+' px). Preview is ready. Click Download to see the subscription plans, or download with an eligible active plan.');
+   setMessage('✓ '+(engine==='ai'&&enableAI?'AI-assisted enhance':'Classic upscale')+' complete ('+width+' × '+height+' px). Preview ready. Full-resolution download requires an eligible subscription.');
    canvas.width=0;canvas.height=0;preview.width=0;preview.height=0;
   }catch(err){
    if(generation.current===id)setMessage(err instanceof Error?err.message:'Upscale failed. Try a smaller image.');
@@ -139,7 +151,7 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
  }
  return <section className="studio-upscale-panel" aria-label="Image upscaling and subscription-gated download">
   <h2>Upscale Image · HD to 8K</h2>
-  <p className="studio-note">Upscale a preview first, then subscribe to download the full-resolution image. Free users can try up to 3 shared tool operations per UTC day. This is high-quality pixel interpolation, not generative AI detail recovery.</p>
+  <p className="studio-note">Upload your image, select output size and enhance. Preview first; the full-resolution download needs a subscription. Free: 3 shared tool runs per UTC day.</p>
   <label htmlFor="studio-shared-upscale-resolution">Output resolution</label>
   <select id="studio-shared-upscale-resolution" value={resolution}
    onChange={event=>setResolution(event.target.value as UpscaleResolution)}>
@@ -148,8 +160,18 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
    <option value="4k">4K · up to 3840×2160 · Download Pro+</option>
    <option value="8k">8K · up to 7680×4320 · Download Premium/Max</option>
   </select>
+  {enableAI&&format==='photo'&&<>
+   <label htmlFor="studio-upscale-engine">Enhancement quality</label>
+   <select id="studio-upscale-engine" value={engine} onChange={event=>setEngine(event.target.value as 'classic'|'ai')}>
+    <option value="classic">Classic HD · Fast, original colours</option>
+    <option value="ai">AI Detail · Neural 2× pass (experimental)</option>
+   </select>
+   <p className="studio-note">{engine==='ai'?
+    'Uses a trained on-device neural 2× model for edges/textures, then resizes to the selected 4K/8K dimensions. First use downloads model weights; processing may be slow or unsupported on some phones. Details are estimates, not recovered ground truth.':
+    'Fast high-quality canvas enlargement. Colour, sharpness and denoise settings are applied before upscaling.'}</p>
+  </>}
   <button type="button" onClick={()=>void upscale()} disabled={working||disabled}>
-   {working?'Upscaling…':'✦ Upscale Image — Preview'}
+   {working?'Enhancing…':'✦ Enhance & Upscale Image'}
   </button>
   {resultUrl&&<div className="studio-upscale-preview"><img src={resultUrl} alt={'Watermarked low-resolution preview of '+resolution.toUpperCase()+' upscaled artwork'}/></div>}
   {resultReady&&<p className="studio-upscale-result">✓ Upscale complete — {resultSize}. Preview ready.</p>}

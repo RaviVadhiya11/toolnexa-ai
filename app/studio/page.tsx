@@ -6,7 +6,7 @@ const items=[
  {href:'/studio/image-to-vector',icon:'◈',title:'Image to Vector Pro',desc:'Upload PNG, JPG or WebP and trace actual editable SVG paths.',tag:'Real SVG'},
  {href:'/studio/convert',icon:'⇄',title:'Vector Format Converter',desc:'Export SVG, vector PDF, EPS and CAD DXF outlines.',tag:'4 formats'},
  {href:'/studio/svg-editor',icon:'✎',title:'SVG Editor',desc:'Change vector shape fill, stroke and geometry.',tag:'Editable'},
- {href:'/studio/enhance',icon:'✺',title:'Image Enhancer & Upscaler',desc:'Improve colour and contrast, click Upscale Image and export actual pixels up to 8K on eligible plans.',tag:'Pro HD'},
+ {href:'/studio/enhance',icon:'✺',title:'AI Detail Enhancer & Upscaler',desc:'Upload photos, compare Before/After, improve noise and sharpness, then upscale with optional neural AI Detail up to 8K.',tag:'Pro HD'},
  {href:'/studio/background-remove',icon:'▣',title:'AI Background Remover HD',desc:'On-device U²-Net AI foreground separation, plus offline solid-bg cleanup.',tag:'AI cutout'},
  {href:'/studio/retouch',icon:'◌',title:'Object Remover & Retouch',desc:'Select and heal small unwanted marks with a painting brush.',tag:'Local retouch'},
  {href:'/studio/restore',icon:'☼',title:'Photo Restore & Colorizer',desc:'Denoise, sharpen and colour-grade scanned photographs.',tag:'Photo tools'}
