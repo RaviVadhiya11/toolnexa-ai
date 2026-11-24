@@ -42,7 +42,7 @@ test('pricing accurately describes Pro-plus exports and no generative AI enhance
  assert.equal(x.length,3,'Pro, Premium and Max must include HD JPEG in pricing');
  const ui=read('components/studio-workspace.tsx');
  assert.match(ui,/traditional image processing, not generative AI detail reconstruction/);
- assert.match(ui,/isPro=\['Pro','Premium','Max'\]/);
+ assert.match(ui,/useStudioPremiumDownload\('Pro HD logo \/ vector export'\)/);
  const pkg=JSON.parse(read('package.json'));
  assert.ok(pkg.dependencies.sharp,'Image processing dependency required');
  const privacy=read('app/privacy/page.tsx');

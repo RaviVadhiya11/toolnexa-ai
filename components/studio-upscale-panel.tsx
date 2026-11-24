@@ -1,17 +1,10 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
-import Link from 'next/link';
+import {PremiumPlanModal} from '@/components/premium-plan-modal';
 import {currentStudioQuota,reserveStudioUsage} from '@/components/studio-quota';
 import {downloadFile,imageBlob} from '@/lib/studio-suite-client';
 import {canUpscale,upscaleDimensions,type UpscalePlan,type UpscaleResolution} from '@/lib/studio-upscale';
 import type {StudioRunSlug} from '@/lib/studio-run-slugs';
-
-const plans=[
- {name:'Starter',quality:'2× HD',description:'For basic upscale downloads'},
- {name:'Pro',quality:'4× + 4K',description:'For sharp creator exports'},
- {name:'Premium',quality:'Up to 8K',description:'For large, high-resolution images'},
- {name:'Max',quality:'Up to 8K',description:'For high-volume image exports'}
-] as const;
 
 export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sourceKey='',usageSlug='studio-enhance',enableAI=false}:{
  getCanvas:()=>Promise<HTMLCanvasElement>;
@@ -36,31 +29,26 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
  const [resultUrl,setResultUrl]=useState('');
  const [resultSize,setResultSize]=useState('');
  const [lastFormat,setLastFormat]=useState<'jpg'|'png'>('jpg');
+ const prepared=useRef<HTMLCanvasElement|null>(null);
+ const [approved,setApproved]=useState(false);
  const generation=useRef(0);
- const closePlans=useRef<HTMLButtonElement|null>(null);
  useEffect(()=>{
   let active=true;
   const refresh=()=>void currentStudioQuota().then(q=>{
-   if(active){setPlan(q.plan);setPlanError(false)}
+   if(active){setPlan(q.plan);setPlanError(false);if(canUpscale(q.plan,resolution)){setApproved(true);setShowPlans(false)}}
   }).catch(()=>{if(active){setPlan(null);setPlanError(true)}});
   refresh();
   window.addEventListener('focus',refresh);
   window.addEventListener('toolnexa-subscription-changed',refresh);
   return()=>{active=false;window.removeEventListener('focus',refresh);
    window.removeEventListener('toolnexa-subscription-changed',refresh)};
- },[]);
+ },[resolution]);
  useEffect(()=>()=>{if(resultUrl)URL.revokeObjectURL(resultUrl)},[resultUrl]);
  useEffect(()=>{
   generation.current+=1;
-  setWorking(false);setResult(null);setResultUrl('');setResultSize('');setMessage('');setShowPlans(false);
+  prepared.current=null;
+  setWorking(false);setResult(null);setResultUrl('');setResultSize('');setMessage('');setApproved(false);setShowPlans(false);
  },[resolution,sourceKey,engine]);
- useEffect(()=>{
-  if(!showPlans)return;
-  closePlans.current?.focus();
-  const escape=(event:KeyboardEvent)=>{if(event.key==='Escape')setShowPlans(false)};
-  window.addEventListener('keydown',escape);
-  return()=>window.removeEventListener('keydown',escape);
- },[showPlans]);
  const requiredTier=resolution==='8k'?'Premium':resolution==='2x'?'Starter':'Pro';
  const entitled=plan!==null&&canUpscale(plan,resolution);
  const resultReady=result!==null&&!working;
@@ -68,7 +56,7 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
   if(working||disabled)return;
   const id=++generation.current;
   setWorking(true);setMessage('Preparing upscale preview…');
-  setResult(null);setResultUrl('');setResultSize('');setShowPlans(false);
+  prepared.current=null;setResult(null);setResultUrl('');setResultSize('');setShowPlans(false);
   try{
    const source=await getCanvas();
    if(generation.current!==id)return;
@@ -84,41 +72,33 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
     renderSource=await neuralEnhance2x(source,setMessage);
    }
    if(generation.current!==id)return;
-   setMessage('Rendering '+width+' × '+height+' pixels…');
+   setMessage('Creating a fast '+resolution.toUpperCase()+' preview…');
    await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));
-   const canvas=document.createElement('canvas');
-   canvas.width=width;canvas.height=height;
-   const context=canvas.getContext('2d',{alpha:format!=='photo'});
-   if(!context)throw Error('This device cannot allocate '+resolution.toUpperCase()+'. Try a smaller resolution.');
-   context.imageSmoothingEnabled=true;context.imageSmoothingQuality='high';
-   if(format==='photo'){context.fillStyle='#ffffff';context.fillRect(0,0,width,height)}
-   context.drawImage(renderSource,0,0,width,height);
-   if(renderSource!==source){renderSource.width=0;renderSource.height=0}
-   // Keep the full-resolution Blob private to component state. Only show a reduced
-   // watermarked preview; never expose the full-resolution Blob through an image URL.
-   const type=format==='photo'?'image/jpeg':'image/png';
-   const blob=await imageBlob(canvas,type,.94);
+   // Preview remains light on mobile. Only paying members are offered full-size
+   // rendering after a fresh, server-verified subscription check.
    const maxPreview=720;
    const ratio=Math.min(1,maxPreview/Math.max(width,height));
    const pw=Math.max(1,Math.round(width*ratio)),ph=Math.max(1,Math.round(height*ratio));
    const preview=document.createElement('canvas');preview.width=pw;preview.height=ph;
    const previewCtx=preview.getContext('2d');
-   if(!previewCtx)throw Error('Could not make a preview. Try a smaller image.');
+   if(!previewCtx)throw Error('Could not make a preview on this device.');
    previewCtx.imageSmoothingEnabled=true;previewCtx.imageSmoothingQuality='high';
-   previewCtx.drawImage(canvas,0,0,pw,ph);
+   if(format==='photo'){previewCtx.fillStyle='#fff';previewCtx.fillRect(0,0,pw,ph)}
+   previewCtx.drawImage(renderSource,0,0,pw,ph);
    const labelSize=Math.max(12,Math.round(Math.min(pw,ph)*.044));
    previewCtx.font='bold '+labelSize+'px sans-serif';previewCtx.textAlign='center';
    previewCtx.fillStyle='rgba(12,18,36,.58)';
    previewCtx.fillRect(0,Math.max(0,ph-labelSize*2.8),pw,labelSize*2.8);
    previewCtx.fillStyle='#ffffff';
    previewCtx.fillText('TOOLNEXA · PREVIEW ONLY',pw/2,ph-labelSize*.9);
-   const previewBlob=await imageBlob(preview,'image/png');
+   const blob=await imageBlob(preview,'image/png');
    if(generation.current!==id)return;
-   const url=URL.createObjectURL(previewBlob);
+   const url=URL.createObjectURL(blob);
+   prepared.current=renderSource;
    setResult(blob);setResultUrl(url);setResultSize(width+' × '+height+' px');
-   setLastFormat(type==='image/png'?'png':'jpg');
-   setMessage('✓ '+(engine==='ai'&&enableAI?'AI-assisted enhance':'Classic upscale')+' complete ('+width+' × '+height+' px). Preview ready. Full-resolution download requires an eligible subscription.');
-   canvas.width=0;canvas.height=0;preview.width=0;preview.height=0;
+   setLastFormat(format==='photo'?'jpg':'png');
+   setMessage('✓ Preview ready ('+width+' × '+height+' px). Tap Download to unlock the high-resolution file. Your preview stays available when you open pricing.');
+   preview.width=0;preview.height=0;
   }catch(err){
    if(generation.current===id)setMessage(err instanceof Error?err.message:'Upscale failed. Try a smaller image.');
   }finally{
@@ -126,28 +106,51 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
   }
  }
  async function download(){
-  if(!resultReady||!result||checkingDownload)return;
+  if(checkingDownload||working)return;
   setCheckingDownload(true);
-  setMessage('Checking your active subscription before download…');
+  setMessage('Checking your active PayPal subscription…');
   try{
    const response=await fetch('/api/studio/upscale-authorize',{
     method:'POST',headers:{'Content-Type':'application/json'},
+    credentials:'same-origin',cache:'no-store',
     body:JSON.stringify({resolution,purpose:'download'})
    });
-   const data=await response.json().catch(()=>({error:'Unable to verify your plan'})) as {authorized?:boolean;error?:string;plan?:UpscalePlan};
+   const data=await response.json().catch(()=>({error:'Unable to verify your plan'})) as {
+    authorized?:boolean;error?:string;plan?:UpscalePlan
+   };
    if(response.status===401||response.status===403){
-    setShowPlans(true);
-    setMessage('The preview is ready. Subscribe to '+requiredTier+' or higher to download '+resolution.toUpperCase()+'. No file was downloaded.');
+    setApproved(false);setShowPlans(true);
+    setMessage('Full-resolution '+resolution.toUpperCase()+' download requires '+requiredTier+
+     ' or higher. Select a subscription in the popup. No file was downloaded.');
     return;
    }
-   if(!response.ok||data.authorized!==true)throw Error(data.error||'Subscription verification failed.');
+   if(!response.ok||data.authorized!==true)throw Error(data.error||'Subscription verification failed. Try again.');
    if(data.plan)setPlan(data.plan);
-   downloadFile(result,'toolnexa-'+resolution+'-upscaled.'+lastFormat);
-   setShowPlans(false);
-   setMessage('Download started: '+resultSize+'. Your '+data.plan+' subscription is active.');
-  }catch(err){
-   setMessage(err instanceof Error?err.message:'Download authorization failed. Please retry.');
-  }finally{setCheckingDownload(false)}
+   setApproved(true);setShowPlans(false);
+   if(!resultReady||!prepared.current){
+    setMessage('Your subscription is active. Upload an image and click Enhance & Upscale Image to prepare the download.');
+    return;
+   }
+   setMessage('Subscription verified. Preparing your full-resolution '+resultSize+' export…');
+   const id=generation.current;
+   // Match preview-selected resolution exactly; AI model size may differ from input.
+   const requested=resultSize.match(/^(\d+) × (\d+) px$/);
+   if(!requested)throw Error('Preview dimensions unavailable. Run Upscale again.');
+   const w=Number(requested[1]),h=Number(requested[2]);
+   const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+   const ctx=canvas.getContext('2d',{alpha:format!=='photo'});
+   if(!ctx)throw Error('Your device cannot allocate a full '+resolution.toUpperCase()+
+    ' image. Try 2× or 4K on a device with more memory.');
+   ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+   if(format==='photo'){ctx.fillStyle='#ffffff';ctx.fillRect(0,0,w,h)}
+   ctx.drawImage(prepared.current,0,0,w,h);
+   const file=await imageBlob(canvas,format==='photo'?'image/jpeg':'image/png',.94);
+   canvas.width=0;canvas.height=0;
+   if(generation.current!==id)return;
+   downloadFile(file,'toolnexa-'+resolution+'-upscaled.'+lastFormat);
+   setMessage('✓ Full-quality '+resultSize+' download started. Your '+data.plan+' subscription is active.');
+  }catch(err){setMessage(err instanceof Error?err.message:'Download verification failed. Please retry.')}
+  finally{setCheckingDownload(false)}
  }
  return <section className="studio-upscale-panel" aria-label="Image upscaling and subscription-gated download">
   <h2>Upscale Image · HD to 8K</h2>
@@ -175,34 +178,19 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
   </button>
   {resultUrl&&<div className="studio-upscale-preview"><img src={resultUrl} alt={'Watermarked low-resolution preview of '+resolution.toUpperCase()+' upscaled artwork'}/></div>}
   {resultReady&&<p className="studio-upscale-result">✓ Upscale complete — {resultSize}. Preview ready.</p>}
-  <button type="button" className="studio-hd" disabled={!resultReady||checkingDownload}
+  <button type="button" className="studio-hd studio-premium-download" disabled={checkingDownload||working}
    aria-label={'Download Upscaled '+resolution.toUpperCase()+' image'}
    onClick={()=>void download()}>
-   {checkingDownload?'Checking subscription…':'↓ Download Upscaled '+resolution.toUpperCase()}
+   {checkingDownload?'Verifying & preparing download…':approved?'↓ Download Full '+resolution.toUpperCase():'🔒 Download '+resolution.toUpperCase()+' · Unlock'}
   </button>
-  {!resultReady&&<p className="studio-note">Download becomes clickable after successful upscaling.</p>}
+  {!resultReady&&<p className="studio-note">Download is always clickable. Free users see subscription plans; subscribed users should enhance the image first.</p>}
   {resultReady&&<p className="studio-note">Full-resolution download requires an active {requiredTier} plan or higher. Click Download to check your subscription and view plans when needed.</p>}
   {planError?<p className="studio-note" role="status">Plan status could not be loaded. Download checks your subscription again.</p>:
    plan!==null?<p className="studio-note">Current plan: <strong>{plan}</strong>. {entitled?'Download will verify your active subscription.':'The '+resolution.toUpperCase()+' download requires '+requiredTier+' or higher.'}</p>:null}
   <p className="studio-message" role="status">{message||'Upload an image, then click Upscale Image. No subscription needed to view a preview.'}</p>
-  {showPlans&&<div className="studio-paywall-overlay" role="presentation" onClick={event=>{if(event.target===event.currentTarget)setShowPlans(false)}}>
-   <div className="studio-paywall-dialog" role="dialog" aria-modal="true" aria-labelledby="studio-paywall-title">
-    <button ref={closePlans} type="button" className="studio-paywall-close" onClick={()=>setShowPlans(false)} aria-label="Close subscription plans">×</button>
-    <span className="studio-eyebrow">YOUR UPSCALE IS READY</span>
-    <h2 id="studio-paywall-title">Subscribe to download {resolution.toUpperCase()}</h2>
-    <p>You've already created the preview. Choose an eligible plan to unlock the full-resolution {resultSize} file. No download happens before a verified active subscription.</p>
-    <div className="studio-paywall-grid">
-     {plans.map(item=><div className={'studio-paywall-plan '+(item.name===requiredTier?'studio-paywall-recommended':'')} key={item.name}>
-      <strong>{item.name}</strong><span>{item.quality}</span>
-      <small>{item.description}</small>
-      {canUpscale(item.name,resolution)?<Link href="/pricing" target="_blank" rel="noopener noreferrer"
-       aria-label={'View '+item.name+' subscription pricing in a new tab'}>View {item.name} Plan</Link>:
-       <small className="studio-paywall-ineligible">Not eligible for {resolution.toUpperCase()} download</small>}
-     </div>)}
-    </div>
-    <p className="studio-note">Pricing opens in a new tab so your preview remains here. Keep this tab open. After PayPal subscription activation, return and click Download again. The server will verify your plan.</p>
-    <button type="button" className="studio-paywall-retry" onClick={()=>{setShowPlans(false);void download()}}>I've subscribed — check and download</button>
-   </div>
-  </div>}
+  <PremiumPlanModal open={showPlans} onClose={()=>setShowPlans(false)}
+    feature={resolution.toUpperCase()+' high-resolution download'} requiredTier={requiredTier}
+    currentPlan={plan??'Free'} busy={checkingDownload} onRetry={()=>void download()}/>
+
  </section>;
 }

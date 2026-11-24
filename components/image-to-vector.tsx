@@ -3,6 +3,7 @@ import {useEffect,useRef,useState} from 'react';
 import Link from 'next/link';
 import {reserveStudioUsage,StudioQuotaNotice} from '@/components/studio-quota';
 import {StudioUpscalePanel} from '@/components/studio-upscale-panel';
+import {useStudioPremiumDownload} from '@/components/studio-premium-download';
 import {StudioUploadPreview} from '@/components/studio-upload-preview';
 import ImageTracer from 'imagetracerjs';
 
@@ -105,7 +106,7 @@ export function ImageToVector(){
  const [status,setStatus]=useState('Upload an image, then select Trace to Vector.');
  const [plan,setPlan]=useState('Checking');
  const [scale,setScale]=useState<2|4>(2);
- const pro=['Pro','Premium','Max'].includes(plan);
+ const premium=useStudioPremiumDownload('Pro HD vector PNG export');
  function chooseTracePreset(value:'logo'|'illustration'|'poster'|'photo'){
   setTracePreset(value);
   const presets={
@@ -166,7 +167,8 @@ export function ImageToVector(){
   finally{setWorking(false)}
  }
  async function downloadHd(){
-  if(!svg||!pro){setStatus('Sign in with Pro, Premium or Max to unlock HD PNG.');return}
+  await premium.run(async()=>{
+  if(!svg){setStatus('Trace an image before downloading the HD file.');return}
   setWorking(true);setStatus('Preparing protected HD download…');
   try{
    const canvas=await renderSvg(svg,640);
@@ -186,6 +188,7 @@ export function ImageToVector(){
    setStatus('Pro HD PNG downloaded at '+(canvas.width*scale)+' × '+(canvas.height*scale)+' px.');
   }catch(e){setStatus(e instanceof Error?e.message:'HD export failed')}
   finally{setWorking(false)}
+  });
  }
  return <section className="vectorize-workspace" aria-label="Upload image and convert to vector">
   <div className="vectorize-header">
@@ -263,8 +266,10 @@ export function ImageToVector(){
     <select id="vector-hd-scale" value={scale} onChange={e=>setScale(Number(e.target.value) as 2|4)}>
      <option value="2">2× high resolution</option><option value="4">4× high resolution</option>
     </select>
-    {pro?<button type="button" disabled={!svg||working} onClick={()=>void downloadHd()}>Download Pro HD PNG</button>:
-     <Link className="studio-upgrade" href="/pricing">Unlock HD with Pro →</Link>}
+    <button type="button" className="studio-hd studio-premium-download" disabled={working||premium.checking}
+      onClick={()=>void downloadHd()}>{premium.checking?'Checking subscription…':'🔒 Download Pro HD PNG · Unlock'}</button>
+    {premium.error&&<p className="studio-note" role="status">{premium.error}</p>}
+    {premium.modal}
     <StudioUpscalePanel getCanvas={()=>renderSvg(svg)} format="vector" disabled={!svg} sourceKey={svg} usageSlug="studio-image-to-vector"/>
     <p className="studio-note">SVG is genuine vector at any zoom. Native AI / CDR / EPS / DXF / WMF / EMF export is not yet implemented; compatible editors can import SVG.</p>
    </div>
