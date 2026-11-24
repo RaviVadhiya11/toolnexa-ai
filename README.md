@@ -183,3 +183,17 @@ The second user-provided reference, \`toolnexa_ai_pro_flagship_ai_studio_60_tool
 - **Command palette** uses the existing real tool slugs and Studio routes; Ctrl/Cmd+K opens search, arrow keys navigate, Enter opens a real page and Escape closes.
 
 Build/automated tests should be verified on GitHub Actions and Vercel before merging. Browser/mobile and real merchant capture plus webhook delivery remain separate end-to-end acceptance tests.
+
+
+## Passport & Social Size Studio (24 November 2026)
+
+Production route: `/studio/passport-social` — tenth Creator Studio workspace. The user-provided `toolnexa_passport_social_studio_demo.html` is the visual and baseline feature reference.
+
+- Four passport examples: 35×45 mm, 2×2 inches, 50×70 mm, 15–150 mm custom. Twelve social outputs: Instagram post/portrait/story, YouTube thumbnail and avatar, LinkedIn cover, profile icon, TikTok, Pinterest, Facebook cover, X header and custom 128–4096 pixel sizes.
+- Browser-only live sample (clearly marked illustration), private JPG/PNG/WebP upload, drag/reposition, zoom, rotation, brightness/contrast/saturation and actual PNG/JPG/WebP downloads. The original photo is not uploaded to the server for the standard editor.
+- Real local U²-Netp AI cutout (loads external model weights) and an offline solid-color background option. Background colors are only visible once a transparent subject cutout is made. AI processing uses a capped working resolution; inspect edges carefully.
+- Exact physical 4×6-inch sheet layout at 300 PPI (1200×1800) with actual-size tile placement and no hidden shrinking. For Pro/Premium/Max: 600-PPI passport output, true 4×6-inch 600-PPI print PDF using jsPDF, and 2× social exports after `/api/studio/upscale-authorize` validates the active PayPal subscription. Integrated shared StudioUpscalePanel also provides 2×/4×/4K/8K according to tier.
+- Uses `studio-passport-social` in the existing 3 Free daily shared-use enforcement (and server account quota where enabled). Each successful export starts after a reserved daily usage operation. Server membership checks do not send pixel data.
+- Passport sizes are samples, NOT biometric or jurisdiction compliance tests. The app cannot guarantee acceptance, automatic face positioning, photo print metadata, or real AI facial reconstruction. PNG/JPG physical PPI metadata may differ from the target; choose PDF actual-size printing for a paper 4×6 inch sheet.
+
+Inspect Vercel Preview, automated tests and PayPal live configuration audit before production merge. Real merchant checkout, phone camera captures, first AI model download and paper printing should be verified manually.
