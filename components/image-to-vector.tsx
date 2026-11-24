@@ -6,7 +6,7 @@ import {StudioUpscalePanel} from '@/components/studio-upscale-panel';
 import {StudioUploadPreview} from '@/components/studio-upload-preview';
 import ImageTracer from 'imagetracerjs';
 
-type TraceColors=2|4|8|16|24;
+type TraceColors=2|4|8|16|24|32|48;
 type TraceDetail='simple'|'balanced'|'detailed';
 const accepted=new Set(['image/png','image/jpeg','image/webp']);
 const MAX_FILE=10*1024*1024;
@@ -36,8 +36,8 @@ async function loadImage(file:File):Promise<HTMLImageElement>{
   return image;
  }finally{URL.revokeObjectURL(url)}
 }
-function traceSvg(image:HTMLImageElement,colors:TraceColors,detail:TraceDetail,removeWhite:boolean){
- const scale=Math.min(1,MAX_TRACE_SIDE/Math.max(image.naturalWidth,image.naturalHeight));
+function traceSvg(image:HTMLImageElement,colors:TraceColors,detail:TraceDetail,removeWhite:boolean,quality:number,smoothness:number){
+ const scale=Math.min(1,Math.min(900,Math.max(320,quality))/Math.max(image.naturalWidth,image.naturalHeight));
  const w=Math.max(1,Math.round(image.naturalWidth*scale));
  const h=Math.max(1,Math.round(image.naturalHeight*scale));
  const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
@@ -58,7 +58,8 @@ function traceSvg(image:HTMLImageElement,colors:TraceColors,detail:TraceDetail,r
   detail==='detailed'?{pathomit:2,ltres:.55,qtres:.55,blurradius:0}:
   {pathomit:6,ltres:1,qtres:1,blurradius:0};
  const traced=ImageTracer.imagedataToSVG(pixels,{
-  ...settings,numberofcolors:colors,colorsampling:2,colorquantcycles:3,
+  ...settings,ltres:settings.ltres+(smoothness/100)*1.2,qtres:settings.qtres+(smoothness/100)*1.1,
+  numberofcolors:colors,colorsampling:2,colorquantcycles:3,
   strokewidth:0,viewbox:true,scale:1,roundcoords:2,desc:false
  });
  const xml=traced.replace(/^<svg\s/, '<svg width="'+w+'" height="'+h+'" ');
@@ -93,6 +94,9 @@ export function ImageToVector(){
  const [svg,setSvg]=useState('');
  const [fileName,setFileName]=useState('');
  const [colors,setColors]=useState<TraceColors>(8);
+ const [quality,setQuality]=useState(640);
+ const [smoothness,setSmoothness]=useState(35);
+ const [tracePreset,setTracePreset]=useState<'logo'|'illustration'|'poster'|'photo'>('illustration');
  const [detail,setDetail]=useState<TraceDetail>('balanced');
  const [removeWhite,setRemoveWhite]=useState(false);
  const [paths,setPaths]=useState(0);
@@ -102,6 +106,18 @@ export function ImageToVector(){
  const [plan,setPlan]=useState('Checking');
  const [scale,setScale]=useState<2|4>(2);
  const pro=['Pro','Premium','Max'].includes(plan);
+ function chooseTracePreset(value:'logo'|'illustration'|'poster'|'photo'){
+  setTracePreset(value);
+  const presets={
+   logo:{colors:4,detail:'simple',smoothness:78,removeWhite:true,quality:640},
+   illustration:{colors:8,detail:'balanced',smoothness:35,removeWhite:false,quality:640},
+   poster:{colors:16,detail:'detailed',smoothness:55,removeWhite:false,quality:900},
+   photo:{colors:48,detail:'detailed',smoothness:20,removeWhite:false,quality:900}
+  } as const;
+  const p=presets[value];setColors(p.colors);setDetail(p.detail);setSmoothness(p.smoothness);
+  setRemoveWhite(p.removeWhite);setQuality(p.quality);
+  setStatus(value+' trace preset selected. Click Trace Image to generate editable SVG paths.');
+ }
  useEffect(()=>{
   let active=true;
   const refresh=()=>void fetch('/api/usage/quota',{cache:'no-store'}).then(r=>r.json())
@@ -131,7 +147,7 @@ export function ImageToVector(){
    const image=await loadImage(fileRef.current);
    if(image.naturalWidth*image.naturalHeight>45000000)throw Error('This photo is too large (45 MP limit). Please resize it first.');
    await reserveStudioUsage('studio-image-to-vector');
-   const result=traceSvg(image,colors,detail,removeWhite);
+   const result=traceSvg(image,colors,detail,removeWhite,quality,smoothness);
    const url=URL.createObjectURL(new Blob([result.xml],{type:'image/svg+xml;charset=utf-8'}));
    setSvg(result.xml);setSvgUrl(url);setPaths(result.pathCount);
    setSourceSize(result.w+' × '+result.h);
@@ -186,6 +202,12 @@ export function ImageToVector(){
       hint="PNG / JPG / WebP · max 10 MB" busy={working} onReset={resetTrace}/>
     {fileName&&<p className="vectorize-file">Selected: {fileName}</p>}
     <h2>2. Trace Settings</h2>
+    <p className="studio-note">Choose your artwork type. Studio presets configure path density, palette and smoothing.</p>
+    <div className="studio-premium-presets">
+     {(['logo','illustration','poster','photo'] as const).map(value=><button key={value}
+       type="button" className={tracePreset===value?'active':''} aria-pressed={tracePreset===value}
+       onClick={()=>chooseTracePreset(value)}>{value==='photo'?'Photo Art':value[0].toUpperCase()+value.slice(1)}</button>)}
+    </div>
     <label htmlFor="vector-colors">Vector color palette</label>
     <select id="vector-colors" value={colors} onChange={e=>setColors(Number(e.target.value) as TraceColors)}>
      <option value="2">2 colors (black &amp; white style)</option>
@@ -198,6 +220,14 @@ export function ImageToVector(){
      <option value="balanced">Balanced · recommended</option>
      <option value="detailed">Detailed · more paths</option>
     </select>
+    <label htmlFor="vector-quality">Tracing detail resolution</label>
+    <select id="vector-quality" value={quality} onChange={event=>setQuality(+event.target.value)}>
+     <option value={400}>Fast · 400 px</option><option value={640}>Balanced · 640 px</option>
+     <option value={900}>High-detail · 900 px</option>
+    </select>
+    <label htmlFor="vector-smoothness">Path smoothness {smoothness}%</label>
+    <input id="vector-smoothness" type="range" min="0" max="100" value={smoothness}
+     onChange={event=>setSmoothness(+event.target.value)}/>
     <label className="vectorize-check"><input type="checkbox" checked={removeWhite}
      onChange={e=>setRemoveWhite(e.target.checked)}/> Remove near-white background</label>
     <button type="button" className="vectorize-action" disabled={!fileName||working}
