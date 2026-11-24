@@ -1042,7 +1042,9 @@
       /* -------------------------------------------------------
          7. IMAGE LOADING & UPLOAD HANDLING
          ------------------------------------------------------- */
+      let uploadSerial = 0;
       function loadImageIntoStudio(img, name) {
+        uploadSerial++;
         state.image = img;
         state.fileName = name.replace(/\.[^/.]+$/, '') || 'toolnexa-photo';
 
@@ -1371,7 +1373,25 @@
       /* -------------------------------------------------------
          9. DISPLAY CANVAS RENDERER (RESPONSIVE DPR)
          ------------------------------------------------------- */
+      let lastPhotoSignature = '', latestPhotoRevision = 0, revisionFrame = 0;
+      function notifyChangedPhoto() {
+        if (window.parent === window) return;
+        const signature = JSON.stringify([
+          uploadSerial,state.presetId,state.mode,state.customW,state.customH,state.customUnit,
+          state.zoom,state.offsetX,state.offsetY,state.rotation,state.baseRotation,
+          state.flipH,state.flipV,state.brightness,state.contrast,state.saturation,state.warmth,
+          state.bgType,state.bgColor,state.bgGradient,state.socialRing,state.borderWidth,
+          state.borderColor,state.showCircleMask
+        ]);
+        if (signature === lastPhotoSignature) return;
+        lastPhotoSignature = signature;
+        cancelAnimationFrame(revisionFrame);
+        revisionFrame = requestAnimationFrame(() => {
+          window.parent.postMessage({type:'toolnexa-photo-revision',revision:++latestPhotoRevision},window.location.origin);
+        });
+      }
       function renderStudio() {
+        notifyChangedPhoto();
         const stageRect = el.canvasStage.getBoundingClientRect();
         const maxW = Math.max(240, stageRect.width - 28);
         const maxH = Math.max(240, stageRect.height - 28);
@@ -1437,7 +1457,7 @@
           el.estSizeBadge.textContent = `~ ${formatted}`;
 
           if (kb <= 50) {
-            el.govtReadyHint.textContent = 'Under 50 KB — Under 50 KB — check portal requirements ✓';
+            el.govtReadyHint.textContent = 'Under 50 KB — check portal requirements ✓';
             el.govtReadyHint.className = 'text-[11px] text-emerald-400 font-medium';
           } else {
             el.govtReadyHint.textContent = 'Adjust quality for exam/govt portals';
