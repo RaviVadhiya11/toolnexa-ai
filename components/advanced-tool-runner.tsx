@@ -1,6 +1,7 @@
 'use client';
 import {ToolUploadPreview} from '@/components/tool-upload-preview';
 import {useEffect,useState} from 'react';
+import {withPaidDownload,showDownloadGate} from '@/lib/download-access';
 import Link from 'next/link';
 import type {Tool} from '@/lib/tools';
 import {dailyLimits,isUsagePlan,quotaKey,readUsage,consumeUsage,type UsagePlan} from '@/lib/usage-limits';
@@ -160,16 +161,27 @@ export function AdvancedToolRunner({tool}:{tool:Tool}){
   if(q.mode==='browser')return q;
   const response=await fetch('/api/usage/quota',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug}),credentials:'same-origin'});
   const data=await response.json() as {used?:unknown;error?:string};
-  if(!response.ok){if(response.status===429&&q.limit!==null)setQuota({...q,used:q.limit});throw Error(data.error||'Could not reserve tool usage.')}
+  if(!response.ok){if(response.status===429){
+   if(q.limit!==null)setQuota({...q,used:q.limit});
+   showDownloadGate({kind:'limit',feature:tool.title,requiredTier:'Starter',message:typeof data.error==='string'?data.error:'Daily allowance reached. Upgrade for more runs.'});
+  }throw Error(data.error||'Could not reserve tool usage.')}
   if(typeof data.used!=='number')throw Error('Invalid usage reservation.');
   const next={...q,used:data.used};setQuota(next);return next;
  }
  async function run(){
+  if(BINARY_TOOLS.has(slug)){
+   await withPaidDownload({slug,feature:tool.title+' file download'},execute);
+  }else await execute();
+ }
+ async function execute(){
   if(working)return;setWorking(true);setFailed(false);setResult('');setLast(null);setThumbnail('');setCopiedItem('');setCopyError('');
   try{
    if(fileNeeded&&!file)throw Error('Choose a file first.');
    const q=await verifyQuota();
-   if(q.limit!==null&&q.used>=q.limit)throw Error('Daily usage limit reached. Upgrade for more runs.');
+   if(q.limit!==null&&q.used>=q.limit){
+    showDownloadGate({kind:'limit',feature:tool.title,requiredTier:'Starter',message:'Your shared daily allowance is exhausted. Upgrade or return after the UTC daily reset.'});
+    throw Error('Daily usage limit reached. Upgrade for more runs.');
+   }
    if(slug==='ai-title-hashtag-generator'&&aiMode==='gemini'&&q.mode!=='account')
     throw Error('Gemini AI requires a signed-in account. Sign in, or choose Offline Smart Mode.');
    const after=await reserve(q);
@@ -362,7 +374,7 @@ export function AdvancedToolRunner({tool}:{tool:Tool}){
      {quotaError&&<p className="tool-quota-error" role="alert">{quotaError}</p>}
      {full&&<div className="tool-quota-upgrade"><strong>Daily limit reached</strong><p>Upgrade your subscription or come back after the daily reset.</p><Link className="button" href="/pricing">View plans</Link></div>}
     </div>
-    <div className="tool-editor-actions"><button type="button" className="button tool-run-button" disabled={working||empty||full} onClick={()=>void run()}>{working?'Processing…':full?'Daily limit reached':'Run '+tool.title} →</button></div>
+    <div className="tool-editor-actions"><button type="button" className="button tool-run-button" disabled={working||empty} onClick={()=>void run()}>{working?'Processing…':full?'Daily limit reached':'Run '+tool.title} →</button></div>
    </div>
    <aside className="tool-output" aria-label="Tool output">
     <div className="tool-output-top"><div><p className="tool-workspace-kicker">RESULT</p><h3>Your output</h3></div>
@@ -394,11 +406,11 @@ export function AdvancedToolRunner({tool}:{tool:Tool}){
       <div className="tool-empty-result"><span aria-hidden="true">✦</span><p>Configure your input and run the tool to see results.</p></div>}
     {(copyError!==''||Boolean(copiedItem&&socialOutput))&&<p className="social-copy-feedback" role="status" aria-live="polite">{copyError||'Copied to clipboard.'}</p>}
     {thumbnail&&<img src={thumbnail} alt="Available YouTube video thumbnail preview" width={460} height={260} style={{maxWidth:'100%',height:'auto',borderRadius:12,marginTop:16}}/>}
-    {last&&<div className="tool-output-actions"><button type="button" className="button outline" onClick={()=>download(last.blob,last.name)}>Download again</button>
+    {last&&<div className="tool-output-actions"><button type="button" className="button outline" onClick={()=>void withPaidDownload({slug,feature:tool.title+' file download'},()=>download(last.blob,last.name))}>Download again</button>
       <span className="small-note">{last.name} · {(last.blob.size/1024/1024).toFixed(2)} MB</span></div>}
     {result&&!failed&&!last&&!socialOutput&&<CopyableResultRows text={result} slug={slug}/>}
     {result&&!failed&&!last&&<div className="tool-output-actions"><button type="button" className="button outline" onClick={()=>void copyPart(result,'full')}>{copiedItem==='full'?'Copied!':socialOutput?'Copy full result':'Copy result'}</button>
-      <button type="button" className="button outline" onClick={()=>download(new Blob([result],{type:slug==='json-to-csv'?'text/csv;charset=utf-8':slug==='seo-meta-generator'?'text/html;charset=utf-8':'text/plain;charset=utf-8'}),slug==='json-to-csv'?'toolnexa-data.csv':slug==='seo-meta-generator'?'toolnexa-seo-tags.html':'toolnexa-result.txt')}>Download text</button></div>}
+      <button type="button" className="button outline" onClick={()=>void withPaidDownload({slug,feature:tool.title+' text download'},()=>download(new Blob([result],{type:slug==='json-to-csv'?'text/csv;charset=utf-8':slug==='seo-meta-generator'?'text/html;charset=utf-8':'text/plain;charset=utf-8'}),slug==='json-to-csv'?'toolnexa-data.csv':slug==='seo-meta-generator'?'toolnexa-seo-tags.html':'toolnexa-result.txt'))}>Download text</button></div>}
     <p className="tool-local-note">{slug==='ai-title-hashtag-generator'&&aiMode==='gemini'?'AI text generation uses Google Gemini on the server; topic text is shared with Google.':BINARY_TOOLS.has(slug)?'Your document or image is processed in the browser.':'Privacy first · Browser-only processing'}</p>
    </aside>
   </div>
