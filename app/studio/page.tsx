@@ -15,8 +15,8 @@ const items=[
  {href:'/studio/passport-social',icon:'▧',title:'AI Passport & Social Size Studio',desc:'Passport, ID and 12 social size presets, live crop, 4×6 print sheets, AI cutout and verified Pro exports.',tag:'New · Pro Print'}
 ] as const;
 export default function StudioHome(){return <main className="studio-home suite-home">
- <span className="studio-eyebrow">TOOLNEXA AI · FLAGSHIP CREATOR STUDIO PRO+</span>
- <h1>High-Quality Image &amp; Vector Suite <span className="suite-count">11 Workspaces</span></h1>
+ <span className="studio-eyebrow">NEON GLASS 3D · TOOLNEXA CREATOR STUDIO</span>
+ <h1>Creative AI, Image, Vector &amp; ZIP Suite <span className="suite-count">11 Workspaces</span></h1>
  <p>Create SVG vector paths from your own images, clean photographs, edit designs and export professional files. Free users share 3 daily runs. Starter adds 2× upscale, Pro adds 4×/4K, and Premium/Max add up to 8K, and all paid tiers can create ZIP archives based on their plan limits.</p>
  <div className="suite-home-grid">{items.map(item=><Link href={item.href} key={item.href} className="suite-tile">
   <div className="suite-tile-art"><span>{item.icon}</span><small>{item.tag}</small></div>
