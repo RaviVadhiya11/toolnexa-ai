@@ -89,6 +89,6 @@ test('Free preview and paid HD download contract survives Studio V3',()=>{
  assert.match(gate,/purpose!=='download'/);
  const ui=read('components/studio-upscale-panel.tsx');
  assert.match(ui,/await reserveStudioUsage\(usageSlug\)/);
- assert.match(ui,/downloadFile\(result/);
+ assert.match(ui,/downloadFile\(file/);
  assert.match(ui,/setShowPlans\(true\)/);
 });
