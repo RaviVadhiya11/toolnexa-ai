@@ -4,6 +4,8 @@ import type {PointerEvent as ReactPointerEvent} from 'react';
 import Link from 'next/link';
 import {reserveStudioUsage,StudioQuotaNotice} from '@/components/studio-quota';
 import {StudioUpscalePanel} from '@/components/studio-upscale-panel';
+import {StudioUploadPreview} from '@/components/studio-upload-preview';
+import {composeBackground,refineBackground,type BgFill,type BgBrush} from '@/lib/studio-bg-editor';
 import {readImage,cropCanvas,imageBlob,downloadFile,proDownload,createCanvas} from '@/lib/studio-suite-client';
 import {solidBackgroundCutout,healMaskedImage,restorePhoto} from '@/lib/studio-image-effects';
 type Mode='background'|'retouch'|'restore';
@@ -19,6 +21,8 @@ export function StudioImageSuite({mode}:{mode:Mode}){
  const paintRef=useRef<HTMLCanvasElement|null>(null);
  const maskRef=useRef<Uint8Array>(new Uint8Array(0));
  const drawing=useRef(false);
+ const bgCanvas=useRef<HTMLCanvasElement|null>(null);
+ const bgDrawing=useRef(false);
  const [fileName,setFileName]=useState('');
  const [originalUrl,setOriginalUrl]=useState('');
  const [resultUrl,setResultUrl]=useState('');
@@ -28,6 +32,14 @@ export function StudioImageSuite({mode}:{mode:Mode}){
  const [plan,setPlan]=useState('Checking');
  const [scale,setScale]=useState<2|4>(2);
  const [algorithm,setAlgorithm]=useState<'ai'|'solid'>('ai');
+ const [bgFill,setBgFill]=useState<BgFill>('transparent');
+ const [bgColor,setBgColor]=useState('#f3f4f6');
+ const [bgSize,setBgSize]=useState(100);
+ const [bgOffsetX,setBgOffsetX]=useState(0);
+ const [bgOffsetY,setBgOffsetY]=useState(0);
+ const [bgShadow,setBgShadow]=useState(false);
+ const [bgTool,setBgTool]=useState<BgBrush>('erase');
+ const [bgBrushSize,setBgBrushSize]=useState(22);
  const [tolerance,setTolerance]=useState(65);
  const [feather,setFeather]=useState(2);
  const [brush,setBrush]=useState(22);
@@ -44,6 +56,46 @@ export function StudioImageSuite({mode}:{mode:Mode}){
   return()=>{mounted=false;window.removeEventListener('focus',refresh);window.removeEventListener('toolnexa-subscription-changed',refresh)};
  },[]);
  useEffect(()=>()=>{if(originalUrl.startsWith('blob:'))URL.revokeObjectURL(originalUrl)},[originalUrl]);
+ const bgOptions={fill:bgFill,color:bgColor,size:bgSize,offsetX:bgOffsetX,offsetY:bgOffsetY,shadow:bgShadow};
+ function exportCanvas(){
+  if(!resultRef.current)throw Error('Process the image before exporting.');
+  return mode==='background'?composeBackground(resultRef.current,bgOptions):resultRef.current;
+ }
+ useEffect(()=>{
+  if(mode!=='background'||!resultRef.current||!resultUrl||!bgCanvas.current)return;
+  const preview=bgCanvas.current,composed=composeBackground(resultRef.current,{
+   fill:bgFill,color:bgColor,size:bgSize,offsetX:bgOffsetX,offsetY:bgOffsetY,shadow:bgShadow
+  });
+  preview.width=composed.width;preview.height=composed.height;
+  preview.getContext('2d')?.drawImage(composed,0,0);
+  composed.width=0;composed.height=0;
+ },[mode,resultUrl,bgFill,bgColor,bgSize,bgOffsetX,bgOffsetY,bgShadow]);
+ function paintBG(event:ReactPointerEvent<HTMLCanvasElement>){
+  if(!resultRef.current||!sourceRef.current)return;
+  if(bgSize!==100||bgOffsetX!==0||bgOffsetY!==0){
+   setStatus('Return subject size to 100% and position to 0 before refining the mask.');return;
+  }
+  const canvas=event.currentTarget,rect=canvas.getBoundingClientRect();
+  const x=(event.clientX-rect.left)*canvas.width/rect.width;
+  const y=(event.clientY-rect.top)*canvas.height/rect.height;
+  refineBackground(resultRef.current,sourceRef.current,x,y,bgBrushSize,bgTool);
+  const output=composeBackground(resultRef.current,bgOptions);
+  canvas.getContext('2d')?.clearRect(0,0,canvas.width,canvas.height);
+  canvas.getContext('2d')?.drawImage(output,0,0);output.width=0;output.height=0;
+ }
+ function finishBgBrush(){
+  bgDrawing.current=false;
+  if(resultRef.current){
+   setResultUrl(resultRef.current.toDataURL('image/png'));
+   setStatus('Cutout refined. Review the edges in the upload preview before downloading.');
+  }
+ }
+ function resetPreview(){
+  resultRef.current=null;setResultUrl('');maskRef.current.fill(0);
+  if(mode==='background'){setBgFill('transparent');setBgSize(100);setBgOffsetX(0);setBgOffsetY(0);setBgShadow(false)}
+  if(mode==='retouch')clearBrush();
+  setStatus('Original image restored. Process it again to create a new result.');
+ }
  useEffect(()=>{
   if(mode!=='retouch'||!sourceRef.current||!paintRef.current)return;
   const canvas=paintRef.current,source=sourceRef.current;
@@ -60,6 +112,7 @@ export function StudioImageSuite({mode}:{mode:Mode}){
    maskRef.current=new Uint8Array(canvas.width*canvas.height);
    setDims({w:canvas.width,h:canvas.height});
    setOriginalUrl(URL.createObjectURL(file));setResultUrl('');
+   if(mode==='background'){setBgFill('transparent');setBgSize(100);setBgOffsetX(0);setBgOffsetY(0);setBgShadow(false)}
    setFileName(file.name);
    setStatus('Image ready. Adjust settings and process it.');
   }catch(e){setStatus(e instanceof Error?e.message:'Cannot open the image')}
@@ -121,7 +174,7 @@ export function StudioImageSuite({mode}:{mode:Mode}){
   if(!resultRef.current)return;
   setWorking(true);
   try{
-   const canvas=resultRef.current;
+   const canvas=exportCanvas();
    let input=canvas;
    if(type==='jpeg'){
     input=createCanvas(canvas,canvas.width,canvas.height);
@@ -139,7 +192,7 @@ export function StudioImageSuite({mode}:{mode:Mode}){
   if(!pro){setStatus('Pro/Premium/Max subscription required for HD exports.');return}
   setWorking(true);setStatus('Checking Pro plan and processing HD image…');
   try{
-   await proDownload(resultRef.current,mode==='background'?'cutout':'image',scale);
+   await proDownload(exportCanvas(),mode==='background'&&bgFill==='transparent'?'cutout':'image',scale);
    setStatus('Pro HD export downloaded. Source details are not recreated by enlargement.');
   }catch(e){setStatus(e instanceof Error?e.message:'HD export unavailable')}
   finally{setWorking(false)}
@@ -149,10 +202,21 @@ export function StudioImageSuite({mode}:{mode:Mode}){
    <h1>{NAMES[mode].name}</h1><p>{NAMES[mode].subtitle}</p></header>
   <div className="suite-editor-grid">
    <div className="studio-panel suite-controls">
-    <h2>1. Upload Image</h2>
-    <label htmlFor={'suite-upload-'+mode} className="suite-upload">↑ Choose JPG, PNG or WebP</label>
-    <input id={'suite-upload-'+mode} type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>void upload(e.target.files?.[0])}/>
-    <p className="studio-note">{fileName||'Up to 12 MB. Image processing happens in the browser.'}</p>
+    <h2>1. Upload &amp; Preview</h2>
+    <StudioUploadPreview id={'suite-upload-'+mode} accept="image/png,image/jpeg,image/webp"
+      name={fileName} sourceUrl={originalUrl} outputUrl={mode==='retouch'?resultUrl||originalUrl:resultUrl}
+      onFile={upload} busy={working} transparent={mode==='background'&&bgFill==='transparent'}
+      beforeLabel="Original" afterLabel={mode==='background'?'Background removed':mode==='retouch'?'Retouched':'Restored'}
+      onReset={resetPreview}
+      editor={mode==='background'&&resultUrl?<canvas ref={bgCanvas} className="studio-bg-edit-canvas"
+        style={{touchAction:'none'}} onPointerDown={e=>{bgDrawing.current=true;e.currentTarget.setPointerCapture(e.pointerId);paintBG(e)}}
+        onPointerMove={e=>{if(bgDrawing.current)paintBG(e)}}
+        onPointerUp={finishBgBrush} onPointerCancel={finishBgBrush}/>:
+       mode==='retouch'&&!resultUrl&&fileName?<canvas ref={paintRef} className="suite-brush-canvas" style={{touchAction:'none'}}
+        onPointerDown={e=>{drawing.current=true;e.currentTarget.setPointerCapture(e.pointerId);point(e)}}
+        onPointerMove={e=>{if(drawing.current)point(e)}}
+        onPointerUp={()=>{drawing.current=false}} onPointerCancel={()=>{drawing.current=false}}/>:undefined}/>
+    <p className="studio-note">{fileName||'JPG, PNG or WebP · up to 12 MB · on-device processing.'}</p>
     <h2>2. Settings</h2>
     {mode==='background'?<>
      <label htmlFor="bg-mode">Removal method</label>
@@ -163,7 +227,29 @@ export function StudioImageSuite({mode}:{mode:Mode}){
       <label>Color tolerance {tolerance}<input type="range" min="20" max="140" value={tolerance} onChange={e=>setTolerance(+e.target.value)}/></label>
       <label>Edge feather {feather}px<input type="range" min="0" max="5" value={feather} onChange={e=>setFeather(+e.target.value)}/></label>
      </>}
-     <p className="studio-note">AI mode downloads a 4.6 MB open-source model from Hugging Face and a runtime from a CDN on first use; your photo remains on your device. Some browsers/networks may not support it.</p>
+     <p className="studio-note">AI mode downloads an open-source U²-Netp model on first use; solid-background removal works offline. Your pixels stay in the browser.</p>
+     {resultUrl&&<>
+      <h2>3. Refine &amp; Change Background</h2>
+      <p className="studio-note">Brush directly on the image in the upload box. Erase removes leftover background; Restore recovers subject details.</p>
+      <div className="suite-pair">
+       <button type="button" className={bgTool==='erase'?'suite-selected':'studio-secondary'} onClick={()=>setBgTool('erase')}>Erase</button>
+       <button type="button" className={bgTool==='restore'?'suite-selected':'studio-secondary'} onClick={()=>setBgTool('restore')}>Restore</button>
+      </div>
+      <label>Refine brush {bgBrushSize}px<input type="range" min="4" max="65" value={bgBrushSize} onChange={e=>setBgBrushSize(+e.target.value)}/></label>
+      <label htmlFor="bg-fill">New background</label>
+      <select id="bg-fill" value={bgFill} onChange={e=>setBgFill(e.target.value as BgFill)}>
+       <option value="transparent">Transparent PNG</option>
+       <option value="white">Clean White</option>
+       <option value="color">Solid Color</option>
+       <option value="gradient">Soft Gradient</option>
+      </select>
+      {(bgFill==='color'||bgFill==='gradient')&&<label>Background color<input type="color" value={bgColor} onChange={e=>setBgColor(e.target.value)}/></label>}
+      <label>Subject size {bgSize}%<input type="range" min="60" max="145" value={bgSize} onChange={e=>setBgSize(+e.target.value)}/></label>
+      <label>Horizontal position {bgOffsetX}%<input type="range" min="-40" max="40" value={bgOffsetX} onChange={e=>setBgOffsetX(+e.target.value)}/></label>
+      <label>Vertical position {bgOffsetY}%<input type="range" min="-40" max="40" value={bgOffsetY} onChange={e=>setBgOffsetY(+e.target.value)}/></label>
+      <label className="studio-bg-checkbox"><input type="checkbox" checked={bgShadow} onChange={e=>setBgShadow(e.target.checked)}/> Soft subject shadow</label>
+      <p className="studio-note">To brush-refine, return size to 100% and both positions to 0. Colors, background and shadow appear immediately in the upload preview.</p>
+     </>}
     </>:mode==='retouch'?<>
       <label>Healing brush size {brush}px<input type="range" min="5" max="65" value={brush} onChange={e=>setBrush(+e.target.value)}/></label>
       <p className="studio-note">Paint purple over small marks in the After panel, then heal. This is local neighborhood inpainting, not generative person removal.</p>
@@ -180,7 +266,7 @@ export function StudioImageSuite({mode}:{mode:Mode}){
     <button type="button" disabled={working||!fileName} onClick={()=>void process()}>{working?'Processing…':NAMES[mode].button}</button>
    </div>
    <div className="studio-panel suite-canvas">
-    <div className="studio-work-top"><strong>3. Before / After</strong><span>{dims.w}×{dims.h} px working image</span></div>
+    <div className="studio-work-top"><strong>Additional comparison</strong><span>{dims.w}×{dims.h} px working image</span></div>
     <div className="suite-before-after">
      <div className="suite-preview"><strong>Before · Original</strong>
       <div className="suite-artboard">{originalUrl?<img src={originalUrl} alt="Original photo"/>:<p>Upload an image</p>}</div>
@@ -209,7 +295,7 @@ export function StudioImageSuite({mode}:{mode:Mode}){
     <select id="suite-hd-scale" value={scale} onChange={e=>setScale(Number(e.target.value) as 2|4)}><option value={2}>2× HD</option><option value={4}>4× HD</option></select>
     {pro?<button type="button" disabled={!resultUrl||working} onClick={()=>void hd()}>Download Pro HD</button>:
       <Link href="/pricing" className="studio-upgrade">Unlock Pro HD Export →</Link>}
-    <StudioUpscalePanel getCanvas={async()=>{if(!resultRef.current)throw Error('Process your image first');return resultRef.current}} format={mode==='background'?'cutout':'photo'} disabled={!resultUrl} sourceKey={resultUrl} usageSlug={mode==='background'?'studio-background':mode==='retouch'?'studio-retouch':'studio-restore'}/>
+    <StudioUpscalePanel getCanvas={async()=>exportCanvas()} format={mode==='background'?'cutout':'photo'} disabled={!resultUrl} sourceKey={[resultUrl,bgFill,bgColor,bgSize,bgOffsetX,bgOffsetY,bgShadow].join(':')} usageSlug={mode==='background'?'studio-background':mode==='retouch'?'studio-retouch':'studio-restore'}/>
     <p className="studio-note">AI cutout may have imperfect edges. Retouching works best on small marks, and resizing does not reconstruct missing photograph detail.</p>
    </div>
   </div>
