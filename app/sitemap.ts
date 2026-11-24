@@ -1,7 +1,8 @@
 import type {MetadataRoute} from 'next';
 import {tools} from '@/lib/tools';
+import {CANONICAL_SITE_URL} from '@/lib/site-url';
 
-const site='https://toolnexa-ai.vercel.app';
+const site=CANONICAL_SITE_URL;
 
 export default function sitemap():MetadataRoute.Sitemap {
  if(process.env.SITE_PUBLIC_LAUNCH_ENABLED!=='true')return [];
