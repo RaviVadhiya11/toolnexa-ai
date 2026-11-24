@@ -16,6 +16,7 @@ const studio=[
  {href:'/studio/restore',name:'Photo Restore & Colorizer',detail:'Clean, sharpen and recolor faded photos',icon:'☀'},
  {href:'/studio/batch',name:'Batch Pro+ ZIP Engine',detail:'Real Premium / Max multi-image processing',icon:'⚡'},
  {href:'/studio/passport-social',name:'AI Passport & Social Size Studio',detail:'Passport ID photos · social dimensions · print sheet · AI cutout',icon:'▧'},
+ {href:'/studio/zip-maker',name:'Advanced ZIP Maker',detail:'Local compression · folders · 1 GB Max archive size',icon:'▤'},
 ] as const;
 
 export function FlagshipCommandPalette(){
@@ -56,10 +57,10 @@ export function FlagshipCommandPalette(){
    <div className="flagship-command-search">
     <Search size={21} aria-hidden="true"/>
     <input ref={inputRef} value={query} onChange={e=>setQuery(e.target.value)} onKeyDown={handleKey}
-      aria-label="Search all 70 tools" placeholder="Search Studio tools, PDF, images, text, developers…"/>
+      aria-label="Search utility and Studio tools" placeholder="Search Studio tools, PDF, images, text, developers…"/>
     <button type="button" onClick={()=>setOpen(false)} aria-label="Close search"><X size={20}/></button>
    </div>
-   <div className="flagship-command-meta"><Sparkles size={15}/> 10 Studio workspaces · 60 working utilities</div>
+   <div className="flagship-command-meta"><Sparkles size={15}/> 11 Studio workspaces · 60 working utilities</div>
    <div className="flagship-command-results" role="listbox" aria-label="Tools matching your search">
     {results.length?results.map((item,index)=><button key={item.href} type="button" role="option"
       aria-selected={index===selected} className={index===selected?'active':''}
