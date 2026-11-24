@@ -17,7 +17,7 @@ export const metadata:Metadata={
  },
  twitter:{card:'summary',title:'ToolNexa AI — 60 Utility Tools + 9 Studio Workspaces',description:'Fast, browser-based PDF, Image, Text and Developer utilities.'}
 };
-export const viewport:Viewport={width:'device-width',initialScale:1,themeColor:'#080e20'};
+export const viewport:Viewport={width:'device-width',initialScale:1,themeColor:'#05060a'};
 export default function RootLayout({children}:{children:React.ReactNode}){
  return <html lang="en" suppressHydrationWarning><body><Shell>{children}</Shell></body></html>;
 }
