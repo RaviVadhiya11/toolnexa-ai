@@ -1,5 +1,6 @@
 import {NextRequest,NextResponse} from 'next/server';
 import {serverSupabase} from '@/lib/supabase/server';
+import {CANONICAL_SITE_URL} from '@/lib/site-url';
 import {adminDb} from '@/lib/admin';
 import {paypalBase,paypalPlanIdForCheckout,configuredPayPalPlanIds,paypalSubscription,paypalToken} from '@/lib/paypal';
 
@@ -83,7 +84,7 @@ export async function POST(request:NextRequest){
   }
   stage='paypal_create_subscription';
   // Fixed, trusted return URLs avoid untrusted Host header based redirects.
-  const site='https://toolnexa-ai.vercel.app';
+  const site=CANONICAL_SITE_URL;
   const response=await fetch(paypalBase+'/v1/billing/subscriptions',{
    method:'POST',
    headers:{Authorization:'Bearer '+token,'Content-Type':'application/json',
