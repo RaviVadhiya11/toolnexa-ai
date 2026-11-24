@@ -125,6 +125,8 @@ export function Shell({children}:{children:React.ReactNode}){
       <h2 id="footer-links-title">QUICK LINKS</h2>
       <Link href="/">Home</Link>
       <Link href="/tools">All Tools</Link>
+      <Link href="/studio">Creator Studio</Link>
+      <Link href="/about">About ToolNexa AI</Link>
       <Link href="/pricing">Premium Pricing</Link>
       <Link href="/dashboard">My Dashboard</Link>
       <Link href="/support">Help &amp; Support</Link>
@@ -143,6 +145,7 @@ export function Shell({children}:{children:React.ReactNode}){
      </section>
     <div className="editorial-footer-bottom">
      <nav className="editorial-footer-legal" aria-label="Legal and help links">
+      <Link href="/about">About</Link>
       <Link href="/privacy">Privacy Policy</Link>
       <Link href="/terms">Terms &amp; Conditions</Link>
       <Link href="/billing">Billing &amp; Cancellation</Link>
