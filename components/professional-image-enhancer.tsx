@@ -71,6 +71,28 @@ export function ProfessionalImageEnhancer(){
   setFileName(file.name);setImageUrl(URL.createObjectURL(file));setCompare(55);
   setStatus('Opening '+file.name+'…');
  }
+ function smartAutoEnhance(){
+  const img=sourceRef.current;
+  if(!img){setStatus('Upload an image first to run smart auto enhance.');return}
+  const sample=document.createElement('canvas');sample.width=96;sample.height=96;
+  const ctx=sample.getContext('2d',{willReadFrequently:true});
+  if(!ctx){choosePreset('natural');return}
+  ctx.drawImage(img,0,0,96,96);
+  const pix=ctx.getImageData(0,0,96,96).data;
+  let sum=0,sq=0,n=0;
+  for(let i=0;i<pix.length;i+=4){
+   const v=.2126*pix[i]+.7152*pix[i+1]+.0722*pix[i+2];
+   sum+=v;sq+=v*v;n++;
+  }
+  const avg=sum/Math.max(1,n);
+  const deviation=Math.sqrt(Math.max(0,sq/Math.max(1,n)-avg*avg));
+  const brightness=Math.max(82,Math.min(132,Math.round(100*130/Math.max(45,avg))));
+  const contrast=Math.max(95,Math.min(125,Math.round(120-deviation*.19)));
+  setPreset('natural');
+  setSettings({...photoPresets.natural,brightness,contrast,
+   denoise:deviation<35?24:12,sharpness:deviation<35?39:28});
+  setStatus('Auto Enhance analysed the image exposure and contrast. Compare results above and fine-tune.');
+ }
  function choosePreset(value:PhotoPreset){
   setPreset(value);setSettings(photoPresets[value]);setStatus('Applied '+presets.find(p=>p.key===value)?.label+' enhancement preset.');
  }
@@ -83,7 +105,7 @@ export function ProfessionalImageEnhancer(){
   return enhancePhotoCanvas(image,settings,900);
  }
  const loaded=dimensions.width>0;
- const sourceKey=[imageUrl,settings.brightness,settings.contrast,settings.saturation,settings.denoise,settings.sharpness].join(':');
+ const sourceKey=[imageUrl,settings.brightness,settings.contrast,settings.saturation,settings.denoise,settings.sharpness,settings.warmth].join(':');
  return <div className="photo-enhance-page">
   <header className="photo-enhance-hero">
    <span className="studio-eyebrow">TOOLNEXA AI · CREATOR STUDIO</span>
@@ -104,7 +126,7 @@ export function ProfessionalImageEnhancer(){
      {presets.map(item=><button key={item.key} type="button" className={preset===item.key?'photo-preset selected':'photo-preset'}
        onClick={()=>choosePreset(item.key)} aria-pressed={preset===item.key} title={item.subtitle}>{item.label}</button>)}
     </div>
-    <button type="button" className="photo-auto-enhance" onClick={()=>choosePreset('natural')}>
+    <button type="button" className="photo-auto-enhance" onClick={smartAutoEnhance}>
      ✨ Auto Enhance — Recommended
     </button>
     <div className="photo-enhance-adjustments">
@@ -113,12 +135,17 @@ export function ProfessionalImageEnhancer(){
        ['contrast','Contrast',75,165],
        ['saturation','Colour',70,160],
        ['denoise','Reduce Noise',0,75],
-       ['sharpness','Sharpen Details',0,85]
+       ['sharpness','Sharpen Details',0,85],
+       ['warmth','Warmth / Temperature',-40,40]
       ] as const).map(([key,label,min,max])=><label key={key} htmlFor={'photo-adjust-'+key}>
-       <span>{label}<b>{settings[key]}{key==='denoise'||key==='sharpness'?'':'%'}</b></span>
+       <span>{label}<b>{settings[key]}{key==='denoise'||key==='sharpness'?'':key==='warmth'?'°':'%'}</b></span>
        <input id={'photo-adjust-'+key} type="range" min={min} max={max} value={settings[key]}
         onChange={e=>updateSetting(key,+e.currentTarget.value)} />
       </label>)}
+    </div>
+    <div className="studio-premium-actions">
+     <button type="button" className="studio-secondary" onClick={()=>choosePreset('natural')}>↶ Reset adjustments</button>
+     <button type="button" className="studio-secondary" onClick={smartAutoEnhance} disabled={!loaded}>✦ Analyze exposure</button>
     </div>
    </section>
    <div className="photo-enhance-preview-group">

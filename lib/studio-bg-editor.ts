@@ -1,9 +1,10 @@
 import {createCanvas} from '@/lib/studio-suite-client';
 
-export type BgFill='transparent'|'white'|'color'|'gradient';
+export type BgFill='transparent'|'white'|'color'|'gradient'|'image';
 export type BgBrush='erase'|'restore';
 export type BgOptions={
  fill:BgFill; color:string; size:number; offsetX:number; offsetY:number; shadow:boolean;
+ image?:HTMLImageElement|null;shadowStrength?:number;
 };
 export function composeBackground(cutout:HTMLCanvasElement,options:BgOptions){
  const w=cutout.width,h=cutout.height;
@@ -18,10 +19,18 @@ export function composeBackground(cutout:HTMLCanvasElement,options:BgOptions){
   grad.addColorStop(0,options.color);grad.addColorStop(1,'#ffffff');
   ctx.fillStyle=grad;ctx.fillRect(0,0,w,h);
  }
+ if(options.fill==='image'){
+  const img=options.image;
+  if(img&&img.naturalWidth>0&&img.naturalHeight>0){
+   const ratio=Math.max(w/img.naturalWidth,h/img.naturalHeight);
+   const iw=img.naturalWidth*ratio,ih=img.naturalHeight*ratio;
+   ctx.drawImage(img,(w-iw)/2,(h-ih)/2,iw,ih);
+  }else{ctx.fillStyle='#f5f5f5';ctx.fillRect(0,0,w,h)}
+ }
  const s=Math.max(.5,Math.min(1.6,options.size/100));
  const sw=w*s,sh=h*s,dx=(w-sw)/2+options.offsetX/100*w,dy=(h-sh)/2+options.offsetY/100*h;
  if(options.shadow){
-  ctx.shadowColor='rgba(0,0,0,.28)';ctx.shadowBlur=Math.max(5,Math.round(w*.026));
+  ctx.shadowColor='rgba(0,0,0,'+(.42*Math.max(0,Math.min(100,options.shadowStrength??65))/100)+')';ctx.shadowBlur=Math.max(5,Math.round(w*.026));
   ctx.shadowOffsetX=Math.round(w*.009);ctx.shadowOffsetY=Math.round(h*.019);
  }
  ctx.drawImage(cutout,dx,dy,sw,sh);

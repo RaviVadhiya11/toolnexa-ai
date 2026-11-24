@@ -137,3 +137,19 @@ live outside that static catalogue.
 - For photo inputs only, **AI Detail (experimental)** uses the MIT-licensed UpscalerJS neural network + default ESRGAN-Slim 2x model, running locally in TensorFlow.js. The neural input is capped to 320 px on phones or 480 px on larger screens. Further scaling to requested output dimensions uses conventional canvas resampling. This is a real learned enhancement step, but it cannot guarantee true reconstruction of a lost image detail.
 - **Classic HD** remains the default and is faster. If the neural model fails to download, a browser has inadequate memory, or the model runtime is unavailable, user can choose Classic and retry. Model weights may be downloaded from the UpscalerJS public CDN, while the photo is processed on device.
 - Browser-side generated pixels are not cryptographically protected; UI subscription gating is intended for ordinary usage and must not be represented as tamper-proof DRM.
+
+
+## Creator Studio V3 — professional editing controls (November 2026)
+
+The eight Image & Vector Studio routes now have the same premium visual navigation and stronger real editing controls, while the original 60 utility tools remain untouched.
+
+- **All eight tools:** unified upload workspace with draggable before/after **Split**, keyboard preview comparison, zoom from 100% to 250%, white/dark/checkerboard canvas options, replace/reset and a mobile-friendly quick tool switcher.
+- **Background Remover:** U²-Netp/offline background separation, Erase/Restore alpha mask brushes, 12-stroke undo/redo history, your own JPG/PNG/WebP background photograph, transparent/white/color/gradient presets, subject repositioning and strength-adjustable soft shadows. Processing remains on-device.
+- **Retouch:** brush-selection undo/redo up to 20 strokes; genuine neighborhood pixel healing (not generative object deletion).
+- **Photo Restore:** balanced/portrait/old-scan/vintage settings and genuine histogram 1%/99% automatic tone stretching, alongside denoise, sharpen and tonal color filters (not trained historical color inference).
+- **Image to Vector:** logo/illustration/poster/photo-art presets; up to 48 quantized colors, three tracing resolutions (up to 900px), an adjustable path smoothness effect, real editable SVG output.
+- **SVG Editor / Converter:** editing can be undone/redone up to 30 steps; star/circle/rectangle generation, opacity, palette swatches, horizontal/vertical geometric mirroring; SVG/PDF/EPS/DXF output restrictions remain accurate (transformed SVG will not export to EPS/DXF via the existing path-converter).
+- **Logo Vector Studio:** six generated scalable SVG designs, five brand color palettes and selectable transparent, white or dark artboard.
+- **Photo Enhancer:** image-content analysis for automatic exposure and contrast, real warmth channel shifts, existing neural AI Detail (experimental), denoise/sharpening and paid resolution exports.
+
+Existing business rules are unchanged: Free has three shared daily uses, and downloads from the 2×/4×/4K/8K upscaler are subscription-gated; 8K requires Premium/Max. Automated tests verify code and builds; claims of proven mobile AI cutout quality, browser-robust 8K, tamper-proof browser processing or real PayPal payment completion require separate real-device/end-to-end testing.

@@ -82,7 +82,7 @@ export function healMaskedImage(source:HTMLCanvasElement,mask:Uint8Array){
  }
  ctx.putImageData(image,0,0);return result;
 }
-export function restorePhoto(source:HTMLCanvasElement,denoise:number,sharpness:number,colour:'original'|'sepia'|'cool'|'warm'){
+export function restorePhoto(source:HTMLCanvasElement,denoise:number,sharpness:number,colour:'original'|'sepia'|'cool'|'warm',autoLevels=false){
  const canvas=createCanvas(source,source.width,source.height),ctx=canvas.getContext('2d',{willReadFrequently:true})!;
  const w=canvas.width,h=canvas.height,image=ctx.getImageData(0,0,w,h),original=new Uint8ClampedArray(image.data);
  const values=new Uint8ClampedArray(original);
@@ -111,6 +111,25 @@ export function restorePhoto(source:HTMLCanvasElement,denoise:number,sharpness:n
    if(colour==='sepia'){values[i]=Math.min(255,gray*1.13);values[i+1]=Math.min(255,gray*.99);values[i+2]=Math.min(255,gray*.79)}
    if(colour==='warm'){values[i]=Math.min(255,values[i]*1.05+5);values[i+1]=Math.min(255,values[i+1]*1.01);values[i+2]=Math.max(0,values[i+2]*.95)}
    if(colour==='cool'){values[i]=Math.max(0,values[i]*.94);values[i+1]=Math.min(255,values[i+1]*1.03);values[i+2]=Math.min(255,values[i+2]*1.1+4)}
+  }
+ }
+ if(autoLevels){
+  // Perceptual 1%/99% luminance percentiles avoid stretching outliers.
+  const histogram=new Uint32Array(256),count=w*h;
+  for(let i=0;i<values.length;i+=4){
+   const lum=Math.max(0,Math.min(255,Math.round(.2126*values[i]+.7152*values[i+1]+.0722*values[i+2])));
+   histogram[lum]++;
+  }
+  let sum=0,low=0,high=255;
+  for(let n=0;n<256;n++){sum+=histogram[n];if(sum>=count*.01){low=n;break}}
+  sum=0;
+  for(let n=255;n>=0;n--){sum+=histogram[n];if(sum>=count*.01){high=n;break}}
+  if(high-low>=24){
+   const factor=255/(high-low),blend=.68;
+   for(let i=0;i<values.length;i+=4)for(let channel=0;channel<3;channel++){
+    const raised=Math.max(0,Math.min(255,(values[i+channel]-low)*factor));
+    values[i+channel]=Math.max(0,Math.min(255,Math.round(values[i+channel]*(1-blend)+raised*blend)));
+   }
   }
  }
  image.data.set(values);ctx.putImageData(image,0,0);return canvas;
