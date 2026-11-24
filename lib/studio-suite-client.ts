@@ -1,10 +1,27 @@
 /* Browser-only common file helpers. Downloads are not uploads. */
 export const MAX_IMAGE_BYTES=12*1024*1024;
-export function downloadFile(data:Blob,name:string){
- const url=URL.createObjectURL(data);
- const anchor=document.createElement('a');
- anchor.href=url;anchor.download=name;document.body.appendChild(anchor);anchor.click();anchor.remove();
- setTimeout(()=>URL.revokeObjectURL(url),18000);
+import {withPaidDownload} from '@/lib/download-access';
+// Resolve the verified Studio entitlement by route; an unknown route fails
+// closed as a supported studio, never as an unvalidated arbitrary slug.
+const slugForPage=()=>{
+ const path=typeof window==='undefined'?'':window.location.pathname;
+ if(path.startsWith('/studio/passport-social'))return 'studio-passport-social';
+ if(path.startsWith('/studio/image-to-vector'))return 'studio-image-to-vector';
+ if(path.startsWith('/studio/svg-editor'))return 'studio-svg-editor';
+ if(path.startsWith('/studio/convert'))return 'studio-convert';
+ if(path.startsWith('/studio/background-remove'))return 'studio-background';
+ if(path.startsWith('/studio/retouch'))return 'studio-retouch';
+ if(path.startsWith('/studio/restore'))return 'studio-restore';
+ if(path.startsWith('/studio/vector'))return 'studio-vector';
+ return 'studio-enhance';
+};
+export async function downloadFile(data:Blob,name:string):Promise<boolean>{
+ return withPaidDownload({slug:slugForPage(),feature:'Creator Studio file export'},()=>{
+  const url=URL.createObjectURL(data);
+  const anchor=document.createElement('a');
+  anchor.href=url;anchor.download=name;document.body.appendChild(anchor);anchor.click();anchor.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),18000);
+ });
 }
 export function imageBlob(canvas:HTMLCanvasElement,type='image/png',quality=.93){
  return new Promise<Blob>((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('Could not render image')),type,quality));
