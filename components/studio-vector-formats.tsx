@@ -15,10 +15,49 @@ export function StudioVectorFormats({mode}:{mode:Mode}){
  const [fill,setFill]=useState('#2563eb');
  const [stroke,setStroke]=useState('#ffffff');
  const [width,setWidth]=useState(2);
+ const [opacity,setOpacity]=useState(100);
+ const [history,setHistory]=useState({past:[] as string[],future:[] as string[]});
  const [size,setSize]=useState(100);
  const [format,setFormat]=useState<VectorFormat>('svg');
  const [busy,setBusy]=useState(false);
  const [status,setStatus]=useState('Choose a valid SVG with paths or shapes.');
+ const shapeCount=(xml.match(/<(?:path|rect|circle|ellipse|polygon|polyline|line)\b/g)||[]).length;
+ function commitSvg(next:string){
+  const cleaned=cleanSVG(next);
+  if(cleaned===xml)return;
+  setHistory(state=>({past:[...state.past,xml].slice(-30),future:[]}));
+  setXml(cleaned);
+ }
+ function travelSvg(direction:'undo'|'redo'){
+  const stack=direction==='undo'?history.past:history.future;
+  const target=stack[stack.length-1];if(target===undefined)return;
+  if(direction==='undo')setHistory(state=>({past:state.past.slice(0,-1),future:[...state.future,xml]}));
+  else setHistory(state=>({past:[...state.past,xml],future:state.future.slice(0,-1)}));
+  setXml(target);setStatus(direction==='undo'?'Undo complete.':'Redo complete.');
+ }
+ function transformShapes(flip:'horizontal'|'vertical'){
+  if(!xml)return;
+  try{
+   const doc=new DOMParser().parseFromString(xml,'image/svg+xml');
+   const root=doc.documentElement,vb=root.getAttribute('viewBox')?.trim().split(/[\s,]+/).map(Number);
+   const w=vb&&vb.length===4?vb[2]:Number.parseFloat(root.getAttribute('width')||'800');
+   const h=vb&&vb.length===4?vb[3]:Number.parseFloat(root.getAttribute('height')||'800');
+   if(!Number.isFinite(w)||!Number.isFinite(h)||w<=0||h<=0)throw Error('Unsupported vector dimensions');
+   const x=vb&&vb.length===4?vb[0]:0,y=vb&&vb.length===4?vb[1]:0;
+   const group=doc.createElementNS('http://www.w3.org/2000/svg','g');
+   group.setAttribute('transform',flip==='horizontal'?'translate('+(2*x+w)+' 0) scale(-1 1)':'translate(0 '+(2*y+h)+') scale(1 -1)');
+   while(root.firstChild)group.appendChild(root.firstChild);
+   root.appendChild(group);
+   commitSvg(new XMLSerializer().serializeToString(root));
+   setStatus('Artwork flipped '+flip+'. Use Undo to reverse it.');
+  }catch(e){setStatus(e instanceof Error?e.message:'Could not transform vector')}
+ }
+ const colorPalettes=[
+  {name:'Ocean',fill:'#2563eb',stroke:'#06b6d4'},
+  {name:'Sunset',fill:'#ef4444',stroke:'#fbbf24'},
+  {name:'Forest',fill:'#059669',stroke:'#a3e635'},
+  {name:'Luxury',fill:'#c99b42',stroke:'#172033'}
+ ];
  useEffect(()=>{
   if(!xml){setPreview('');return}
   const url=URL.createObjectURL(new Blob([xml],{type:'image/svg+xml'}));setPreview(url);
@@ -38,20 +77,27 @@ export function StudioVectorFormats({mode}:{mode:Mode}){
   try{
    const doc=new DOMParser().parseFromString(xml,'image/svg+xml');
    const targets=doc.documentElement.querySelectorAll('path,rect,circle,ellipse,polygon,polyline,line');
-   for(const shape of targets){shape.setAttribute('fill',fill);shape.setAttribute('stroke',stroke);shape.setAttribute('stroke-width',String(width))}
+   for(const shape of targets){shape.setAttribute('fill',fill);shape.setAttribute('stroke',stroke);shape.setAttribute('stroke-width',String(width));shape.setAttribute('opacity',String(opacity/100))}
    setXml(cleanSVG(new XMLSerializer().serializeToString(doc.documentElement)));
    setStatus(targets.length+' vector shapes updated.');
   }catch(e){setStatus(e instanceof Error?e.message:'Could not update colors')}
  }
- function addShape(type:'circle'|'rect'){
+ function addShape(type:'circle'|'rect'|'star'){
   try{
    const base=xml||'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800"></svg>';
    const doc=new DOMParser().parseFromString(base,'image/svg+xml');
    const root=doc.documentElement;
-   const node=doc.createElementNS('http://www.w3.org/2000/svg',type);
-   for(const [key,value] of Object.entries(type==='circle'?{cx:'400',cy:'400',r:'130'}:{x:'290',y:'290',width:'220',height:'220',rx:'0'}))node.setAttribute(key,value);
-   node.setAttribute('fill',fill);node.setAttribute('stroke',stroke);node.setAttribute('stroke-width',String(width));root.appendChild(node);
-   setXml(cleanSVG(new XMLSerializer().serializeToString(root)));setStatus('New editable '+type+' added.');
+   const node=doc.createElementNS('http://www.w3.org/2000/svg',type==='star'?'path':type);
+   if(type==='star'){
+    const d=Array.from({length:10},(_,index)=>{
+     const angle=(-Math.PI/2)+index*Math.PI/5,r=index%2===0?175:78;
+     return (index===0?'M':'L')+' '+(400+Math.cos(angle)*r).toFixed(2)+' '+(400+Math.sin(angle)*r).toFixed(2);
+    }).join(' ')+' Z';
+    node.setAttribute('d',d);
+   }
+   for(const [key,value] of Object.entries(type==='circle'?{cx:'400',cy:'400',r:'130'}:type==='rect'?{x:'290',y:'290',width:'220',height:'220',rx:'0'}:{}))node.setAttribute(key,value);
+   node.setAttribute('fill',fill);node.setAttribute('stroke',stroke);node.setAttribute('stroke-width',String(width));node.setAttribute('opacity',String(opacity/100));root.appendChild(node);
+   commitSvg(new XMLSerializer().serializeToString(root));setStatus('New editable '+type+' added.');
   }catch(e){setStatus(e instanceof Error?e.message:'Unable to add shape')}
  }
  async function run(){
@@ -95,14 +141,31 @@ export function StudioVectorFormats({mode}:{mode:Mode}){
     <h2>Upload SVG &amp; Live Preview</h2>
     <StudioUploadPreview id="suite-svg-file" accept=".svg,image/svg+xml" name={name}
       sourceUrl={preview} onFile={upload} hint="Editable SVG · max 2.5 MB"
-      beforeLabel="SVG Vector" busy={busy} onReset={()=>{setXml('');setStatus('Preview reset. Upload another SVG or create shapes.')}}/>
+      beforeLabel="SVG Vector" busy={busy} onReset={()=>{setXml('');setHistory({past:[],future:[]});setStatus('Preview reset. Upload another SVG or create shapes.')}}/>
     <p className="studio-note">{name||'Use SVG from Image-to-Vector, Illustrator, Inkscape or CorelDRAW.'}</p>
     {mode==='edit'?<><h2>Design Controls</h2>
      <label>Fill color<input type="color" value={fill} onChange={e=>setFill(e.target.value)}/></label>
      <label>Stroke color<input type="color" value={stroke} onChange={e=>setStroke(e.target.value)}/></label>
      <label>Stroke width {width}px<input type="range" min="0" max="15" value={width} onChange={e=>setWidth(+e.target.value)}/></label>
+     <label>Shape opacity {opacity}%<input type="range" min="10" max="100" value={opacity} onChange={e=>setOpacity(+e.target.value)}/></label>
+     <div className="studio-premium-palette">{colorPalettes.map(item=><button key={item.name} type="button"
+      title={item.name} aria-label={'Choose '+item.name+' color palette'}
+      style={{background:'linear-gradient(120deg,'+item.fill+' 50%,'+item.stroke+' 50%)'}}
+      onClick={()=>{setFill(item.fill);setStroke(item.stroke);setStatus(item.name+' palette selected. Click Apply to vector shapes.')}}/>)}</div>
      <button type="button" disabled={!xml} onClick={changeFill}>Apply to vector shapes</button>
-     <div className="suite-pair"><button type="button" onClick={()=>addShape('circle')}>+ Circle</button><button type="button" onClick={()=>addShape('rect')}>+ Rectangle</button></div>
+     <div className="suite-pair">
+      <button type="button" className="studio-secondary" disabled={!history.past.length} onClick={()=>travelSvg('undo')}>↶ Undo</button>
+      <button type="button" className="studio-secondary" disabled={!history.future.length} onClick={()=>travelSvg('redo')}>↷ Redo</button>
+     </div>
+     <div className="studio-premium-presets">
+      <button type="button" onClick={()=>addShape('circle')}>+ Circle</button>
+      <button type="button" onClick={()=>addShape('rect')}>+ Rectangle</button>
+      <button type="button" onClick={()=>addShape('star')}>+ Star</button>
+     </div>
+     <div className="suite-pair">
+      <button type="button" className="studio-secondary" disabled={!xml} onClick={()=>transformShapes('horizontal')}>⇆ Flip H</button>
+      <button type="button" className="studio-secondary" disabled={!xml} onClick={()=>transformShapes('vertical')}>⇅ Flip V</button>
+     </div>
      <label>Output size {size}%<input type="range" min="25" max="200" value={size} onChange={e=>setSize(+e.target.value)}/></label>
     </>:<><h2>Vector File Format</h2><label htmlFor="suite-format">Output format</label>
      <select id="suite-format" value={format} onChange={e=>setFormat(e.target.value as VectorFormat)}>
