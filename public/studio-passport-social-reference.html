@@ -120,6 +120,21 @@
       background: rgba(34, 211, 238, 0.08) !important;
       box-shadow: 0 0 35px rgba(34, 211, 238, 0.25) !important;
     }
+
+    /* Neon Glass 3D harmonization — original editor layout and event handlers retained */
+    body{background-image:radial-gradient(ellipse at 87% 0%,rgba(124,50,255,.19),transparent 55%),
+      radial-gradient(ellipse at 0% 38%,rgba(9,192,239,.09),transparent 55%);background-attachment:fixed}
+    .glass-card{background:linear-gradient(150deg,rgba(30,43,82,.83),rgba(11,19,47,.90))!important;
+      border:1px solid rgba(135,153,248,.33)!important;
+      box-shadow:inset 0 1px rgba(226,232,255,.16),0 18px 48px rgba(1,4,20,.43),0 0 18px rgba(95,57,233,.09)}
+    #inlineProStudio{background:radial-gradient(ellipse at 100% 0%,rgba(83,217,255,.15),transparent 63%),
+      linear-gradient(135deg,rgba(60,36,108,.6),rgba(19,31,68,.88))!important;
+      border-color:rgba(177,133,255,.6)!important;box-shadow:0 0 24px rgba(115,67,242,.17)}
+    #btnPro4k,#btnPro8k{border:1px solid rgba(182,165,255,.48);box-shadow:0 6px 22px rgba(100,71,242,.31)}
+    #btnPro4k:hover,#btnPro8k:hover{filter:brightness(1.13)}
+    :is(button,input,select):focus-visible{outline:2px solid #5ce4fa;outline-offset:2px}
+    @media(prefers-reduced-motion:reduce){.glass-card,#btnPro4k,#btnPro8k{transition:none!important}}
+
   </style>
 </head>
 <body class="relative selection:bg-violet-500/30 selection:text-cyan-200">
