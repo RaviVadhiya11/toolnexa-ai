@@ -51,7 +51,7 @@ export default function Home(){return <div className="premium-home flagship-home
   <Link href="/dashboard"><Crown size={16}/> My Workspace</Link>
  </nav>
  <section className="flagship-metrics" aria-label="ToolNexa product features">
-  <div><strong>70</strong><span>Working tool pages</span></div>
+  <div><strong>71</strong><span>Working tool pages</span></div>
   <div><strong>Up to 8K</strong><span>Plan-gated export resolution</span></div>
   <div><strong>3 / day</strong><span>Shared Free tool runs</span></div>
   <div><strong>PayPal</strong><span>Verified subscription checkout</span></div>
