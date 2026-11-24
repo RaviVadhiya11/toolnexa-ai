@@ -257,10 +257,11 @@ function renderZipActivity(){
   row.append(label,size);list.append(row);
  }
  const latest=zipSessionHistory[zipSessionHistory.length-1];
- const saved=Math.max(0,latest.input-latest.output);
- const pct=latest.input>0?saved/latest.input*100:0;
- $('insightSavings').textContent=pct.toFixed(1)+'% saved';
- $('insightSavingsSub').textContent=formatSize(latest.input)+' input → '+formatSize(latest.output)+' ZIP · '+formatSize(saved)+' smaller';
+ const delta=latest.input-latest.output;
+ const pct=latest.input>0?Math.abs(delta)/latest.input*100:0;
+ const shrunk=delta>=0;
+ $('insightSavings').textContent=pct.toFixed(1)+'% '+(shrunk?'saved':'larger');
+ $('insightSavingsSub').textContent=formatSize(latest.input)+' input → '+formatSize(latest.output)+' ZIP · '+formatSize(Math.abs(delta))+(shrunk?' smaller':' ZIP overhead/growth');
  const recent=zipSessionHistory.slice(-7);
  const max=Math.max(1,...recent.map(item=>item.output));
  recent.forEach((item,index)=>{
