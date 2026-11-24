@@ -1,7 +1,7 @@
 import type {Metadata} from 'next';
-import {PassportSocialStudio} from '@/components/passport-social-studio';
+import {PassportSocialExactExperience} from '@/components/passport-social-exact-experience';
 export const metadata:Metadata={
- title:'AI Passport & Social Size Studio',
- description:'Prepare passport and social photos with real crop controls, common photo sizes, 4x6 print sheet, local AI background cutout, and verified Pro exports. Country photo requirements must be checked independently.'
+ title:'Passport & Social Photo Studio — ToolNexa AI',
+ description:'Premium glassmorphism photo workspace with ID crops, social frames, 300 PPI 4x6 and A4 sheets, file-size optimization, and verified subscription exports.'
 };
-export default function PassportSocialPage(){return <PassportSocialStudio/>;}
+export default function PassportSocialPage(){return <PassportSocialExactExperience/>;}
