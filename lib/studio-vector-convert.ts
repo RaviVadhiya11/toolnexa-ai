@@ -87,8 +87,11 @@ function contours(xml:string){
  return {output,width,height};
 }
 export async function exportVector(xml:string,format:'svg'|'pdf'|'eps'|'dxf'){
+ async function savePremium(blob:Blob,name:string){
+  if(!await downloadFile(blob,name))throw Error('A verified subscription is required to download vector files.');
+ }
  const safe=cleanSVG(xml);
- if(format==='svg'){downloadFile(new Blob([safe],{type:'image/svg+xml'}),'toolnexa-vector.svg');return}
+ if(format==='svg'){await savePremium(new Blob([safe],{type:'image/svg+xml'}),'toolnexa-vector.svg');return}
  if(format==='pdf'){
   const {jsPDF}=await import('jspdf');
   const {svg2pdf}=await import('svg2pdf.js');
@@ -96,7 +99,7 @@ export async function exportVector(xml:string,format:'svg'|'pdf'|'eps'|'dxf'){
   const {width,height}=svgSize(doc.documentElement);
   const pdf=new jsPDF({orientation:width>height?'landscape':'portrait',unit:'pt',format:[width,height]});
   await svg2pdf(doc.documentElement as unknown as SVGSVGElement,pdf,{x:0,y:0,width,height});
-  downloadFile(pdf.output('blob'),'toolnexa-vector.pdf');return;
+  await savePremium(pdf.output('blob'),'toolnexa-vector.pdf');return;
  }
  const {output,width,height}=contours(safe);
  if(format==='eps'){
@@ -108,7 +111,7 @@ export async function exportVector(xml:string,format:'svg'|'pdf'|'eps'|'dxf'){
    if(item.closed)lines.push('closepath');lines.push('eofill');
   }
   lines.push('grestore','showpage','%%EOF');
-  downloadFile(new Blob([lines.join('\n')],{type:'application/postscript'}),'toolnexa-vector.eps');return;
+  await savePremium(new Blob([lines.join('\n')],{type:'application/postscript'}),'toolnexa-vector.eps');return;
  }
  const lines=['0','SECTION','2','HEADER','9','$ACADVER','1','AC1015','0','ENDSEC','0','SECTION','2','ENTITIES'];
  for(const item of output){
@@ -117,5 +120,5 @@ export async function exportVector(xml:string,format:'svg'|'pdf'|'eps'|'dxf'){
   for(const p of points){lines.push('10',p.x.toFixed(4),'20',(height-p.y).toFixed(4))}
  }
  lines.push('0','ENDSEC','0','EOF');
- downloadFile(new Blob([lines.join('\n')],{type:'application/dxf'}),'toolnexa-outline.dxf');
+ await savePremium(new Blob([lines.join('\n')],{type:'application/dxf'}),'toolnexa-outline.dxf');
 }
