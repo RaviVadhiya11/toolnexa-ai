@@ -16,16 +16,16 @@ function zipModule(){
 test('ZIP Maker tiers enforce files, size, compression and Max eligibility',()=>{
  const lib=zipModule();
  assert.equal(lib.zipRequiredTier(1,100,'smart'),'Starter');
- assert.equal(lib.zipRequiredTier(20,30*MB,'smart'),'Starter');
- assert.equal(lib.zipRequiredTier(21,31*MB,'smart'),'Pro');
+ assert.equal(lib.zipRequiredTier(50,100*MB,'smart'),'Starter');
+ assert.equal(lib.zipRequiredTier(51,101*MB,'smart'),'Pro');
  assert.equal(lib.zipRequiredTier(1,10,'maximum'),'Pro');
- assert.equal(lib.zipRequiredTier(60,100*MB,'maximum'),'Pro');
- assert.equal(lib.zipRequiredTier(61,100*MB,'smart'),'Premium');
- assert.equal(lib.zipRequiredTier(150,200*MB,'maximum'),'Premium');
- assert.equal(lib.zipRequiredTier(151,200*MB,'smart'),'Max');
- assert.equal(lib.zipRequiredTier(300,300*MB,'smart'),'Max');
- assert.equal(lib.zipRequiredTier(301,1,'fast'),null);
- assert.equal(lib.zipRequiredTier(1,301*MB,'smart'),null);
+ assert.equal(lib.zipRequiredTier(200,300*MB,'maximum'),'Pro');
+ assert.equal(lib.zipRequiredTier(201,300*MB,'smart'),'Premium');
+ assert.equal(lib.zipRequiredTier(500,600*MB,'maximum'),'Premium');
+ assert.equal(lib.zipRequiredTier(501,600*MB,'smart'),'Max');
+ assert.equal(lib.zipRequiredTier(1000,1024*MB,'smart'),'Max');
+ assert.equal(lib.zipRequiredTier(1001,1,'fast'),null);
+ assert.equal(lib.zipRequiredTier(1,1025*MB,'smart'),null);
  assert.equal(lib.zipRequiredTier(0,100,'fast'),null);
  assert.equal(lib.zipRequiredTier(1,-1,'smart'),null);
  assert.equal(lib.zipRequiredTier(3,2.3,'smart'),null);
@@ -41,6 +41,14 @@ test('approved ZIP Maker demo styling and functioning ZIP32 composer remain inta
  assert.match(html,/ToolNexa AI — Advanced ZIP Maker Studio/); // approved brand
  assert.match(html,/toolnexa-zip-access/);
  assert.match(html,/toolnexa-zip-resume/);
+ assert.match(html,/maxFiles=1000,maxTotal=1024\*1024\*1024/);
+ assert.match(html,/async function crc32File\(file\)/);
+ assert.match(html,/file\.stream\(\)\.getReader\(\)/);
+ assert.match(html,/file\.stream\(\)\.pipeThrough\(new CompressionStream/);
+ assert.match(html,/new Blob\(\[\.\.\.main,\.\.\.central/);
+ assert.doesNotMatch(html,/item\.file\.arrayBuffer\(\)/);
+ for(const term of ['50 files · 100 MB','200 files · 300 MB','500 files · 600 MB','1,000 files · 1 GB'])
+  assert.ok(html.includes(term),'ZIP display mismatch: '+term);
  assert.match(html,/requestZipAccess\(\)/);
  assert.match(html,/async function createZip\(alreadyAuthorized=false\)/);
  assert.match(html,/if\(!alreadyAuthorized\)await requestZipAccess\(\)/);
