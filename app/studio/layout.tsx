@@ -1,2 +1,5 @@
 import './studio.css';
-export default function StudioLayout({children}:{children:React.ReactNode}){return children}
+import {StudioTopbar} from '@/components/studio-premium-nav';
+export default function StudioLayout({children}:{children:React.ReactNode}){
+ return <><StudioTopbar/>{children}</>;
+}
