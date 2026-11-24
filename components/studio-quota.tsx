@@ -1,6 +1,7 @@
 'use client';
 import {useEffect,useState} from 'react';
 import Link from 'next/link';
+import {showDownloadGate} from '@/lib/download-access';
 import type {StudioRunSlug} from '@/lib/studio-run-slugs';
 import {quotaKey,readUsage,consumeUsage,dailyLimits,isUsagePlan,type UsagePlan} from '@/lib/usage-limits';
 
@@ -18,15 +19,28 @@ export async function currentStudioQuota():Promise<Quota>{
 }
 export async function reserveStudioUsage(slug:StudioRunSlug){
  const balance=await currentStudioQuota();
- if(balance.used>=balance.limit)throw Error('Daily limit reached. Free includes 3 shared runs per UTC day. Upgrade for more.');
+ if(balance.used>=balance.limit){
+  showDownloadGate({kind:'limit',feature:'Creator Studio export',requiredTier:'Starter',
+   currentPlan:balance.plan,message:'Your '+balance.plan+' daily run limit is complete. Upgrade for more daily usage or try again after the UTC reset.'});
+  throw Error('Daily limit reached. Upgrade for more usage.');
+ }
  if(balance.mode==='account'){
   const res=await fetch('/api/usage/quota',{method:'POST',
    headers:{'Content-Type':'application/json'},body:JSON.stringify({slug})});
   const json=await res.json();
-  if(!res.ok)throw Error(json.error||'Cannot reserve the daily tool run');
+  if(!res.ok){
+   if(res.status===429)showDownloadGate({kind:'limit',feature:'Creator Studio export',
+    requiredTier:'Starter',currentPlan:balance.plan,
+    message:json.error||'Daily allowance exhausted. Upgrade for more runs.'});
+   throw Error(json.error||'Cannot reserve the daily tool run');
+  }
  }else{
   const used=consumeUsage(quotaKey(balance.userId),balance.limit);
-  if(used===null)throw Error('Daily free limit reached. Upgrade to continue.');
+  if(used===null){
+   showDownloadGate({kind:'limit',feature:'Creator Studio export',requiredTier:'Starter',
+    currentPlan:balance.plan,message:'Your daily allowance is complete. Upgrade for more runs.'});
+   throw Error('Daily limit reached. Upgrade to continue.');
+  }
  }
  window.dispatchEvent(new Event('toolnexa-usage-changed'));
 }
