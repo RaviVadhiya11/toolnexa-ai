@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type {Metadata} from 'next';
-export const metadata:Metadata={title:'9 Creative Studio Workspaces including Batch Pro+',description:'Explore ToolNexa AI Vector Studio, JPG to SVG, vector format conversion, SVG editing, background removal, retouch, enhancement and photo restoration.'};
+export const metadata:Metadata={title:'10 Creator Studio Workspaces including AI Passport & Social Size Studio',description:'Explore ToolNexa AI Vector Studio, JPG to SVG, vector format conversion, SVG editing, background removal, retouch, enhancement and photo restoration.'};
 const items=[
  {href:'/studio/vector',icon:'✦',title:'Real Vector Studio',desc:'Generate editable SVG designs and open the image tracer.',tag:'Vector'},
  {href:'/studio/image-to-vector',icon:'◈',title:'Image to Vector Pro',desc:'Upload PNG, JPG or WebP and trace actual editable SVG paths.',tag:'Real SVG'},
@@ -10,11 +10,12 @@ const items=[
  {href:'/studio/background-remove',icon:'▣',title:'AI Background Remover HD',desc:'On-device U²-Net AI foreground separation, plus offline solid-bg cleanup.',tag:'AI cutout'},
  {href:'/studio/retouch',icon:'◌',title:'Object Remover & Retouch',desc:'Select and heal small unwanted marks with a painting brush.',tag:'Local retouch'},
  {href:'/studio/restore',icon:'☼',title:'Photo Restore & Colorizer',desc:'Denoise, sharpen and colour-grade scanned photographs.',tag:'Photo tools'},
- {href:'/studio/batch',icon:'⚡',title:'Batch Pro+ ZIP Engine',desc:'Sequential local enhancement of up to 8 photos with real Premium/Max verification and ZIP export.',tag:'Premium · Max'}
+ {href:'/studio/batch',icon:'⚡',title:'Batch Pro+ ZIP Engine',desc:'Sequential local enhancement of up to 8 photos with real Premium/Max verification and ZIP export.',tag:'Premium · Max'},
+ {href:'/studio/passport-social',icon:'▧',title:'AI Passport & Social Size Studio',desc:'Passport, ID and 12 social size presets, live crop, 4×6 print sheets, AI cutout and verified Pro exports.',tag:'New · Pro Print'}
 ] as const;
 export default function StudioHome(){return <main className="studio-home suite-home">
  <span className="studio-eyebrow">TOOLNEXA AI · FLAGSHIP CREATOR STUDIO PRO+</span>
- <h1>High-Quality Image &amp; Vector Suite <span className="suite-count">9 Workspaces</span></h1>
+ <h1>High-Quality Image &amp; Vector Suite <span className="suite-count">10 Workspaces</span></h1>
  <p>Create SVG vector paths from your own images, clean photographs, edit designs and export professional files. Free users share 3 daily runs. Starter adds 2× upscale, Pro adds 4×/4K, and Premium/Max add up to 8K plus batch ZIP export.</p>
  <div className="suite-home-grid">{items.map(item=><Link href={item.href} key={item.href} className="suite-tile">
   <div className="suite-tile-art"><span>{item.icon}</span><small>{item.tag}</small></div>
