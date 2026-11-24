@@ -2,16 +2,16 @@
  * Values are product caps, not protection against a modified client or offline copies.
  */
 export const zipPlans={
- Starter:{files:20,bytes:30*1024*1024,maximum:false},
- Pro:{files:60,bytes:100*1024*1024,maximum:true},
- Premium:{files:150,bytes:200*1024*1024,maximum:true},
- Max:{files:300,bytes:300*1024*1024,maximum:true}
+ Starter:{files:50,bytes:100*1024*1024,maximum:false},
+ Pro:{files:200,bytes:300*1024*1024,maximum:true},
+ Premium:{files:500,bytes:600*1024*1024,maximum:true},
+ Max:{files:1000,bytes:1024*1024*1024,maximum:true}
 } as const;
 export type ZipTier=keyof typeof zipPlans;
 export type ZipCompression='fast'|'smart'|'maximum';
 const order:ZipTier[]=['Starter','Pro','Premium','Max'];
 export function zipRequiredTier(count:number,bytes:number,mode:ZipCompression):ZipTier|null{
- if(!Number.isSafeInteger(count)||count<1||count>300||
+ if(!Number.isSafeInteger(count)||count<1||count>zipPlans.Max.files||
    !Number.isSafeInteger(bytes)||bytes<0||bytes>zipPlans.Max.bytes)return null;
  for(const tier of order){
   const limits=zipPlans[tier];
