@@ -616,3 +616,18 @@ html.light .premium-shell .flagship-hero-copy{color:#fff}
 @media(prefers-reduced-motion:reduce){
  .premium-shell .secure-checkout-tabs button{transition:none!important}
 }
+
+/* A checkout sheet must live above every Studio panel, sticky header and
+ * bottom navigation. It is portalled to <body> while retaining Neon styles. */
+.premium-shell.secure-checkout-portal-root{
+ position:fixed!important;inset:0;z-index:3100!important;
+ width:100%;height:100vh;height:100dvh;
+ pointer-events:none;isolation:isolate;
+}
+.premium-shell.secure-checkout-portal-root .secure-checkout-backdrop{
+ pointer-events:auto;z-index:1;max-height:100dvh;
+ padding:clamp(10px,2vh,22px) max(9px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(9px,env(safe-area-inset-left));
+}
+.premium-shell.secure-checkout-portal-root .secure-checkout-dialog{
+ max-height:calc(100dvh - 25px - env(safe-area-inset-bottom));
+}
