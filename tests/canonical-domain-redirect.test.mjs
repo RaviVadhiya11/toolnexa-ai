@@ -18,7 +18,7 @@ test('the new registered domain is the only canonical address',()=>{
  assert.match(read('app/page.tsx'),/alternates:\{canonical:'\/'\}/);
  assert.match(read('app/layout.tsx'),/metadataBase:new URL\(site\)/);
  assert.match(read('app/layout.tsx'),/openGraph:\{/);
- assert.match(read('app/sitemap.ts'),/url:site\+'\/tools\/'\+tool.slug/);
+ assert.match(read('app/sitemap.ts'),/url:CANONICAL_SITE_URL\+'\/tools\/'\+tool.slug/);
  assert.match(read('app/robots.ts'),/sitemap:CANONICAL_SITE_URL\+'\/sitemap.xml'/);
  assert.match(read('app/robots.ts'),/host:CANONICAL_SITE_URL/);
 });
