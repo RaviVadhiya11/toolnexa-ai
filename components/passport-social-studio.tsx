@@ -23,6 +23,13 @@ const colors=[
  {name:'Deep navy',value:'#182845'}
 ];
 const sourceName='toolnexa-passport-social';
+const photoLooks=[
+ {id:'natural',name:'Natural',brightness:100,contrast:100,saturation:100,warmth:0},
+ {id:'bright',name:'Studio Bright',brightness:112,contrast:106,saturation:104,warmth:4},
+ {id:'crisp',name:'Crisp HD',brightness:104,contrast:118,saturation:112,warmth:-2},
+ {id:'soft',name:'Soft Portrait',brightness:108,contrast:92,saturation:95,warmth:10},
+ {id:'mono',name:'B&W Classic',brightness:105,contrast:122,saturation:0,warmth:0}
+] as const;
 function formatName(format:ExportFormat){return format==='jpeg'?'jpg':format}
 function filenameSafe(s:string){return s.replace(/[^a-z0-9-]/gi,'-').slice(0,45).replace(/-+$/,'')||'photo'}
 function controlNumber(n:number,min:number,max:number){return Number.isFinite(n)?Math.max(min,Math.min(max,n)):min}
@@ -63,7 +70,7 @@ export function PassportSocialStudio(){
  const sheetGrid=useMemo(()=>printSheetGrid(pixels.width,pixels.height),[pixels.width,pixels.height]);
  const sourceKey=[sequence,mode,presetId,preset.w,preset.h,sheet,settings.zoom,settings.panX,
   settings.panY,settings.brightness,settings.contrast,settings.saturation,settings.rotation,
-  settings.color,settings.gradient,cutout].join(':');
+  settings.color,settings.gradient,settings.flipH,settings.flipV,settings.warmth,cutout].join(':');
 
  useEffect(()=>{
   srcRef.current={image:demoPassportCanvas(),width:750,height:1000};
@@ -80,6 +87,10 @@ export function PassportSocialStudio(){
 
  function change<K extends keyof PhotoAdjust>(key:K,value:PhotoAdjust[K]){
   setSettings(prev=>({...prev,[key]:value}));
+  setUpscaledPreview('');
+ }
+ function applyPhotoLook(look:typeof photoLooks[number]){
+  setSettings(prev=>({...prev,brightness:look.brightness,contrast:look.contrast,saturation:look.saturation,warmth:look.warmth}));
   setUpscaledPreview('');
  }
  function setStudioMode(next:PhotoMode){
@@ -213,6 +224,26 @@ export function PassportSocialStudio(){
   canvas.width=0;canvas.height=0;
   return {blob,width,height};
  }
+ async function downloadSmallJpeg(){
+  if(busy)return;
+  setBusy(true);setStatus('Preparing under-50-KB JPG while retaining exact selected dimensions…');
+  try{
+   if(mode==='passport'&&sheet)throw Error('Select Single Photo for a 50-KB application image.');
+   const canvas=currentCanvas(300);
+   let blob:Blob|null=null;
+   for(let q=0.88;q>=0.09;q-=0.07){
+    const candidate=await imageBlob(canvas,'image/jpeg',q);
+    if(candidate.type!=='image/jpeg')throw Error('JPG export unsupported in this browser.');
+    if(candidate.size<=50*1024){blob=candidate;break}
+   }
+   canvas.width=0;canvas.height=0;
+   if(!blob)throw Error('Could not fit under 50 KB at the chosen dimensions. Use a smaller preset.');
+   await reserveStudioUsage('studio-passport-social');
+   downloadFile(blob,sourceName+'-'+filenameSafe(preset.id)+'-under-50kb.jpg');
+   setStatus('✓ JPG '+(blob.size/1024).toFixed(1)+' KB exported with selected pixel dimensions. Check your portal requirements.');
+  }catch(err){setStatus(err instanceof Error?err.message:'50-KB JPG export failed.')}
+  finally{setBusy(false)}
+ }
  async function standardDownload(){
   if(busy)return;
   setBusy(true);setStatus('Preparing standard quality file…');
@@ -287,7 +318,7 @@ export function PassportSocialStudio(){
    <div><span className="studio-eyebrow">✦ TOOLNEXA AI · PRO+ CREATOR STUDIO</span>
     <h1>AI Passport <span>&amp;</span> Social Size Studio</h1>
     <p>One photo, every important size. Crop by touch, refine your image, prepare real print layouts and export platform-ready images.</p>
-    <div className="ps-hero-chips"><span>12 Social presets</span><span>300 / 600 PPI print</span>
+    <div className="ps-hero-chips"><span>14 Social presets</span><span>300 / 600 PPI print</span>
      <span>Real local background removal</span><span>Secure Pro HD</span></div>
    </div>
    <Link href="/pricing" className="ps-plan-link"><Crown size={17}/> Unlock Pro exports <ChevronRight size={16}/></Link>
@@ -332,10 +363,20 @@ export function PassportSocialStudio(){
     <div className="ps-controls-head"><strong>Photo adjustments</strong>
      <button type="button" className="ps-small-reset" onClick={reset} disabled={busy}><RotateCcw size={15}/> Reset</button>
     </div>
+    <div className="ps-preset-title"><strong>One-click studio looks</strong><span>5 styles</span></div>
+    <div className="ps-action-pair" role="group" aria-label="Photo filter presets">
+     {photoLooks.map(look=><button type="button" key={look.id} disabled={busy}
+      onClick={()=>applyPhotoLook(look)}>{look.name}</button>)}
+    </div>
+    <div className="ps-action-pair" role="group" aria-label="Flip and straighten photo">
+     <button type="button" onClick={()=>change('flipH',!settings.flipH)}>↔ Flip horizontal</button>
+     <button type="button" onClick={()=>change('flipV',!settings.flipV)}>↕ Flip vertical</button>
+     <button type="button" onClick={()=>change('rotation',0)}>⟲ Straighten</button>
+    </div>
     {([
      ['zoom','Zoom',100,260,'%'],['brightness','Brightness',60,150,'%'],
      ['contrast','Contrast',60,160,'%'],['saturation','Saturation',0,200,'%'],
-     ['rotation','Rotation',-20,20,'°'],['panX','Move horizontally',-100,100,'%'],
+     ['rotation','Rotation',-45,45,'°'],['warmth','Warmth / Coolness',-40,40,''],['panX','Move horizontally',-100,100,'%'],
      ['panY','Move vertically',-100,100,'%']
     ] as const).map(([key,title,min,max,unit])=><label className="ps-slider" key={key}>
      <span><strong>{title}</strong><small>{settings[key]}{unit}</small></span>
@@ -350,6 +391,9 @@ export function PassportSocialStudio(){
       className={settings.color===item.value?'active':''}
       style={{backgroundColor:item.value}} onClick={()=>change('color',item.value)}/>)}
     </div>
+    <label className="ps-slider"><span><strong>Custom background color</strong><small>{settings.color}</small></span>
+     <input type="color" value={settings.color} aria-label="Custom photo background color" onChange={e=>change('color',e.target.value)}/>
+    </label>
     {mode==='social'&&<label className="ps-check">
      <input type="checkbox" checked={settings.gradient}
       onChange={e=>change('gradient',e.target.checked)}/> Gradient social background
@@ -408,6 +452,8 @@ export function PassportSocialStudio(){
      <button className="ps-download-standard" disabled={busy||!pixels.width||!pixels.height||(isSheet&&!sheetFits)}
       type="button" onClick={()=>void standardDownload()}><Download size={18}/>
       {busy?'Processing…':'Download '+(isSheet?'4×6 Print Sheet':'Standard Image')}</button>
+     {mode==='passport'&&!sheet&&<button type="button" className="ps-download-standard" disabled={busy||!pixels.width||!pixels.height}
+       onClick={()=>void downloadSmallJpeg()}><Download size={17}/> Fit under 50 KB (JPG)</button>}
      <div className="ps-pro-divider"><Crown size={16}/><strong>Premium Print &amp; Creator Export</strong></div>
      <div className="ps-pro-actions">
       <button type="button" disabled={busy||!pixels.width||!pixels.height||(isSheet&&!sheetFits)}
