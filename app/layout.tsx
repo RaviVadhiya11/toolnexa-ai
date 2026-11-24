@@ -1,9 +1,10 @@
 import type {Metadata,Viewport} from 'next';
+import {CANONICAL_SITE_URL} from '@/lib/site-url';
 import './globals.css';
 import './neon-glass-3d.css';
 import {Shell} from '@/components/shell';
 
-const site='https://toolnexa-ai.vercel.app';
+const site=CANONICAL_SITE_URL;
 export const metadata:Metadata={
  metadataBase:new URL(site),
  title:{default:'ToolNexa AI | 60 Utility Tools + 11 Creator Studio Workspaces',template:'%s | ToolNexa AI'},
