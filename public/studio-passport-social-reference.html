@@ -602,9 +602,10 @@
               <button id="btnProPhoto" type="button" class="rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:brightness-110 px-3 py-3 text-sm font-bold text-slate-950 flex gap-2 items-center justify-center"><i data-lucide="image-down" class="w-4 h-4"></i><span>600 PPI Passport HD</span></button>
               <button id="btnProSheet" type="button" class="rounded-xl bg-white/5 hover:bg-white/10 border border-amber-400/35 px-3 py-3 text-sm font-semibold text-amber-100 flex items-center justify-center gap-2"><i data-lucide="printer" class="h-4 w-4"></i><span>600 PPI Print Sheet</span></button>
               <button id="btnProPdf" type="button" class="rounded-xl bg-white/5 hover:bg-white/10 border border-amber-400/35 px-3 py-3 text-sm font-semibold text-amber-100 flex items-center justify-center gap-2"><i data-lucide="file-text" class="h-4 w-4"></i><span>Print-ready PDF (4×6 / A4)</span></button>
-              <button id="btnProAi" type="button" class="rounded-xl bg-gradient-to-r from-violet-600/75 to-cyan-600/75 hover:brightness-110 border border-white/15 px-3 py-3 text-sm font-bold text-white flex items-center justify-center gap-2"><i data-lucide="sparkles" class="h-4 w-4"></i><span>AI Detail · 4K / 8K ↓</span></button>
+              <button id="btnPro4k" type="button" class="rounded-xl bg-gradient-to-r from-violet-600/85 to-cyan-600/85 hover:brightness-110 border border-white/15 px-3 py-3 text-sm font-bold text-white flex items-center justify-center gap-2"><i data-lucide="sparkles" class="h-4 w-4"></i><span>↓ Auto 4K HD Download</span></button>
+              <button id="btnPro8k" type="button" class="rounded-xl bg-gradient-to-r from-violet-700/90 to-fuchsia-700/90 hover:brightness-110 border border-violet-300/30 px-3 py-3 text-sm font-bold text-white flex items-center justify-center gap-2"><i data-lucide="sparkles" class="h-4 w-4"></i><span>↓ Auto 8K Ultra Download</span></button>
             </div>
-            <p id="proStatus" role="status" aria-live="polite" class="text-xs text-amber-100/80 leading-relaxed">Choose an HD format. Your edits stay in this page.</p>
+            <p id="proStatus" role="status" aria-live="polite" class="text-xs text-amber-100/80 leading-relaxed">One tap automatically checks your plan, enhances the current edited photo and downloads the selected resolution. No extra upscaler.</p>
             <a id="proUpgradeLink" href="/pricing" target="_top" class="hidden w-full text-center rounded-xl border border-amber-300/50 bg-amber-400/20 px-3 py-3 font-bold text-sm text-amber-200">View Pro &amp; Premium Plans</a>
             <p class="text-[11px] text-slate-400">600 PPI is the output pixel density at the specified print size; it cannot recreate details absent from a low-resolution upload. Always check official passport photo requirements.</p>
           </section>
@@ -1723,14 +1724,63 @@
           document.querySelectorAll('#inlineProStudio button').forEach(b=>b.disabled=false);
         }
       }
+      // A single click handles entitlement + automatic AI/HD enhancement + download.
+      // The parent does all plan checks and renders the file in a safe first-party context.
+      async function autoUpscaleAndDownload(resolution) {
+        if (premiumBusy) return;
+        if (!state.image) {
+          showToast('Upload a photo or try the demo portrait first.', 'error');
+          return;
+        }
+        if (window.parent === window) {
+          premiumStatus('Open this editor from ToolNexa AI to unlock HD exports.', true);
+          return;
+        }
+        premiumBusy = true;
+        document.querySelectorAll('#inlineProStudio button').forEach(button=>button.disabled=true);
+        document.getElementById('proUpgradeLink')?.classList.add('hidden');
+        const id='auto-hd-'+(++exportRequestSequence);
+        premiumStatus('Checking active membership for '+resolution.toUpperCase()+'…');
+        try {
+          await new Promise((resolve,reject)=>{
+            const timer=setTimeout(()=>{
+              window.removeEventListener('message', receive);
+              reject(new Error('Automatic upscale timed out. Try a smaller photo or use 4K.'));
+            },240000);
+            function receive(event) {
+              if(event.origin!==window.location.origin || event.source!==window.parent) return;
+              const message=event.data;
+              if(!message || message.id!==id || message.type!=='toolnexa-photo-upscale-progress')return;
+              if(typeof message.message==='string')premiumStatus(message.message, message.ok===false);
+              if(!message.finished)return;
+              clearTimeout(timer);
+              window.removeEventListener('message', receive);
+              if(message.ok===true)resolve();
+              else {
+                document.getElementById('proUpgradeLink')?.classList.toggle('hidden',!message.upgrade);
+                reject(new Error(message.message || 'HD export unavailable.'));
+              }
+            }
+            window.addEventListener('message', receive);
+            window.parent.postMessage({
+              type:'toolnexa-photo-auto-upscale',id,resolution,
+              format:state.exportFormat,quality:state.exportQuality
+            },window.location.origin);
+          });
+        }catch(error){
+          premiumStatus(error instanceof Error?error.message:'Automatic HD export failed.',true);
+        }finally{
+          premiumBusy=false;
+          document.querySelectorAll('#inlineProStudio button').forEach(button=>button.disabled=false);
+        }
+      }
+
       function initializeIntegratedPremium(){
         document.getElementById('btnProPhoto')?.addEventListener('click',()=>void premiumExport('photo'));
         document.getElementById('btnProSheet')?.addEventListener('click',()=>void premiumExport('sheet'));
         document.getElementById('btnProPdf')?.addEventListener('click',()=>void premiumExport('pdf'));
-        document.getElementById('btnProAi')?.addEventListener('click',()=>{
-          window.parent.postMessage({type:'toolnexa-photo-open-ai'},window.location.origin);
-          premiumStatus('Opening the AI Detail / 4K / 8K controls below in this same page…');
-        });
+        document.getElementById('btnPro4k')?.addEventListener('click',()=>void autoUpscaleAndDownload('4k'));
+        document.getElementById('btnPro8k')?.addEventListener('click',()=>void autoUpscaleAndDownload('8k'));
         window.addEventListener('message',async event=>{
           if (event.origin!==window.location.origin || event.source!==window.parent) return;
           const data=event.data;
