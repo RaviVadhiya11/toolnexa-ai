@@ -4,14 +4,14 @@
  */
 export type PhotoPreset='natural'|'portrait'|'product'|'logo'|'old';
 export type PhotoSettings={
- brightness:number;contrast:number;saturation:number;denoise:number;sharpness:number;
+ brightness:number;contrast:number;saturation:number;denoise:number;sharpness:number;warmth:number;
 };
 export const photoPresets:Record<PhotoPreset,PhotoSettings>={
- natural:{brightness:104,contrast:109,saturation:110,denoise:12,sharpness:34},
- portrait:{brightness:105,contrast:105,saturation:104,denoise:27,sharpness:21},
- product:{brightness:107,contrast:117,saturation:120,denoise:8,sharpness:53},
- logo:{brightness:100,contrast:125,saturation:112,denoise:0,sharpness:62},
- old:{brightness:107,contrast:116,saturation:106,denoise:35,sharpness:29},
+ natural:{brightness:104,contrast:109,saturation:110,denoise:12,sharpness:34,warmth:0},
+ portrait:{brightness:105,contrast:105,saturation:104,denoise:27,sharpness:21,warmth:4},
+ product:{brightness:107,contrast:117,saturation:120,denoise:8,sharpness:53,warmth:0},
+ logo:{brightness:100,contrast:125,saturation:112,denoise:0,sharpness:62,warmth:0},
+ old:{brightness:107,contrast:116,saturation:106,denoise:35,sharpness:29,warmth:10},
 };
 export function enhancePhotoCanvas(source:HTMLImageElement,settings:PhotoSettings,maxSide=900){
  const max=Math.max(source.naturalWidth,source.naturalHeight);
@@ -28,9 +28,18 @@ export function enhancePhotoCanvas(source:HTMLImageElement,settings:PhotoSetting
  context.drawImage(source,0,0,w,h);context.filter='none';
  const noise=Math.min(1,Math.max(0,settings.denoise/100));
  const sharpening=Math.min(.74,Math.max(0,settings.sharpness/100*.73));
- if(noise===0&&sharpening===0)return canvas;
+ if(noise===0&&sharpening===0&&settings.warmth===0)return canvas;
  const image=context.getImageData(0,0,w,h);
  const pixels=image.data;
+ // Temperature shift acts on actual pixels, not on a simulated preview overlay.
+ const temperature=Math.max(-40,Math.min(40,settings.warmth));
+ if(temperature!==0){
+  for(let i=0;i<pixels.length;i+=4){
+   pixels[i]=Math.max(0,Math.min(255,pixels[i]+temperature*.66));
+   pixels[i+1]=Math.max(0,Math.min(255,pixels[i+1]+temperature*.08));
+   pixels[i+2]=Math.max(0,Math.min(255,pixels[i+2]-temperature*.74));
+  }
+ }
  // Detail-preserving neighborhood denoise with thresholded color similarity.
  if(noise>0&&w>2&&h>2){
   const before=new Uint8ClampedArray(pixels);
