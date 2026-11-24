@@ -23,13 +23,13 @@ export async function POST(request:NextRequest){
  if(typeof slug!=='string'||!accepted.has(slug))
   return reply({authorized:false,error:'Unknown tool'},400);
  const required=body?.requiredTier;
- if(required!==undefined&&!['Starter','Pro','Premium'].includes(String(required)))
+ if(required!==undefined&&!['Starter','Pro','Premium','Max'].includes(String(required)))
   return reply({authorized:false,error:'Unknown export tier'},400);
- const requested=required==='Premium'?'8k':required==='Pro'?'4k':'2x';
+ const requested=required==='Max'?'8k':required==='Premium'?'8k':required==='Pro'?'4k':'2x';
  const member=await verifyStudioMember();
  if('error' in member)return reply({authorized:false,error:member.error,requiredTier:required||'Starter'},member.status);
  const ranks={Starter:1,Pro:2,Premium:3,Max:4};
- const needed=required==='Premium'?3:required==='Pro'?2:1;
+ const needed=required==='Max'?4:required==='Premium'?3:required==='Pro'?2:1;
  if(ranks[member.plan]<needed)
   return reply({authorized:false,error:'Upgrade to '+(required||'Starter')+' or higher to download this file.',requiredTier:required||'Starter',plan:member.plan},403);
  return reply({authorized:true,plan:member.plan,slug,requested});
