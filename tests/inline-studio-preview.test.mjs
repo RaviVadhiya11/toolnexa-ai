@@ -39,7 +39,7 @@ test('BG editor supports genuine alpha restoration, erase, color, positioning an
  assert.match(ops,/cut\.data\[i\+3\]=Math\.round/);
  assert.match(ops,/src\.data\[i\+3\]/);
  assert.match(ui,/bgCanvas/);
- assert.match(ui,/onPointerDown=\{e=>\{bgDrawing/);
+ assert.match(ui,/onPointerDown=\{e=>\{recordBG\(\);bgDrawing/);
  assert.match(ui,/onPointerMove=\{e=>\{if\(bgDrawing/);
  assert.match(ui,/onPointerUp=\{finishBgBrush\}/);
  assert.match(ui,/Transparent PNG/);
