@@ -1,5 +1,6 @@
 'use client';
 import {useEffect,useState} from 'react';import Link from 'next/link';import {dailyLimits,isUsagePlan,quotaKey,readUsage,consumeUsage,type UsagePlan} from '@/lib/usage-limits';
+import {ToolUploadPreview} from '@/components/tool-upload-preview';
 import {CopyableResultRows} from '@/components/copyable-result-rows';import QRCode from 'qrcode';import {PDFDocument} from 'pdf-lib';import type {Tool} from '@/lib/tools';import {wordReport,convertCase,reverseText,formatJson,encodeBase64,decodeBase64,transformUrl,securePassword,gstReport,percentageReport,profitReport,parsePageRanges} from '@/lib/tool-operations';
 function download(data:Blob,name:string){const url=URL.createObjectURL(data);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000)}
 function recordUse(slug:string){void fetch('/api/usage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug}),keepalive:true}).catch(()=>{});}
@@ -180,6 +181,7 @@ return <section className="tool-workspace" aria-label={tool.title+' workspace'}>
    {isFile&&<div className="tool-field">
     <label htmlFor="tool-file">Select {slug==='image-to-pdf'?'images':slug==='merge-pdf'?'PDF files':slug==='split-pdf'?'a PDF file':'an image'}</label>
     <input key={fileKey} id="tool-file" type="file" className="field tool-file-input" accept={fileAccept} multiple={slug==='merge-pdf'||slug==='image-to-pdf'} onChange={e=>{setFiles(Array.from(e.target.files||[]));setOutput('');setQr('');setDownloaded(false);setLastDownload(null)}}/>
+    {files.length>0&&<ToolUploadPreview files={files}/>}
     {files.length>0?<div className="tool-file-summary"><strong>{files.length} file{files.length===1?'':'s'} selected</strong><span>{files.slice(0,3).map(f=>f.name).join(' · ')}{files.length>3?' and more':''}</span></div>:null}
     <p className="small-note">Your files are processed locally. Maximum 25 MB per file. {slug==='image-to-pdf'?'Up to 20 images.':slug==='merge-pdf'?'Choose 2–15 PDFs.':''}</p>
    </div>}
