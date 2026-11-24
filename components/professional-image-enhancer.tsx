@@ -5,6 +5,7 @@ import {StudioUpscalePanel} from '@/components/studio-upscale-panel';
 import {StudioQuotaNotice} from '@/components/studio-quota';
 import {StudioUploadPreview} from '@/components/studio-upload-preview';
 import {enhancePhotoCanvas,photoPresets,type PhotoSettings,type PhotoPreset} from '@/lib/studio-photo-enhance';
+import {studioSampleFile,type StudioSample} from '@/lib/studio-sample-scenes';
 
 const MAX_IMAGE=10*1024*1024;
 const presets:{key:PhotoPreset;label:string;subtitle:string}[]=[
@@ -25,6 +26,8 @@ export function ProfessionalImageEnhancer(){
  const [compare,setCompare]=useState(55);
  const [status,setStatus]=useState('Upload a photo to start enhancing.');
  const [previewLoading,setPreviewLoading]=useState(false);
+ const [sampleLoading,setSampleLoading]=useState(false);
+ const [upscaledPreview,setUpscaledPreview]=useState('');
  const previewSeq=useRef(0);
  useEffect(()=>()=>{if(imageUrl)URL.revokeObjectURL(imageUrl)},[imageUrl]);
  useEffect(()=>()=>{if(previewUrl)URL.revokeObjectURL(previewUrl)},[previewUrl]);
@@ -63,11 +66,18 @@ export function ProfessionalImageEnhancer(){
   },130);
   return()=>{window.clearTimeout(timer);previewSeq.current+=1};
  },[imageUrl,dimensions.width,dimensions.height,settings]);
+ async function loadSample(kind:StudioSample){
+  if(sampleLoading)return;
+  setSampleLoading(true);
+  try{chooseFile(await studioSampleFile(kind));setStatus('Local demo illustration loaded. Select an enhancement preset to compare.')}
+  catch(e){setStatus(e instanceof Error?e.message:'Demo sample unavailable')}
+  finally{setSampleLoading(false)}
+ }
  function chooseFile(file?:File){
   if(!file)return;
   if(!['image/png','image/jpeg','image/webp'].includes(file.type)){setStatus('Choose a JPG, PNG or WebP image.');return}
   if(file.size>MAX_IMAGE){setStatus('Maximum upload size is 10 MB.');return}
-  sourceRef.current=null;setDimensions({width:0,height:0});setPreviewUrl('');
+  sourceRef.current=null;setDimensions({width:0,height:0});setPreviewUrl('');setUpscaledPreview('');
   setFileName(file.name);setImageUrl(URL.createObjectURL(file));setCompare(55);
   setStatus('Opening '+file.name+'…');
  }
@@ -115,9 +125,17 @@ export function ProfessionalImageEnhancer(){
   </header>
   <div className="photo-enhance-layout">
    <section className="studio-panel photo-enhance-input">
+    <div className="studio-v4-samples" role="group" aria-label="Local illustrated sample images">
+     <span>Try a demo scene:</span>
+     {([
+      ['mountain','🏔️ Sunset'],['product','🧴 Product'],['vintage','🎞️ Vintage']
+     ] as const).map(([key,label])=><button type="button" key={key}
+      onClick={()=>void loadSample(key)} disabled={sampleLoading}>{label}</button>)}
+    </div>
+    <p className="studio-v4-sample-note">Samples are generated illustrations for testing, not AI photographs.</p>
     <div className="photo-enhance-step"><span>01</span><div><h2>Upload Image</h2><p>Start with a photo from your device</p></div></div>
     <StudioUploadPreview id="photo-enhance-input" accept="image/jpeg,image/png,image/webp"
-      name={fileName} sourceUrl={loaded?imageUrl:''} outputUrl={previewUrl}
+      name={fileName} sourceUrl={loaded?imageUrl:''} outputUrl={upscaledPreview||previewUrl}
       onFile={chooseFile} hint="JPG · PNG · WebP · up to 10 MB" busy={previewLoading}
       beforeLabel="Original" afterLabel="Enhanced" onReset={()=>choosePreset('natural')}/>
     {fileName&&<p className="photo-upload-meta">{fileName} {loaded?'· '+dimensions.width+' × '+dimensions.height+' px':''}</p>}
@@ -153,7 +171,7 @@ export function ProfessionalImageEnhancer(){
      <div className="studio-work-top"><strong>Before / After Image Preview</strong><span>{previewLoading?'Enhancing preview…':loaded?'Ready to compare':'No image selected'}</span></div>
      <div className="photo-compare">
       {imageUrl&&loaded?<><img className="photo-compare-original" src={imageUrl} alt="Original uploaded photo"/>
-       {previewUrl&&<img className="photo-compare-after" src={previewUrl} alt="Enhanced colour and sharpness preview"
+       {(upscaledPreview||previewUrl)&&<img className="photo-compare-after" src={upscaledPreview||previewUrl} alt="Enhanced colour and sharpness preview"
         style={{clipPath:'inset(0 '+(100-compare)+'% 0 0)'}}/>}
        <div className="photo-compare-line" style={{left:compare+'%'}} aria-hidden="true"><span>◀ ▶</span></div>
        <span className="photo-before-label">Original</span><span className="photo-after-label">Enhanced</span>
@@ -170,7 +188,7 @@ export function ProfessionalImageEnhancer(){
       <p>Generate the result first; payment is checked only for the full-size download</p></div></div>
      <StudioQuotaNotice/>
      <StudioUpscalePanel getCanvas={processedCanvas} format="photo" disabled={!loaded}
-       sourceKey={sourceKey} usageSlug="studio-enhance" enableAI/>
+       sourceKey={sourceKey} usageSlug="studio-enhance" enableAI onPreviewChange={setUpscaledPreview}/>
     </section>
    </div>
   </div>
