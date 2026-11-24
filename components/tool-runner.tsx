@@ -1,6 +1,6 @@
 'use client';
 import {useEffect,useState} from 'react';
-import {withPaidDownload,showDownloadGate} from '@/lib/download-access';import Link from 'next/link';import {dailyLimits,isUsagePlan,quotaKey,readUsage,consumeUsage,type UsagePlan} from '@/lib/usage-limits';
+import {withPaidDownload,showDownloadGate} from '@/lib/download-access';import Link from 'next/link';import {dailyLimits,isUsagePlan,quotaKey,readUsage,consumeUsage,reconcileFreeDeviceUsage,mirrorFreeDeviceUsage,type QuotaMode,type UsagePlan} from '@/lib/usage-limits';
 import {ToolUploadPreview} from '@/components/tool-upload-preview';
 import {CopyableResultRows} from '@/components/copyable-result-rows';import QRCode from 'qrcode';import {PDFDocument} from 'pdf-lib';import type {Tool} from '@/lib/tools';import {wordReport,convertCase,reverseText,formatJson,encodeBase64,decodeBase64,transformUrl,securePassword,gstReport,percentageReport,profitReport,parsePageRanges} from '@/lib/tool-operations';
 function download(data:Blob,name:string){const url=URL.createObjectURL(data);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000)}
@@ -41,19 +41,20 @@ async function canvasImage(file:File,width?:number,maxDimension?:number){
 async function toBlob(canvas:HTMLCanvasElement,mime:string,quality=.9){return new Promise<Blob>((resolve,reject)=>canvas.toBlob(x=>x?resolve(x):reject(Error('Unable to export this image in your browser')),mime,quality))}
 function validFile(file:File|undefined,types:string[]){if(!file)throw Error('Choose a file first');if(file.size>25*1024*1024)throw Error('Maximum file size is 25 MB');if(!types.some(t=>file.type===t||file.name.toLowerCase().endsWith(t==='application/pdf'?'.pdf':'.'+t.split('/').pop())))throw Error('Invalid file type');return file}
 export function ToolRunner({tool}:{tool:Tool}){const [text,setText]=useState(''),[mode,setMode]=useState('encode'),[num,setNum]=useState(tool.slug==='password-generator'?'16':tool.slug==='image-resizer'?'800':'1000'),[num2,setNum2]=useState('18'),[files,setFiles]=useState<File[]>([]),[output,setOutput]=useState(''),[qr,setQr]=useState(''),[working,setWorking]=useState(false),[symbols,setSymbols]=useState(true),[fileKey,setFileKey]=useState(0),[copyMessage,setCopyMessage]=useState(''),[imageQuality,setImageQuality]=useState(90),[downloaded,setDownloaded]=useState(false),[lastDownload,setLastDownload]=useState<{blob:Blob;name:string}|null>(null);const slug=tool.slug;
-const [quota,setQuota]=useState<{plan:UsagePlan;used:number;limit:number|null;key:string;mode:'browser'|'account'}|null>(null);
+const [quota,setQuota]=useState<{plan:UsagePlan;used:number;limit:number|null;key:string;mode:QuotaMode}|null>(null);
 const [quotaError,setQuotaError]=useState('');
 async function getLiveQuota(){
  const response=await fetch('/api/usage/quota',{cache:'no-store'});
  const result=await response.json() as {plan?:unknown;userId?:unknown;mode?:unknown;limit?:unknown;used?:unknown;error?:string};
  if(!response.ok)throw Error(result.error||'Unable to verify your daily account allowance.');
- if(!isUsagePlan(result.plan)||!['browser','account'].includes(String(result.mode)))throw Error('Unable to verify daily usage limits.');
+ if(!isUsagePlan(result.plan)||!['browser','account','device'].includes(String(result.mode)))throw Error('Unable to verify daily usage limits.');
  const owner=typeof result.userId==='string'?result.userId:null;
- const key=quotaKey(owner);
- const mode=result.mode as 'browser'|'account';
+ const mode=result.mode as QuotaMode;
+ const key=quotaKey(mode==='device'?null:owner);
  const limit=dailyLimits[result.plan];
  if(result.plan==='Max' && (mode!=='account'||result.limit!==3000))throw Error('Max 3,000/day account access must be server verified.');
- const used=mode==='account'&&typeof result.used==='number'?result.used:readUsage(key);
+ const used=mode==='device'?await reconcileFreeDeviceUsage(Number(result.used),owner):
+  mode==='account'&&typeof result.used==='number'?result.used:readUsage(key);
  const next={plan:result.plan,used,limit,key,mode};
  setQuota(next);setQuotaError('');
  return next;
@@ -79,17 +80,17 @@ async function execute(){if(working)return;setWorking(true);setOutput('');setQr(
   showDownloadGate({kind:'limit',feature:tool.title,requiredTier:'Starter',message:'Your shared daily usage limit is complete. Upgrade for a higher limit or return after the UTC daily reset.'});
   throw Error('Daily limit reached. Subscribe or upgrade for more usage.');
  }
- if(allowance.mode==='account'){
+ if(allowance.mode!=='browser'){
   // Atomic reservation before any local operation: concurrent devices cannot exceed the quota.
   // A reservation is charged even if local processing subsequently fails.
-  const res=await fetch('/api/usage/quota',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug})});
+  const res=await fetch('/api/usage/quota',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug,...(allowance.mode==='device'?{clientUsed:readUsage(quotaKey(null))}:{})})});
   const data=await res.json() as {error?:string;used?:number};
   if(!res.ok){if(res.status===429){
    if(allowance.limit!==null)setQuota({...allowance,used:allowance.limit});
    showDownloadGate({kind:'limit',feature:tool.title,requiredTier:'Starter',message:data.error||'Daily limit reached. Upgrade for more daily runs.'});
   }throw Error(data.error||'Unable to reserve a daily tool run.')}
   if(typeof data.used!=='number')throw Error('Unexpected account quota response');
-  allowance={...allowance,used:data.used};setQuota(allowance);
+  allowance={...allowance,used:data.used};if(allowance.mode==='device')mirrorFreeDeviceUsage(data.used);setQuota(allowance);
  }
  let output='';const a=Number(num),b=Number(num2);if(['gst-calculator','percentage-calculator','profit-margin'].includes(slug)&&(!Number.isFinite(a)||!Number.isFinite(b)||num.trim()===''||num2.trim()===''))throw Error('Enter valid numbers');switch(slug){
 case 'word-counter':output=wordReport(text);break;
