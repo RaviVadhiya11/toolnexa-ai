@@ -20,6 +20,8 @@ export function PremiumPricing({clientId,plans,enabled,yearlyEnabled,maxEnabled}
  useEffect(()=>{
   const chosen=new URLSearchParams(window.location.search).get('plan');
   if(chosen&&paidTiers.includes(chosen as PaidTier)){
+   const requestedBilling=new URLSearchParams(window.location.search).get('billing');
+   if(requestedBilling==='monthly'||requestedBilling==='yearly')setBillingPeriod(requestedBilling);
    setSelected(chosen as PaidTier);
    setPaymentMethod('paypal');
   }
@@ -127,7 +129,7 @@ export function PremiumPricing({clientId,plans,enabled,yearlyEnabled,maxEnabled}
      </section>
      <div className="secure-checkout-action" aria-label="Single secure payment action">
       {paymentMethod==='paypal'?(available?
-        <PayPalSubscribe key={selected+'-'+billingPeriod} clientId={clientId} planId={planId} tier={selected} billingPeriod={billingPeriod}/>:
+        <PayPalSubscribe key={selected+'-'+billingPeriod} clientId={clientId} planId={planId} tier={selected} billingPeriod={billingPeriod} singleAction/>:
         <button type="button" className="secure-checkout-primary" disabled>PayPal checkout is not available for this plan</button>):
        <button type="button" className="secure-checkout-primary" disabled>PhonePe {paymentMethod==='upi'?'UPI':'Card'} · Activation pending</button>}
       <p className="secure-checkout-note">{paymentMethod==='paypal'?'Secure PayPal approval · No payment is taken until you confirm.':'PhonePe checkout is unavailable until approved. No card or UPI information is collected here.'}</p>
