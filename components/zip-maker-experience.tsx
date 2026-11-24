@@ -9,8 +9,8 @@ type ZipRequest={id:string;count:number;bytes:number;mode:'fast'|'smart'|'maximu
 type ZipDecision={authorized?:boolean;plan?:string;requiredTier?:DownloadTier;error?:string};
 function isZipRequest(data:Record<string,unknown>):data is Record<string,unknown>&ZipRequest{
  return typeof data.id==='string'&&data.id.length<=80&&
- typeof data.count==='number'&&Number.isSafeInteger(data.count)&&data.count>0&&data.count<=300&&
- typeof data.bytes==='number'&&Number.isSafeInteger(data.bytes)&&data.bytes>=0&&data.bytes<=300*1048576&&
+ typeof data.count==='number'&&Number.isSafeInteger(data.count)&&data.count>0&&data.count<=1000&&
+ typeof data.bytes==='number'&&Number.isSafeInteger(data.bytes)&&data.bytes>=0&&data.bytes<=1024*1048576&&
  (data.mode==='fast'||data.mode==='smart'||data.mode==='maximum');
 }
 
@@ -86,7 +86,7 @@ export function ZipMakerExperience(){
    if(data.type==='toolnexa-zip-access'){
     if(isZipRequest(data))void authorize(data);
     else if(typeof data.id==='string')send({type:'toolnexa-zip-access-result',id:data.id,
-     ok:false,error:'ZIP must contain 1–300 files and at most 300 MB.'});
+     ok:false,error:'ZIP must contain 1–1,000 files and at most 1 GB.'});
    }
   };
   window.addEventListener('message',onMessage);
