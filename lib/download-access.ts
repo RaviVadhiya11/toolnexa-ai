@@ -1,5 +1,5 @@
 'use client';
-export type DownloadTier='Starter'|'Pro'|'Premium';
+export type DownloadTier='Starter'|'Pro'|'Premium'|'Max';
 export type GateKind='subscription'|'limit'|'error';
 export type DownloadGateEvent={
  kind:GateKind;feature:string;message:string;requiredTier:DownloadTier;
