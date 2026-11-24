@@ -11,6 +11,10 @@ const nextConfig={
     return [
       {source:'/:path*',headers:common},
       // Permit only the self-hosted, sandboxed reference Studio to appear in its parent workspace.
+      {source:'/studio-zip-maker.html',headers:[
+        {key:'X-Frame-Options',value:'SAMEORIGIN'},
+        {key:'Content-Security-Policy',value:"frame-ancestors 'self'"}
+      ]},
       {source:'/studio-passport-social-reference.html',headers:[
         {key:'X-Frame-Options',value:'SAMEORIGIN'},
         {key:'Content-Security-Policy',value:"frame-ancestors 'self'"}
