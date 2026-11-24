@@ -20,7 +20,7 @@ export async function POST(request:NextRequest){
   return result({authorized:false,error:'Invalid archive content summary'},400);
  const required=zipRequiredTier(count,bytes,mode);
  if(!required){
-  return result({authorized:false,error:'ZIP Maker supports up to 300 files and 300 MB per archive. Use smaller files or split your archive.'},413);
+  return result({authorized:false,error:'ZIP Maker supports up to 1,000 files and 1 GB per archive. Split larger archives.'},413);
  }
  const member=await verifyStudioMember();
  if('error' in member){
@@ -28,7 +28,7 @@ export async function POST(request:NextRequest){
  }
  if(!zipPlanAllows(member.plan,required)){
   return result({authorized:false,plan:member.plan,requiredTier:required,
-   error:'Your ZIP needs '+required+' or higher ('+count+' files, '+Math.ceil(bytes/1048576)+' MB, '+mode+' mode). Upgrade to download.'},403);
+   error:'Your ZIP needs '+required+' or higher ('+count+' files, '+(bytes>=1024*1048576?'1 GB':Math.ceil(bytes/1048576)+' MB')+', '+mode+' mode). Upgrade to download.'},403);
  }
  return result({authorized:true,plan:member.plan,requiredTier:required,
   limits:zipPlans[member.plan]});
