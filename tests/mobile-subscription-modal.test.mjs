@@ -50,3 +50,20 @@ test('payment gates and retry authorization remain server checked',()=>{
  assert.match(studio,/fetch\('\/api\/studio\/upscale-authorize'/);
  assert.match(studio,/data\.authorized!==true/);
 });
+
+test('PayPal and PhonePe are still the only gateways and their single CTA is pinned below scroll content',()=>{
+ const pricing=read('components/premium-pricing.tsx');
+ const css=read('app/neon-glass-3d.css');
+ assert.match(pricing,/secure-checkout-portal-root/);
+ assert.match(pricing,/createPortal\(/);
+ assert.match(pricing,/aria-label="Single secure payment action"/);
+ assert.match(pricing,/paymentMethod==='paypal'/);
+ assert.match(pricing,/paymentMethod==='phonepe'/);
+ assert.doesNotMatch(pricing,/paymentMethod==='upi'|paymentMethod==='card'/);
+ const body=pricing.indexOf('className="secure-checkout-scroll"');
+ const action=pricing.indexOf('className="secure-checkout-action"');
+ const bodyEnd=pricing.lastIndexOf('</div>',action);
+ assert.ok(body>=0&&bodyEnd>body&&bodyEnd<action,'Scroll area should close before pinned checkout action');
+ assert.match(css,/\.secure-checkout-dialog > \.secure-checkout-action\{/);
+ assert.match(css,/flex:none;min-height:0;max-height:min\(42dvh,320px\);overflow-y:auto/);
+});
