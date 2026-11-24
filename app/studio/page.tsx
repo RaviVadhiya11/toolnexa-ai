@@ -9,7 +9,8 @@ const items=[
  {href:'/studio/enhance',icon:'✺',title:'AI Detail Enhancer & Upscaler',desc:'Upload photos, compare Before/After, improve noise and sharpness, then upscale with optional neural AI Detail up to 8K.',tag:'Pro HD'},
  {href:'/studio/background-remove',icon:'▣',title:'AI Background Remover HD',desc:'On-device U²-Net AI foreground separation, plus offline solid-bg cleanup.',tag:'AI cutout'},
  {href:'/studio/retouch',icon:'◌',title:'Object Remover & Retouch',desc:'Select and heal small unwanted marks with a painting brush.',tag:'Local retouch'},
- {href:'/studio/restore',icon:'☼',title:'Photo Restore & Colorizer',desc:'Denoise, sharpen and colour-grade scanned photographs.',tag:'Photo tools'}
+ {href:'/studio/restore',icon:'☼',title:'Photo Restore & Colorizer',desc:'Denoise, sharpen and colour-grade scanned photographs.',tag:'Photo tools'},
+ {href:'/studio/batch',icon:'⚡',title:'Batch Pro+ ZIP Engine',desc:'Sequential local enhancement of up to 8 photos with real Premium/Max verification and ZIP export.',tag:'Premium · Max'}
 ] as const;
 export default function StudioHome(){return <main className="studio-home suite-home">
  <span className="studio-eyebrow">TOOLNEXA AI · CREATOR STUDIO V4</span>
