@@ -29,7 +29,7 @@ test('vector page displays an image upload and real raster-to-path converter ahe
  assert.ok(importer>=0);
  assert.ok(importer<page.indexOf('<StudioWorkspace mode="vector"/>'),'Upload-to-vector must be prominent');
  const ui=read('components/image-to-vector.tsx');
- for(const word of ['type="file"','image/png,image/jpeg,image/webp','Trace Image to Vector',
+ for(const word of ['StudioUploadPreview','image/png,image/jpeg,image/webp','Trace Image to Vector',
   'ImageTracer.imagedataToSVG','Download SVG Vector','setSvg(result.xml)',
   '/api/studio/hd-export','role="status"','before-after']){
   if(word==='before-after')assert.match(ui,/vectorize-before-after/);

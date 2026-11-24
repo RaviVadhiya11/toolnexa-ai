@@ -1,9 +1,9 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
-import type {DragEvent as ReactDragEvent,ChangeEvent} from 'react';
 import Link from 'next/link';
 import {StudioUpscalePanel} from '@/components/studio-upscale-panel';
 import {StudioQuotaNotice} from '@/components/studio-quota';
+import {StudioUploadPreview} from '@/components/studio-upload-preview';
 import {enhancePhotoCanvas,photoPresets,type PhotoSettings,type PhotoPreset} from '@/lib/studio-photo-enhance';
 
 const MAX_IMAGE=10*1024*1024;
@@ -16,7 +16,6 @@ const presets:{key:PhotoPreset;label:string;subtitle:string}[]=[
 ];
 export function ProfessionalImageEnhancer(){
  const sourceRef=useRef<HTMLImageElement|null>(null);
- const fileInput=useRef<HTMLInputElement|null>(null);
  const [imageUrl,setImageUrl]=useState('');
  const [previewUrl,setPreviewUrl]=useState('');
  const [fileName,setFileName]=useState('');
@@ -24,7 +23,6 @@ export function ProfessionalImageEnhancer(){
  const [preset,setPreset]=useState<PhotoPreset>('natural');
  const [settings,setSettings]=useState<PhotoSettings>(photoPresets.natural);
  const [compare,setCompare]=useState(55);
- const [dragging,setDragging]=useState(false);
  const [status,setStatus]=useState('Upload a photo to start enhancing.');
  const [previewLoading,setPreviewLoading]=useState(false);
  const previewSeq=useRef(0);
@@ -79,13 +77,6 @@ export function ProfessionalImageEnhancer(){
  function updateSetting(key:keyof PhotoSettings,value:number){
   setSettings(previous=>({...previous,[key]:value}));
  }
- function drop(event:ReactDragEvent<HTMLDivElement>){
-  event.preventDefault();setDragging(false);chooseFile(event.dataTransfer.files[0]);
- }
- function fileChanged(event:ChangeEvent<HTMLInputElement>){
-  chooseFile(event.currentTarget.files?.[0]);
-  event.currentTarget.value='';
- }
  async function processedCanvas(){
   const image=sourceRef.current;
   if(!image||!dimensions.width)throw Error('Upload a valid photo first.');
@@ -103,16 +94,10 @@ export function ProfessionalImageEnhancer(){
   <div className="photo-enhance-layout">
    <section className="studio-panel photo-enhance-input">
     <div className="photo-enhance-step"><span>01</span><div><h2>Upload Image</h2><p>Start with a photo from your device</p></div></div>
-    <div className={'photo-dropzone '+(dragging?'photo-dropzone-active':'')}
-      onDragOver={e=>{e.preventDefault();setDragging(true)}}
-      onDragLeave={e=>{e.preventDefault();setDragging(false)}}
-      onDrop={drop}>
-     <input ref={fileInput} type="file" id="photo-enhance-input" accept="image/jpeg,image/png,image/webp" onChange={fileChanged}/>
-     <label htmlFor="photo-enhance-input"><span className="photo-upload-icon" aria-hidden="true">↑</span>
-      <strong>{fileName?'Change image':'Drag & drop your image'}</strong><span>or click to upload</span>
-      <small>JPG · PNG · WebP · up to 10 MB</small>
-     </label>
-    </div>
+    <StudioUploadPreview id="photo-enhance-input" accept="image/jpeg,image/png,image/webp"
+      name={fileName} sourceUrl={loaded?imageUrl:''} outputUrl={previewUrl}
+      onFile={chooseFile} hint="JPG · PNG · WebP · up to 10 MB" busy={previewLoading}
+      beforeLabel="Original" afterLabel="Enhanced" onReset={()=>choosePreset('natural')}/>
     {fileName&&<p className="photo-upload-meta">{fileName} {loaded?'· '+dimensions.width+' × '+dimensions.height+' px':''}</p>}
     <div className="photo-enhance-step photo-enhance-second"><span>02</span><div><h2>Enhance Photo</h2><p>Fine-tune for better clarity</p></div></div>
     <div className="photo-preset-grid">

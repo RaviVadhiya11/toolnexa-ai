@@ -161,6 +161,11 @@ export function StudioWorkspace({mode}:{mode:Mode}){
      <input id="studio-primary" type="color" value={primary} onChange={event=>setPrimary(event.target.value)}/>
      <label htmlFor="studio-accent">Accent color</label>
      <input id="studio-accent" type="color" value={accent} onChange={event=>setAccent(event.target.value)}/>
+     <div className="studio-inline-vector-preset">
+      <strong>Live design preview</strong>
+      <div className="studio-inline-preset-stage" dangerouslySetInnerHTML={{__html:svg}}/>
+      <p className="studio-note">Your design updates here as you edit shapes and colors.</p>
+     </div>
      <button type="button" className="studio-secondary" onClick={()=>void downloadSvg()}>Download SVG — Free</button>
     </>:<>
      <label htmlFor="studio-upload">Choose JPG, PNG or WebP image</label>

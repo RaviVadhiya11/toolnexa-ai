@@ -3,6 +3,7 @@ import {useEffect,useRef,useState} from 'react';
 import Link from 'next/link';
 import {reserveStudioUsage,StudioQuotaNotice} from '@/components/studio-quota';
 import {StudioUpscalePanel} from '@/components/studio-upscale-panel';
+import {StudioUploadPreview} from '@/components/studio-upload-preview';
 import ImageTracer from 'imagetracerjs';
 
 type TraceColors=2|4|8|16|24;
@@ -86,7 +87,6 @@ async function renderSvg(xml:string,size=640){
  }finally{URL.revokeObjectURL(url)}
 }
 export function ImageToVector(){
- const fileInput=useRef<HTMLInputElement|null>(null);
  const fileRef=useRef<File|null>(null);
  const [originalUrl,setOriginalUrl]=useState('');
  const [svgUrl,setSvgUrl]=useState('');
@@ -180,11 +180,10 @@ export function ImageToVector(){
   <div className="vectorize-grid">
    <div className="studio-panel vectorize-settings">
     <h2>1. Upload Image</h2>
-    <input ref={fileInput} id="vectorize-upload" type="file" accept="image/png,image/jpeg,image/webp"
-      className="vectorize-input" onChange={e=>selectFile(e.target.files?.[0])}/>
-    <label className="vectorize-upload-label" htmlFor="vectorize-upload">
-     <span aria-hidden="true">↑</span><strong>Choose image</strong><small>PNG / JPG / WebP · Max 10 MB</small>
-    </label>
+    <StudioUploadPreview id="vectorize-upload" accept="image/png,image/jpeg,image/webp"
+      name={fileName} sourceUrl={originalUrl} outputUrl={svgUrl}
+      onFile={selectFile} beforeLabel="Original raster" afterLabel="Real traced SVG"
+      hint="PNG / JPG / WebP · max 10 MB" busy={working} onReset={resetTrace}/>
     {fileName&&<p className="vectorize-file">Selected: {fileName}</p>}
     <h2>2. Trace Settings</h2>
     <label htmlFor="vector-colors">Vector color palette</label>

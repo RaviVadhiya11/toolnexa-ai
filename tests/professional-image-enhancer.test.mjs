@@ -8,7 +8,7 @@ test('image enhancer uses separate fully interactive photo workspace',()=>{
  const ui=file('components/professional-image-enhancer.tsx');
  assert.match(page,/ProfessionalImageEnhancer/);
  for(const marker of [
-  'onDrop={drop}', 'image/jpeg,image/png,image/webp','MAX_IMAGE=10*1024*1024',
+  'StudioUploadPreview', 'onFile={chooseFile}', 'image/jpeg,image/png,image/webp','MAX_IMAGE=10*1024*1024',
   "setCompare(","photo-compare-range","Auto Enhance — Recommended",
   "photoPresets","photo-adjust-","Preview","StudioUpscalePanel",
   'usageSlug="studio-enhance"','enableAI'
