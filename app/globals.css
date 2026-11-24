@@ -1040,7 +1040,7 @@ h1,h2,h3,h4,.flagship-brand-link{font-family:"Plus Jakarta Sans",Inter,ui-sans-s
 .premium-shell>.premium-sidebar.flagship-workspace-drawer.sidebar-open .mobile-sidebar-close{
  display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;flex-shrink:0;
  border-radius:10px;background:#17213a;border:1px solid #818cf858;color:#eff6ff}
-.premium-shell:has(.flagship-workspace-drawer.sidebar-open)>.premium-menu-backdrop{
+.premium-shell.has-open-drawer>.premium-menu-backdrop{
  display:block;position:fixed;inset:0;z-index:125;background:#030510c6;border:0;width:100%;height:100%;
  backdrop-filter:blur(4px)}
 .premium-shell>.flagship-workspace-drawer .premium-sidebar-head{min-width:0;gap:10px}
