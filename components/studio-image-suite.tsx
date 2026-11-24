@@ -101,7 +101,7 @@ export function StudioImageSuite({mode}:{mode:Mode}){
   const canvas=paintRef.current,source=sourceRef.current;
   canvas.width=source.width;canvas.height=source.height;
   canvas.getContext('2d')?.drawImage(source,0,0);
- },[fileName,mode,dims]);
+ },[fileName,mode,dims,resultUrl]);
  async function upload(file?:File){
   if(!file)return;
   setWorking(true);setStatus('Opening image…');
@@ -273,11 +273,7 @@ export function StudioImageSuite({mode}:{mode:Mode}){
      </div>
      <div className="suite-preview"><strong>{mode==='retouch'&&!resultUrl?'Paint Mask / After':'After · Processed'}</strong>
       <div className={'suite-artboard '+(mode==='background'?'suite-checker':'')}>
-       {mode==='retouch'&&fileName&&!resultUrl?
-        <canvas ref={paintRef} className="suite-brush-canvas" style={{touchAction:'none'}} 
-         onPointerDown={e=>{drawing.current=true;e.currentTarget.setPointerCapture(e.pointerId);point(e)}}
-         onPointerMove={e=>{if(drawing.current)point(e)}}
-         onPointerUp={()=>{drawing.current=false}} onPointerCancel={()=>{drawing.current=false}}/>:
+       {mode==='retouch'&&fileName&&!resultUrl?<img src={originalUrl} alt="Original image — paint on the upload preview above"/>:
         resultUrl?<img src={resultUrl} alt="Processed image"/>:<p>{fileName?'Select Process to see results':'Your output appears here'}</p>}
       </div>
      </div>
