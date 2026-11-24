@@ -156,7 +156,7 @@ export function PassportSocialStudio(){
    }
   }
  },[sequence,mode,preset.id,preset.w,preset.h,sheet,pixels.width,pixels.height,
-  settings,cutout,guide]);
+  settings,cutout,guide,upscaledPreview]);
 
  function pointerDown(e:PointerEvent<HTMLCanvasElement>){
   pointer.current={x:e.clientX,y:e.clientY,panX:settings.panX,panY:settings.panY};
@@ -243,6 +243,8 @@ export function PassportSocialStudio(){
    if(!response.ok||json.authorized!==true)throw Error(json.error||'Could not verify the active PayPal plan.');
    if(json.plan)setPlan(json.plan);
    setPlansOpen(false);
+   if(mode==='social'&&pixels.width*pixels.height*4>32000000)
+    throw Error('Pro 2× export would exceed the 32 MP canvas limit. Choose a smaller social size.');
    await reserveStudioUsage('studio-passport-social');
    if(action==='pdf'){
     if(mode!=='passport'||!sheet)throw Error('Select Passport mode and enable 4 × 6 print sheet to export a print PDF.');
@@ -255,7 +257,6 @@ export function PassportSocialStudio(){
     canvas.width=0;canvas.height=0;
     setStatus('✓ Premium 4 × 6 inch PDF generated at 600 PPI. Use 100% / actual-size printing.');
    }else{
-    const res=await prepareExport(mode==='passport'?600:300);
     // Social sizes double their intended size for the Pro export; passport
     // documents use an actual 600-PPI pixel grid rather than an arbitrary 2×.
     if(mode==='social'){
@@ -269,6 +270,7 @@ export function PassportSocialStudio(){
      downloadFile(blob,sourceName+'-social-'+preset.id+'-pro-2x.'+formatName(format));
      setStatus('✓ Pro 2× social image exported. Some platforms will rescale uploaded artwork.');
     }else{
+     const res=await prepareExport(600);
      downloadFile(res.blob,sourceName+'-passport-'+preset.id+'-600ppi.'+formatName(format));
      setStatus('✓ Pro passport print export generated at 600 PPI pixel dimensions.');
     }
