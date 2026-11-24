@@ -14,7 +14,8 @@ const studioItems=[
  {href:'/studio/svg-editor',title:'SVG Shape & Color Editor',desc:'Edit SVG colors, geometry and paths',tag:'Editable',icon:SlidersHorizontal},
  {href:'/studio/retouch',title:'Object Remover & Retouch',desc:'Paint over small unwanted marks and heal',tag:'Local retouch',icon:ScanText},
  {href:'/studio/restore',title:'Photo Restore & Colorizer',desc:'Sharpen, denoise and regrade older photos',tag:'Photo tools',icon:ImageIcon},
- {href:'/studio/batch',title:'Batch Pro+ ZIP Engine',desc:'Premium/Max sequential image jobs and one ZIP export',tag:'Premium / Max',icon:Layers3}
+ {href:'/studio/batch',title:'Batch Pro+ ZIP Engine',desc:'Premium/Max sequential image jobs and one ZIP export',tag:'Premium / Max',icon:Layers3},
+ {href:'/studio/passport-social',title:'AI Passport & Social Size Studio',desc:'Passport/ID and social presets, local cutout, real print sheets and Pro photo exports',tag:'NEW · Pro Print',icon:ImageIcon}
 ] as const;
 const pricing=[
  {name:'Free',price:'0',detail:'3 shared tool runs per day',features:['All 60 utilities','Studio previews','No paid export access'],href:'/tools'},
@@ -42,6 +43,7 @@ export default function Home(){return <div className="premium-home flagship-home
  <nav className="flagship-classic-shortcuts" aria-label="Quick access to the original tool categories and editors">
   <span>QUICK ACCESS</span>
   <Link href="/studio/enhance"><Sparkles size={16}/> Enhance Image</Link>
+  <Link href="/studio/passport-social"><ImageIcon size={16}/> Passport / Social</Link>
   <Link href="/studio/background-remove"><ImageIcon size={16}/> Remove BG</Link>
   <Link href="/studio/image-to-vector"><PenTool size={16}/> Image to SVG</Link>
   <Link href="/tools?category=PDF"><FileText size={16}/> PDF Tools</Link>
@@ -49,7 +51,7 @@ export default function Home(){return <div className="premium-home flagship-home
   <Link href="/dashboard"><Crown size={16}/> My Workspace</Link>
  </nav>
  <section className="flagship-metrics" aria-label="ToolNexa product features">
-  <div><strong>69</strong><span>Working tool pages</span></div>
+  <div><strong>70</strong><span>Working tool pages</span></div>
   <div><strong>Up to 8K</strong><span>Plan-gated export resolution</span></div>
   <div><strong>3 / day</strong><span>Shared Free tool runs</span></div>
   <div><strong>PayPal</strong><span>Verified subscription checkout</span></div>
