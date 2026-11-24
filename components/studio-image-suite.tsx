@@ -4,6 +4,7 @@ import type {PointerEvent as ReactPointerEvent} from 'react';
 import Link from 'next/link';
 import {reserveStudioUsage,StudioQuotaNotice} from '@/components/studio-quota';
 import {StudioUpscalePanel} from '@/components/studio-upscale-panel';
+import {useStudioPremiumDownload} from '@/components/studio-premium-download';
 import {StudioUploadPreview} from '@/components/studio-upload-preview';
 import {composeBackground,refineBackground,type BgFill,type BgBrush} from '@/lib/studio-bg-editor';
 import {readImage,cropCanvas,imageBlob,downloadFile,proDownload,createCanvas} from '@/lib/studio-suite-client';
@@ -55,7 +56,7 @@ export function StudioImageSuite({mode}:{mode:Mode}){
  const [denoise,setDenoise]=useState(45);
  const [sharpness,setSharpness]=useState(45);
  const [tint,setTint]=useState<Tint>('original');
- const pro=['Pro','Premium','Max'].includes(plan);
+ const premium=useStudioPremiumDownload('Pro HD photo export');
  useEffect(()=>{
   let mounted=true;
   const refresh=()=>void fetch('/api/usage/quota',{cache:'no-store'}).then(r=>r.json())
@@ -266,14 +267,16 @@ export function StudioImageSuite({mode}:{mode:Mode}){
   finally{setWorking(false)}
  }
  async function hd(){
+  await premium.run(async()=>{
   if(!resultRef.current){setStatus('Process an image first.');return}
-  if(!pro){setStatus('Pro/Premium/Max subscription required for HD exports.');return}
+  
   setWorking(true);setStatus('Checking Pro plan and processing HD image…');
   try{
    await proDownload(exportCanvas(),mode==='background'&&bgFill==='transparent'?'cutout':'image',scale);
    setStatus('Pro HD export downloaded. Source details are not recreated by enlargement.');
   }catch(e){setStatus(e instanceof Error?e.message:'HD export unavailable')}
   finally{setWorking(false)}
+  });
  }
  return <section className="suite-workspace">
   <header className="suite-head"><span className="studio-eyebrow">IMAGE & VECTOR SUITE · PHOTO EDITING</span>
@@ -385,8 +388,10 @@ export function StudioImageSuite({mode}:{mode:Mode}){
      <p>{mode==='background'?'Transparent PNG (with alpha)':'High-quality JPEG'} on a verified paid plan.</p></div>
     <label htmlFor="suite-hd-scale">Resolution</label>
     <select id="suite-hd-scale" value={scale} onChange={e=>setScale(Number(e.target.value) as 2|4)}><option value={2}>2× HD</option><option value={4}>4× HD</option></select>
-    {pro?<button type="button" disabled={!resultUrl||working} onClick={()=>void hd()}>Download Pro HD</button>:
-      <Link href="/pricing" className="studio-upgrade">Unlock Pro HD Export →</Link>}
+    <button type="button" className="studio-hd studio-premium-download" disabled={working||premium.checking}
+      onClick={()=>void hd()}>{premium.checking?'Checking subscription…':'🔒 Download Pro HD · Unlock'}</button>
+    {premium.error&&<p className="studio-note" role="status">{premium.error}</p>}
+    {premium.modal}
     <StudioUpscalePanel getCanvas={async()=>exportCanvas()} format={mode==='background'?'cutout':'photo'} disabled={!resultUrl} sourceKey={[resultUrl,bgFill,bgColor,bgSize,bgOffsetX,bgOffsetY,bgShadow,bgShadowStrength,bgPhotoUrl].join(':')} usageSlug={mode==='background'?'studio-background':mode==='retouch'?'studio-retouch':'studio-restore'}/>
     <p className="studio-note">AI cutout may have imperfect edges. Retouching works best on small marks, and resizing does not reconstruct missing photograph detail.</p>
    </div>
