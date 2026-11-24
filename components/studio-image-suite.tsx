@@ -334,7 +334,7 @@ export function StudioImageSuite({mode}:{mode:Mode}){
       <label>Horizontal position {bgOffsetX}%<input type="range" min="-40" max="40" value={bgOffsetX} onChange={e=>setBgOffsetX(+e.target.value)}/></label>
       <label>Vertical position {bgOffsetY}%<input type="range" min="-40" max="40" value={bgOffsetY} onChange={e=>setBgOffsetY(+e.target.value)}/></label>
       <label className="studio-bg-checkbox"><input type="checkbox" checked={bgShadow} onChange={e=>setBgShadow(e.target.checked)}/> Soft subject shadow</label>
-      {bgShadow&&<label>Shadow intensity {bgShadowStrength}%<input type="range" min="15" max="100" value={bgShadowStrength} onChange={e=>setBgShadowStrength(+e.target.value)}/></label>
+      {bgShadow&&<label>Shadow intensity {bgShadowStrength}%<input type="range" min="15" max="100" value={bgShadowStrength} onChange={e=>setBgShadowStrength(+e.target.value)}/></label>}
       <p className="studio-note">To brush-refine, return size to 100% and both positions to 0. Colors, background and shadow appear immediately in the upload preview.</p>
      </>}
     </>:mode==='retouch'?<>
