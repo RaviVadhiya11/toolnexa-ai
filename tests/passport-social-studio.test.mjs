@@ -56,7 +56,7 @@ test('Passport & Social tool is actually linked across all page entry points',()
  'app/page.tsx','app/dashboard/page.tsx'
  ];
  for(const path of locations)assert.ok(read(path).includes('/studio/passport-social'),path);
- assert.match(read('app/studio/page.tsx'),/10 Workspaces/);
+ assert.match(read('app/studio/page.tsx'),/11 Workspaces/);
  assert.match(read('app/layout.tsx'),/11 Creator Studio Workspaces/);
  assert.match(read('app/page.tsx'),/<strong>71<\/strong>/);
  assert.equal([...read('lib/tools.ts').matchAll(/\bslug:\s*["']([a-z0-9-]+)["']/g)].length,60);
