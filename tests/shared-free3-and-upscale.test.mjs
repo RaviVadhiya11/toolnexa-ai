@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const components=['components/studio-workspace.tsx','components/image-to-vector.tsx',
  'components/studio-image-suite.tsx','components/studio-vector-formats.tsx'];
-test('all original 60 + 8 Studio tools share three Free runs per UTC day',()=>{
+test('all 60 utilities and Studio downloads share the correct Free and paid daily quotas',()=>{
  const limits=read('lib/usage-limits.ts');
  assert.match(limits,/Free:3,/);
  assert.match(limits,/Starter:500,Pro:1000,Premium:1500,Max:3000/);
@@ -12,7 +12,7 @@ test('all original 60 + 8 Studio tools share three Free runs per UTC day',()=>{
  assert.match(api,/studioRunSlugs/);
  assert.match(api,/const allowed=new Set\(\[\.\.\.tools.map/);
  const slugs=read('lib/studio-run-slugs.ts');
- assert.equal([...slugs.matchAll(/'studio-[\w-]+'/g)].length,9);
+ assert.equal([...slugs.matchAll(/'studio-[\w-]+'/g)].length,10);
  for(const file of components){
   const content=read(file);
   assert.match(content,/StudioQuotaNotice/);
