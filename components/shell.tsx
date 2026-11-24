@@ -56,7 +56,7 @@ export function Shell({children}:{children:React.ReactNode}){
     </nav>
     <div className="flagship-nav-actions">
      <button type="button" className="flagship-search-trigger" onClick={()=>window.dispatchEvent(new Event('toolnexa-open-command'))}
-       aria-label="Search all 68 tools"><Search size={18}/><span>Search</span><kbd>⌘K</kbd></button>
+       aria-label="Search all 69 tools"><Search size={18}/><span>Search</span><kbd>⌘K</kbd></button>
      <Link className="flagship-workspace-link" href="/dashboard"><LayoutDashboard size={17}/><span>Workspace</span></Link>
      <button className="flagship-theme-toggle" onClick={toggle} type="button" aria-label={dark?'Switch to light mode':'Switch to dark mode'}>{dark?<Sun size={18}/>:<Moon size={18}/>}</button>
      <AccountStatus/>
