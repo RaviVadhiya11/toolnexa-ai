@@ -17,9 +17,12 @@ test('Passport demo dimensions: 35x45 mm, 2x2 inch, 50x70 mm at actual 300/600 P
  assert.deepEqual(engine.outputPixels(engine.passportPresets[0],600),{width:827,height:1063});
  assert.throws(()=>engine.outputPixels({...engine.passportPresets[0],w:151}),/15–150 mm/);
 });
-test('Social media demo retains original six presets and adds six useful advanced presets',()=>{
- assert.equal(engine.passportPresets.length,4);
- assert.equal(engine.socialPresets.length,12);
+test('Passport and social media retain existing dimensions and add advanced application and profile presets',()=>{
+ assert.equal(engine.passportPresets.length,6);
+ assert.equal(engine.socialPresets.length,14);
+ assert.deepEqual(engine.outputPixels(engine.passportPresets.find(p=>p.id==='exam')),{width:200,height:230});
+ assert.deepEqual(engine.outputPixels(engine.passportPresets.find(p=>p.id==='25x35')),{width:295,height:413});
+ assert.deepEqual(engine.outputPixels(engine.socialPresets.find(p=>p.id==='whatsapp')),{width:800,height:800});
  const get=id=>engine.socialPresets.find(p=>p.id===id);
  assert.deepEqual(engine.outputPixels(get('igpost')),{width:1080,height:1080});
  assert.deepEqual(engine.outputPixels(get('igportrait')),{width:1080,height:1350});
