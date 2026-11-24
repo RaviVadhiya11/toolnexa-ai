@@ -11,13 +11,15 @@ const tools=[
  {path:'/studio/retouch',name:'Retouch',icon:'◉'},
  {path:'/studio/restore',name:'Restore',icon:'☀'},
  {path:'/studio/batch',name:'Batch Pro+',icon:'⚡'},
- {path:'/studio/passport-social',name:'Passport / Social',icon:'▧'}
+ {path:'/studio/passport-social',name:'Passport / Social',icon:'▧'},
+ {path:'/studio/zip-maker',name:'ZIP Maker',icon:'▤'}
 ] as const;
 export function StudioTopbar(){
  const pathname=usePathname();
  // The uploaded Passport editor has its own mode navigation; prevent a second
  // sticky toolbar from covering its mobile controls.
- if(pathname==='/studio/passport-social'||pathname==='/studio/zip-maker')return null;
+ if(pathname==='/studio/passport-social')return null;
+ if(pathname==='/studio/zip-maker')return null;
  return <nav className="studio-premium-nav" aria-label="Creator Studio tools">
   <div className="studio-premium-brand">
    <Link href="/studio"><span className="studio-premium-brand-icon">✦</span>
