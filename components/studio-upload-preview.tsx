@@ -13,16 +13,17 @@ export function StudioUploadPreview({
  transparent=false,editor,busy=false,onReset
 }:Props){
  const [compare,setCompare]=useState(false);
+ const [holdOriginal,setHoldOriginal]=useState(false);
  const [split,setSplit]=useState(false);
  const [splitAt,setSplitAt]=useState(50);
  const [zoom,setZoom]=useState(100);
  const [mat,setMat]=useState<Mat>('checker');
  const [dragging,setDragging]=useState(false);
  const hasSource=!!sourceUrl,hasOutput=!!outputUrl;
- useEffect(()=>{setCompare(false);setSplit(false);setSplitAt(50);setZoom(100)},[sourceUrl]);
+ useEffect(()=>{setCompare(false);setHoldOriginal(false);setSplit(false);setSplitAt(50);setZoom(100)},[sourceUrl]);
  function select(file?:File){
   if(!file)return;
-  setCompare(false);setSplit(false);setZoom(100);
+  setCompare(false);setHoldOriginal(false);setSplit(false);setZoom(100);
   void onFile(file);
  }
  function drop(event:DragEvent<HTMLDivElement>){
@@ -47,11 +48,22 @@ export function StudioUploadPreview({
    <div className="studio-inline-toolbar">
     <span className="studio-inline-filename" title={name}>{name||'Uploaded image'}</span>
     <div className="studio-inline-actions">
+     {hasOutput&&<button type="button" className="studio-inline-action studio-preview-hold" title="Hold to inspect the original"
+       aria-label="Hold to compare original image"
+       onPointerDown={()=>setHoldOriginal(true)} onPointerUp={()=>setHoldOriginal(false)}
+       onPointerCancel={()=>setHoldOriginal(false)} onPointerLeave={()=>setHoldOriginal(false)}
+       onKeyDown={event=>{if(event.key===' '||event.key==='Enter')setHoldOriginal(true)}}
+       onKeyUp={()=>setHoldOriginal(false)}
+       onBlur={()=>setHoldOriginal(false)}>◉ Hold original</button>}
      <label htmlFor={id} className="studio-inline-action" title="Choose another image">↻ Replace</label>
      {hasOutput&&<button type="button" className="studio-inline-action" aria-pressed={compare}
        onClick={()=>{setCompare(value=>!value);setSplit(false)}}>{compare?'After':'Before / After'}</button>}
      {hasOutput&&<button type="button" className="studio-inline-action" aria-pressed={split}
        onClick={()=>{setSplit(value=>!value);setCompare(false)}}>◧ Split</button>}
+     <button type="button" className="studio-inline-action studio-zoom-fit" title="Fit image to stage"
+      onClick={()=>setZoom(100)}>Fit</button>
+     <button type="button" className="studio-inline-action studio-zoom-inspect" aria-pressed={zoom===200}
+      title="Inspect at double zoom" onClick={()=>setZoom(z=>z===200?100:200)}>2× Inspect</button>
      <button type="button" className="studio-inline-action" aria-label="Zoom in" onClick={()=>setZoom(z=>Math.min(250,z+25))}>＋</button>
      <button type="button" className="studio-inline-action" aria-label="Fit image" onClick={()=>setZoom(100)}>{zoom}%</button>
      <button type="button" className="studio-inline-action" aria-label="Zoom out" onClick={()=>setZoom(z=>Math.max(100,z-25))}>－</button>
@@ -79,10 +91,10 @@ export function StudioUploadPreview({
      <input type="range" className="studio-inline-split-slider" min={0} max={100}
       value={splitAt} onChange={event=>setSplitAt(+event.target.value)} aria-label="Drag to compare before and after"/>
     </div>:
-    compare||!hasOutput?<img src={sourceUrl} alt={beforeLabel} className="studio-inline-art"/>:
+    compare||holdOriginal||!hasOutput?<img src={sourceUrl} alt={beforeLabel} className="studio-inline-art"/>:
      editor?<div className="studio-inline-custom">{editor}</div>:
      <img src={outputUrl} alt={afterLabel} className="studio-inline-art"/>}
-    {hasOutput&&<span className="studio-inline-state">{split?'Drag comparison line':compare?beforeLabel:afterLabel}</span>}
+    {hasOutput&&<span className="studio-inline-state">{split?'Drag comparison line':compare||holdOriginal?beforeLabel:afterLabel}</span>}
    </div>
    <p className="studio-inline-hint">Zoom {zoom}% · {hasOutput?'Use Split for a live before/after comparison.':'Your photo is ready. Process it to update this preview.'} <span className="studio-shortcut-hint">Keyboard: Space compare · + / − zoom</span></p>
   </div>:<label htmlFor={id} className="studio-inline-empty studio-premium-drop">
