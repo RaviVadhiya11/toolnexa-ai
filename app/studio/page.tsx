@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type {Metadata} from 'next';
-export const metadata:Metadata={title:'8 High-Quality Image & Vector Tools',description:'Explore ToolNexa AI Vector Studio, JPG to SVG, vector format conversion, SVG editing, background removal, retouch, enhancement and photo restoration.'};
+export const metadata:Metadata={title:'9 Creative Studio Workspaces including Batch Pro+',description:'Explore ToolNexa AI Vector Studio, JPG to SVG, vector format conversion, SVG editing, background removal, retouch, enhancement and photo restoration.'};
 const items=[
  {href:'/studio/vector',icon:'✦',title:'Real Vector Studio',desc:'Generate editable SVG designs and open the image tracer.',tag:'Vector'},
  {href:'/studio/image-to-vector',icon:'◈',title:'Image to Vector Pro',desc:'Upload PNG, JPG or WebP and trace actual editable SVG paths.',tag:'Real SVG'},
@@ -13,9 +13,9 @@ const items=[
  {href:'/studio/batch',icon:'⚡',title:'Batch Pro+ ZIP Engine',desc:'Sequential local enhancement of up to 8 photos with real Premium/Max verification and ZIP export.',tag:'Premium · Max'}
 ] as const;
 export default function StudioHome(){return <main className="studio-home suite-home">
- <span className="studio-eyebrow">TOOLNEXA AI · CREATOR STUDIO V4</span>
- <h1>High-Quality Image &amp; Vector Suite <span className="suite-count">8 Tools</span></h1>
- <p>Create SVG vector paths from your own images, clean photographs, edit designs and export professional files. Free users share 3 daily runs. Starter adds 2× upscale, Pro adds 4×/4K, and Premium/Max add up to 8K.</p>
+ <span className="studio-eyebrow">TOOLNEXA AI · FLAGSHIP CREATOR STUDIO PRO+</span>
+ <h1>High-Quality Image &amp; Vector Suite <span className="suite-count">9 Workspaces</span></h1>
+ <p>Create SVG vector paths from your own images, clean photographs, edit designs and export professional files. Free users share 3 daily runs. Starter adds 2× upscale, Pro adds 4×/4K, and Premium/Max add up to 8K plus batch ZIP export.</p>
  <div className="suite-home-grid">{items.map(item=><Link href={item.href} key={item.href} className="suite-tile">
   <div className="suite-tile-art"><span>{item.icon}</span><small>{item.tag}</small></div>
   <strong>{item.title}</strong><p>{item.desc}</p><b>Open Tool →</b>
