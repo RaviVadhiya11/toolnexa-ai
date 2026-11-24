@@ -105,7 +105,7 @@ export function StudioBatchProcessor(){
    setStage('Building local ZIP archive…');
    const zip=await packageImagesAsZip(produced);
    if(zip.size>260*1024*1024)throw Error('Batch ZIP exceeds 260 MB. Select fewer images.');
-   downloadFile(zip,'toolnexa-batch-'+resolution+'.zip');
+   if(!await downloadFile(zip,'toolnexa-batch-'+resolution+'.zip'))return;
    setStage('✓ '+produced.length+' processed images exported in one ZIP. All images stayed in your browser.');
   }catch(err){setStage(err instanceof Error?err.message:'Batch export failed.')}
   finally{setBusy(false)}
