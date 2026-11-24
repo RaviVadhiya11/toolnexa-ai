@@ -71,7 +71,7 @@ export function Shell({children}:{children:React.ReactNode}){
       <h2 id="footer-about-title">ABOUT TOOLNEXA AI</h2>
       <p>All your everyday PDF, image, text, developer, business and creator tools in one smart workspace.</p>
       <p className="editorial-footer-caption">60 practical utility tools. Optional premium batch text analysis.</p>
-      <a href="https://github.com/RaviVadhiya11/toolnexa-ai/issues" className="editorial-footer-contact" target="_blank" rel="noopener noreferrer"><span className="editorial-footer-contact-icon"><Briefcase size={17}/></span>Report a technical issue <ArrowUpRight size={17}/></a>
+      <Link href="/support" className="editorial-footer-contact"<span className="editorial-footer-contact-icon"><Briefcase size={17}/></span>Report a technical issue <ArrowUpRight size={17}/></Link>
      </section>
      <nav className="editorial-footer-column" aria-labelledby="footer-categories-title">
       <h2 id="footer-categories-title">POPULAR CATEGORIES</h2>
@@ -93,7 +93,7 @@ export function Shell({children}:{children:React.ReactNode}){
       </div>
       <div className="editorial-contact-actions">
        <Link href="/support" className="editorial-contact-button"><LifeBuoy size={17}/> Help Center</Link>
-       <a href="https://github.com/RaviVadhiya11/toolnexa-ai/issues" target="_blank" rel="noopener noreferrer" className="editorial-contact-button"><Briefcase size={17}/> Report an Issue <ArrowUpRight size={15}/></a>
+       <Link href="/support" className="editorial-contact-button"<Briefcase size={17}/> Report an Issue <ArrowUpRight size={15}/></Link>
        <Link href="/billing" className="editorial-contact-button"><CreditCard size={17}/> Billing Help</Link>
       </div>
      </section>
