@@ -7,6 +7,7 @@ import {AccountStatus} from '@/components/account-status';
 import {tools} from '@/lib/tools';
 import {ShieldCheck,Home,LayoutGrid,LayoutDashboard,Crown,Moon,Sun,Search,FileText,Image as ImageIcon,Code2,Briefcase,Type,Menu,X,Sparkles,ArrowUpRight,LifeBuoy,CreditCard,Clapperboard} from 'lucide-react';
 const nav=[{href:'/',label:'Home',icon:Home},{href:'/tools',label:'All Tools',icon:LayoutGrid},{href:'/studio',label:'Creator Studio',icon:Sparkles},{href:'/dashboard',label:'Dashboard',icon:LayoutDashboard},{href:'/pricing',label:'Pricing',icon:Crown},{href:'/admin',label:'Admin',icon:ShieldCheck}];
+const mobileNav=[{href:'/',label:'Home',icon:Home},{href:'/tools',label:'Tools',icon:LayoutGrid},{href:'/studio',label:'Studio',icon:Sparkles},{href:'/dashboard',label:'Dashboard',icon:LayoutDashboard},{href:'/pricing',label:'Plans',icon:Crown}];
 const groups=[{name:'Text',icon:Type},{name:'Image',icon:ImageIcon},{name:'PDF',icon:FileText},{name:'Developer',icon:Code2},{name:'Business',icon:Briefcase},{name:'Creator',icon:Clapperboard}] as const;
 export function Shell({children}:{children:React.ReactNode}){
  const path=usePathname(),router=useRouter();
@@ -98,7 +99,9 @@ export function Shell({children}:{children:React.ReactNode}){
      <Link className="flagship-workspace-link" href="/dashboard"><LayoutDashboard size={17}/><span>Workspace</span></Link>
      <button className="flagship-theme-toggle" onClick={toggle} type="button" aria-label={dark?'Switch to light mode':'Switch to dark mode'}>{dark?<Sun size={18}/>:<Moon size={18}/>}</button>
      <AccountStatus/>
-     <Link href="/pricing" className="flagship-gold-cta"><Crown size={17}/> Upgrade <span>Pro+</span></Link>
+     <Link href="/pricing" className="flagship-gold-cta" aria-label="Upgrade to ToolNexa Pro+ subscription plans">
+      <Crown size={17}/><span className="flagship-upgrade-label">Upgrade</span><span className="flagship-upgrade-tier">Pro+</span>
+     </Link>
     </div>
    </header>
    {children}
@@ -147,6 +150,14 @@ export function Shell({children}:{children:React.ReactNode}){
    </footer>
   </main>
   <FlagshipCommandPalette/>
-  <nav className="mobile-nav premium-mobile-nav" aria-label="Bottom navigation">{nav.map(item=><Link href={item.href} key={item.href} className={path===item.href||item.href==='/tools'&&path.startsWith('/tools/')?'active':''} aria-current={path===item.href||item.href==='/tools'&&path.startsWith('/tools/')?'page':undefined}><item.icon size={21}/><span>{item.label}</span></Link>)}</nav>
+  <nav className="mobile-nav premium-mobile-nav" aria-label="Mobile quick navigation">
+   {mobileNav.map(item=>{
+    const active=path===item.href||
+      (item.href==='/tools'&&path.startsWith('/tools/'))||
+      (item.href==='/studio'&&path.startsWith('/studio/'));
+    return <Link href={item.href} key={item.href} className={active?'active':''}
+      aria-current={active?'page':undefined}><item.icon size={20}/><span>{item.label}</span></Link>;
+   })}
+  </nav>
  </div>;
 }
