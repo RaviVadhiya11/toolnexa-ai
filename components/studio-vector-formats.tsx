@@ -4,6 +4,7 @@ import Link from 'next/link';
 import {reserveStudioUsage,StudioQuotaNotice} from '@/components/studio-quota';
 import {StudioUpscalePanel} from '@/components/studio-upscale-panel';
 import {StudioUploadPreview} from '@/components/studio-upload-preview';
+import {withPaidDownload} from '@/lib/download-access';
 import {cleanSVG,exportVector} from '@/lib/studio-vector-convert';
 import {downloadFile} from '@/lib/studio-suite-client';
 type Mode='convert'|'edit';
@@ -102,6 +103,10 @@ export function StudioVectorFormats({mode}:{mode:Mode}){
   }catch(e){setStatus(e instanceof Error?e.message:'Unable to add shape')}
  }
  async function run(){
+  if(!xml)return;
+  await withPaidDownload({slug:mode==='edit'?'studio-svg-editor':'studio-convert',feature:'Vector '+format.toUpperCase()+' export'},generate);
+ }
+ async function generate(){
   if(!xml)return;
   setBusy(true);setStatus('Creating genuine '+format.toUpperCase()+' vector file…');
   try{
