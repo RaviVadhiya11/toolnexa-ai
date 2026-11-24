@@ -15,7 +15,9 @@ export default function robots():MetadataRoute.Robots {
     '/reset-password',
     '/signup',
     '/subscribe/',
-    '/pro/'
+    '/pro/',
+    '/auth/',
+    '/studio/passport-social/pro'
    ]
   }],
   sitemap:CANONICAL_SITE_URL+'/sitemap.xml',
