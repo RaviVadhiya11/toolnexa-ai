@@ -4,6 +4,7 @@ import Link from 'next/link';
 import {reserveStudioUsage,StudioQuotaNotice} from '@/components/studio-quota';
 import {StudioUpscalePanel} from '@/components/studio-upscale-panel';
 import {useStudioPremiumDownload} from '@/components/studio-premium-download';
+import {withPaidDownload} from '@/lib/download-access';
 import {StudioUploadPreview} from '@/components/studio-upload-preview';
 import ImageTracer from 'imagetracerjs';
 
@@ -159,13 +160,15 @@ export function ImageToVector(){
  }
  async function downloadPng(){
   if(!svg)return;
-  setWorking(true);
-  try{
-   const canvas=await renderSvg(svg);
-   save(await canvasBlob(canvas),'toolnexa-vector-standard.png');
-   setStatus('Standard PNG downloaded. The SVG remains your real vector file.');
-  }catch(e){setStatus(e instanceof Error?e.message:'Could not render PNG')}
-  finally{setWorking(false)}
+  await withPaidDownload({slug:'studio-image-to-vector',feature:'Image to Vector PNG export'},async()=>{
+   setWorking(true);
+   try{
+    const canvas=await renderSvg(svg);
+    save(await canvasBlob(canvas),'toolnexa-vector-standard.png');
+    setStatus('Standard PNG downloaded. The SVG remains your real vector file.');
+   }catch(e){setStatus(e instanceof Error?e.message:'Could not render PNG')}
+   finally{setWorking(false)}
+  });
  }
  async function downloadHd(){
   await premium.run(async()=>{
@@ -255,9 +258,9 @@ export function ImageToVector(){
     <h2>4. Download Vector</h2><StudioQuotaNotice/>
     <div className="studio-plan"><span>FREE</span><strong>Real SVG Vector</strong>
      <p>Scale without pixelation; contains editable geometric SVG paths.</p></div>
-    <button type="button" disabled={!svg||working} onClick={()=>save(
+    <button type="button" disabled={!svg||working} onClick={()=>void withPaidDownload({slug:'studio-image-to-vector',feature:'SVG vector file export'},()=>save(
       new Blob([svg],{type:'image/svg+xml;charset=utf-8'}),
-      'toolnexa-'+(fileName.replace(/\.[^.]+$/,'').replace(/[^a-z0-9_-]/gi,'-').slice(0,45)||'image')+'-vector.svg')}>
+      'toolnexa-'+(fileName.replace(/\.[^.]+$/,'').replace(/[^a-z0-9_-]/gi,'-').slice(0,45)||'image')+'-vector.svg'))}>
       Download SVG Vector
     </button>
     <button type="button" className="studio-secondary" disabled={!svg||working} onClick={()=>void downloadPng()}>Download Standard PNG</button>
