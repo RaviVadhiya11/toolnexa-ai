@@ -3,6 +3,7 @@ import {useEffect,useState} from 'react';
 import Link from 'next/link';
 import {reserveStudioUsage,StudioQuotaNotice} from '@/components/studio-quota';
 import {StudioUpscalePanel} from '@/components/studio-upscale-panel';
+import {StudioUploadPreview} from '@/components/studio-upload-preview';
 import {cleanSVG,exportVector} from '@/lib/studio-vector-convert';
 import {downloadFile} from '@/lib/studio-suite-client';
 type Mode='convert'|'edit';
@@ -91,8 +92,10 @@ export function StudioVectorFormats({mode}:{mode:Mode}){
   </header>
   <div className="suite-editor-grid">
    <div className="studio-panel suite-controls">
-    <h2>Upload SVG</h2><label htmlFor="suite-svg-file" className="suite-upload">↑ Choose SVG file</label>
-    <input id="suite-svg-file" type="file" accept=".svg,image/svg+xml" onChange={e=>void upload(e.target.files?.[0])}/>
+    <h2>Upload SVG &amp; Live Preview</h2>
+    <StudioUploadPreview id="suite-svg-file" accept=".svg,image/svg+xml" name={name}
+      sourceUrl={preview} onFile={upload} hint="Editable SVG · max 2.5 MB"
+      beforeLabel="SVG Vector" busy={busy} onReset={()=>{setXml('');setStatus('Preview reset. Upload another SVG or create shapes.')}}/>
     <p className="studio-note">{name||'Use SVG from Image-to-Vector, Illustrator, Inkscape or CorelDRAW.'}</p>
     {mode==='edit'?<><h2>Design Controls</h2>
      <label>Fill color<input type="color" value={fill} onChange={e=>setFill(e.target.value)}/></label>
