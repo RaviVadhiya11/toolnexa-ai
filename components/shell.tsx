@@ -1,16 +1,18 @@
 'use client';
 import Link from 'next/link';
-import {usePathname} from 'next/navigation';
+import {usePathname,useRouter} from 'next/navigation';
 import {FlagshipCommandPalette} from '@/components/flagship-command-palette';
-import {useEffect,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {AccountStatus} from '@/components/account-status';
 import {tools} from '@/lib/tools';
 import {ShieldCheck,Home,LayoutGrid,LayoutDashboard,Crown,Moon,Sun,Search,FileText,Image as ImageIcon,Code2,Briefcase,Type,Menu,X,Sparkles,ArrowUpRight,LifeBuoy,CreditCard,Clapperboard} from 'lucide-react';
-const nav=[{href:'/',label:'Home',icon:Home},{href:'/tools',label:'All Tools',icon:LayoutGrid},{href:'/studio',label:'Creator Studio V4',icon:Sparkles},{href:'/dashboard',label:'Dashboard',icon:LayoutDashboard},{href:'/pricing',label:'Pricing',icon:Crown},{href:'/admin',label:'Admin',icon:ShieldCheck}];
+const nav=[{href:'/',label:'Home',icon:Home},{href:'/tools',label:'All Tools',icon:LayoutGrid},{href:'/studio',label:'Creator Studio',icon:Sparkles},{href:'/dashboard',label:'Dashboard',icon:LayoutDashboard},{href:'/pricing',label:'Pricing',icon:Crown},{href:'/admin',label:'Admin',icon:ShieldCheck}];
 const groups=[{name:'Text',icon:Type},{name:'Image',icon:ImageIcon},{name:'PDF',icon:FileText},{name:'Developer',icon:Code2},{name:'Business',icon:Briefcase},{name:'Creator',icon:Clapperboard}] as const;
 export function Shell({children}:{children:React.ReactNode}){
- const path=usePathname();
+ const path=usePathname(),router=useRouter();
  const [dark,setDark]=useState(true),[menuOpen,setMenuOpen]=useState(false);
+ const [drawerSearch,setDrawerSearch]=useState('');
+ const drawerClose=useRef<HTMLButtonElement|null>(null);
  useEffect(()=>{
   const useDark=localStorage.getItem('toolnexa-theme')!=='light';
   setDark(useDark);
@@ -18,15 +20,42 @@ export function Shell({children}:{children:React.ReactNode}){
   document.documentElement.classList.toggle('light',!useDark);
  },[]);
  useEffect(()=>{setMenuOpen(false)},[path]);
+ useEffect(()=>{
+  if(!menuOpen)return;
+  const previous=document.activeElement instanceof HTMLElement?document.activeElement:null;
+  const originalOverflow=document.body.style.overflow;
+  document.body.style.overflow='hidden';
+  drawerClose.current?.focus();
+  const dismiss=(event:KeyboardEvent)=>{if(event.key==='Escape')setMenuOpen(false)};
+  window.addEventListener('keydown',dismiss);
+  return()=>{
+   window.removeEventListener('keydown',dismiss);
+   document.body.style.overflow=originalOverflow;
+   previous?.focus();
+  };
+ },[menuOpen]);
+ function findTools(event:React.FormEvent<HTMLFormElement>){
+  event.preventDefault();
+  router.push('/tools?q='+encodeURIComponent(drawerSearch.trim()));
+  setMenuOpen(false);
+ }
  function toggle(){const value=!dark;setDark(value);document.documentElement.classList.toggle('dark',value);document.documentElement.classList.toggle('light',!value);localStorage.setItem('toolnexa-theme',value?'dark':'light')}
  return <div className="shell premium-shell">
   <a className="site-skip-link" href="#main-content">Skip to main content</a>
-  <aside className={'sidebar premium-sidebar '+(menuOpen?'sidebar-open':'')} aria-label="Main menu">
+  <aside id="flagship-workspace-drawer" className={'sidebar premium-sidebar flagship-workspace-drawer '+(menuOpen?'sidebar-open':'')}
+   aria-label="Classic workspace navigation and tool categories" aria-hidden={!menuOpen}>
    <div className="premium-sidebar-head">
     <Link href="/" className="brand premium-brand"><span className="brand-icon"><Sparkles size={22}/></span><span>ToolNexa <em>AI</em></span></Link>
-    <button type="button" className="mobile-sidebar-close" aria-label="Close menu" onClick={()=>setMenuOpen(false)}><X size={20}/></button>
+    <button ref={drawerClose} type="button" className="mobile-sidebar-close" aria-label="Close workspace menu" onClick={()=>setMenuOpen(false)}><X size={20}/></button>
    </div>
-   <p className="premium-sidebar-label">WORKSPACE</p>
+   <p className="premium-sidebar-label">WORKSPACE · CLASSIC NAVIGATION</p>
+   <form className="flagship-drawer-search" role="search" onSubmit={findTools}>
+    <label htmlFor="flagship-drawer-query">Find a tool</label>
+    <div><input id="flagship-drawer-query" className="search" type="search" value={drawerSearch}
+      onChange={event=>setDrawerSearch(event.target.value)}
+      placeholder="Search PDF, Image, JSON…" aria-label="Find a utility tool by name"/>
+     <button type="submit" aria-label="Search all utility tools"><Search size={19}/></button></div>
+   </form>
    <nav aria-label="Main pages">{nav.map(item=><Link key={item.href} className={'nav '+(path===item.href||item.href==='/tools'&&path.startsWith('/tools/')?'active':'')} href={item.href} aria-current={path===item.href||item.href==='/tools'&&path.startsWith('/tools/')?'page':undefined}>
     <item.icon size={19}/><span>{item.label}</span>{item.href==='/tools'&&<small>{tools.length}</small>}
    </Link>)}</nav>
@@ -34,6 +63,13 @@ export function Shell({children}:{children:React.ReactNode}){
    <nav aria-label="Tool categories">{groups.map(group=><Link className="nav premium-category-link" href={'/tools?category='+group.name} key={group.name}>
     <group.icon size={18}/><span>{group.name} Tools</span><small>{tools.filter(tool=>tool.category===group.name).length}</small>
    </Link>)}</nav>
+   <div className="flagship-drawer-shortcuts" aria-label="Popular creative workflows">
+    <p className="premium-sidebar-label">QUICK CREATOR ACCESS</p>
+    <Link href="/studio/enhance"><Sparkles size={18}/> Enhance &amp; Upscale</Link>
+    <Link href="/studio/background-remove"><ImageIcon size={18}/> Remove Background</Link>
+    <Link href="/studio/image-to-vector"><LayoutGrid size={18}/> Image to Vector</Link>
+    <Link href="/studio/batch"><Crown size={18}/> Batch Pro+ ZIP</Link>
+   </div>
    <div className="premium-sidebar-upgrade">
     <span className="premium-upgrade-icon"><Crown size={20}/></span>
     <strong>ToolNexa Pro</strong>
@@ -45,7 +81,9 @@ export function Shell({children}:{children:React.ReactNode}){
   <main id="main-content" className="main premium-main" tabIndex={-1}>
    <header className="top premium-top flagship-top" aria-label="ToolNexa flagship navigation">
     <div className="flagship-nav-brand">
-     <button type="button" className="flagship-nav-menu" onClick={()=>setMenuOpen(true)} aria-label="Open full navigation"><Menu size={20}/></button>
+     <button type="button" className="flagship-nav-menu" aria-expanded={menuOpen}
+      aria-controls="flagship-workspace-drawer" onClick={()=>setMenuOpen(v=>!v)}
+      aria-label={menuOpen?'Close classic workspace navigation':'Open classic workspace navigation'}><Menu size={20}/></button>
      <Link href="/" className="flagship-brand-link"><span className="brand-icon"><Sparkles size={21}/></span><span>ToolNexa <b>AI</b></span></Link>
      <Link className="flagship-proplus-badge" href="/pricing" title="See available subscription plans">PRO+</Link>
     </div>
