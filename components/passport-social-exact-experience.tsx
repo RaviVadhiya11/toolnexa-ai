@@ -12,7 +12,8 @@ export function PassportSocialExactExperience(){
  const [height,setHeight]=useState(2250);
  useEffect(()=>{
   const onMessage=(event:MessageEvent)=>{
-   if(event.origin!==window.location.origin||event.source!==frame.current?.contentWindow)return;
+   // A sandboxed frame has an opaque 'null' origin; source identity is mandatory.
+   if(event.origin!=='null'||event.source!==frame.current?.contentWindow)return;
    const data=event.data;
    if(!data||typeof data!=='object')return;
    if(data.type==='toolnexa-photo-height'){
@@ -24,11 +25,11 @@ export function PassportSocialExactExperience(){
     const source=frame.current?.contentWindow;
     const id=data.id;
     void reserveStudioUsage('studio-passport-social')
-     .then(()=>source?.postMessage({type:'toolnexa-photo-usage-result',id,ok:true},window.location.origin))
+     .then(()=>source?.postMessage({type:'toolnexa-photo-usage-result',id,ok:true},'*'))
      .catch(error=>source?.postMessage({
       type:'toolnexa-photo-usage-result',id,ok:false,
       error:error instanceof Error?error.message:'Unable to verify daily usage'
-     },window.location.origin));
+     },'*'));
    }
   };
   window.addEventListener('message',onMessage);
@@ -44,6 +45,6 @@ export function PassportSocialExactExperience(){
   </div>
   <iframe ref={frame} src="/studio-passport-social-reference.html" title="ToolNexa Passport and Social Photo Studio — original premium design"
     style={{display:'block',width:'100%',height:height+'px',border:0,background:'#060913'}}
-    scrolling="no" loading="eager"/>
+    scrolling="no" loading="eager" sandbox="allow-scripts allow-downloads allow-top-navigation-by-user-activation"/>
  </div>;
 }
