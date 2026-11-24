@@ -78,6 +78,27 @@ body{background:radial-gradient(950px 420px at 70% -10%,#5e2cba2d,transparent),l
 @media(max-width:1410px){.workspace{grid-template-columns:repeat(2,minmax(0,1fr))}.zipInsights{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:750px){.shell{padding:0 10px 20px!important}.hero{margin:8px 0 12px;padding:16px 14px;gap:10px;border-radius:17px}.heroBadge{flex-basis:53px;width:53px;height:53px;font-size:30px;border-radius:13px}.hero h1{font-size:24px;margin-bottom:7px}.hero p{font-size:11px}.heroSide{display:none}.workspace{grid-template-columns:1fr;gap:12px}.zipInsights{grid-template-columns:1fr 1fr;gap:9px}.insight{min-height:144px;padding:13px}.featurebar{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:380px){.zipInsights{grid-template-columns:1fr}.hero h1{font-size:21px}.btns{gap:5px}.primary,.secondary,.tertiary{padding:9px 8px;font-size:10px}}
+
+/* Neon Glass 3D refinement — applied over the selected Dark Pro dashboard. */
+body{background:radial-gradient(ellipse at 90% 0%,#7440e52a,transparent 60%),#080d20}
+.hero{background:radial-gradient(ellipse at 93% 0%,#7f43e459,transparent 57%),
+ linear-gradient(115deg,#1a1b4b,#0a1c44 73%)!important;border-color:#888ce9a6;
+ box-shadow:0 17px 48px #05071a84,inset 0 1px #e4ddff32}
+.panel,.insight{background:linear-gradient(148deg,#1a2650eb,#0e1631f7)!important;
+ border-color:#8299dd78;box-shadow:0 12px 40px #03081c7f,inset 0 1px #dedaff20}
+.panelIcon,.insightIcon{background:linear-gradient(145deg,#7947e9aa,#247ddf8a);
+ border:1px solid #b3acfa70;box-shadow:0 0 18px #7450e75c}
+.upload{background:radial-gradient(ellipse at 50% 0%,#6a34dd59,transparent 69%),#121a3a;border-color:#ab78ff9e}
+.upload.dragging{border-color:#42dffa;box-shadow:0 0 26px #30caf856}
+.nglScope .opt.active,.opt.active{border-color:#68d7fc!important;
+ background:linear-gradient(125deg,#5339ad78,#18619a66)!important;box-shadow:0 0 16px #36c3f83e}
+.download{background:linear-gradient(105deg,#a348ff,#674cfa 52%,#19b9f4)!important;
+ border:1px solid #c7b7ff9e;box-shadow:0 8px 26px #8455ff75,inset 0 1px #ffffff45}
+.download:hover{filter:brightness(1.12)}
+.zipTier.active{border-color:#7df0f7!important;background:linear-gradient(110deg,#5946a964,#1854787d)!important}
+.textInput:focus-visible,button:focus-visible{outline:2px solid #5ce0fa;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){.download,.panel{transition:none!important}}
+
 </style></head><body>
 <div class="shell" id="zipDashboard">
  <section class="hero" aria-label="ZIP Maker introduction">
