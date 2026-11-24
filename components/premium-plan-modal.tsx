@@ -2,6 +2,7 @@
 import {useEffect,useRef} from 'react';
 import Link from 'next/link';
 import type {UpscalePlan} from '@/lib/studio-upscale';
+import {subscriptionPrices} from '@/lib/subscription-pricing';
 
 const rank:Record<UpscalePlan,number>={Free:0,Starter:1,Pro:2,Premium:3,Max:4};
 const tiers=[
@@ -45,6 +46,7 @@ export function PremiumPlanModal({
      return <article key={tier.name} className={'studio-paywall-plan'+(featured?' studio-paywall-recommended':'')}>
       {featured&&<span className="studio-paywall-minimum">RECOMMENDED FOR THIS EXPORT</span>}
       <strong>{tier.name}</strong><span>{tier.name==='Starter'?'2× HD':tier.name==='Pro'?'4K': 'Up to 8K'}</span>
+      <small>From ${subscriptionPrices[tier.name].monthly}/month</small>
       <small>{tier.desc}</small>
       {eligible?<Link className="studio-paywall-plan-link" href={'/pricing?plan='+tier.name}
        target="_blank" rel="noopener noreferrer">View {tier.name} Plan</Link>:
