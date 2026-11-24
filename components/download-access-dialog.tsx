@@ -1,5 +1,6 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
+import './download-access-dialog.css';
 import Link from 'next/link';
 import {PremiumPlanModal} from '@/components/premium-plan-modal';
 import {GATE_EVENT,GATE_GRANTED_EVENT,type DownloadGateEvent} from '@/lib/download-access';
