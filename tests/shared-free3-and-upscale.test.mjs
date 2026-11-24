@@ -12,7 +12,7 @@ test('all original 60 + 8 Studio tools share three Free runs per UTC day',()=>{
  assert.match(api,/studioRunSlugs/);
  assert.match(api,/const allowed=new Set\(\[\.\.\.tools.map/);
  const slugs=read('lib/studio-run-slugs.ts');
- assert.equal([...slugs.matchAll(/'studio-[\w-]+'/g)].length,8);
+ assert.equal([...slugs.matchAll(/'studio-[\w-]+'/g)].length,9);
  for(const file of components){
   const content=read(file);
   assert.match(content,/StudioQuotaNotice/);
