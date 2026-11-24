@@ -5,13 +5,13 @@ const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const paths=[
  '/studio/vector','/studio/image-to-vector','/studio/convert',
  '/studio/svg-editor','/studio/enhance','/studio/background-remove',
- '/studio/retouch','/studio/restore'
+ '/studio/retouch','/studio/restore','/studio/batch'
 ];
-test('the Studio landing page has exactly eight independent links',()=>{
+test('the Studio landing page has the eight original workflows plus the real ninth batch workspace',()=>{
  const page=read('app/studio/page.tsx');
  for(const route of paths)assert.ok(page.includes("href:'"+route+"'"),'Missing route '+route);
  const cards=[...page.matchAll(/href:'\/studio\//g)];
- assert.equal(cards.length,8,'Eight Studio tools should be visible');
+ assert.equal(cards.length,9,'All nine Studio workspaces should be visible');
  for(const route of paths)assert.ok(read('app'+route+'/page.tsx').includes('export default function'),'No Next.js page for '+route);
 });
 test('legacy 60 tools remain unchanged',()=>{
