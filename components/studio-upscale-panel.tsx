@@ -155,7 +155,7 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
    if(file.type!==mime)throw Error('Your browser cannot export '+exportFormat.toUpperCase()+'. Choose PNG or JPG.');
    canvas.width=0;canvas.height=0;
    if(generation.current!==id)return;
-   downloadFile(file,'toolnexa-'+resolution+'-upscaled.'+(exportFormat==='jpeg'?'jpg':exportFormat));
+   if(!await downloadFile(file,'toolnexa-'+resolution+'-upscaled.'+(exportFormat==='jpeg'?'jpg':exportFormat)))return;
    setMessage('✓ Full-quality '+resultSize+' download started. Your '+data.plan+' subscription is active.');
   }catch(err){setMessage(err instanceof Error?err.message:'Download verification failed. Please retry.')}
   finally{setCheckingDownload(false)}
