@@ -20,7 +20,7 @@ test('V4 reference design applies to all 60 original utility routes and 8 Studio
  for(const id of ['/studio/vector','/studio/image-to-vector','/studio/convert','/studio/svg-editor',
   '/studio/enhance','/studio/background-remove','/studio/retouch','/studio/restore'])
   assert.ok(nav.includes(id),id);
- assert.match(read('app/page.tsx'),/Free users receive 3 shared daily runs/);
+ assert.match(read('app/page.tsx'),/3 shared tool runs per day/);
 });
 test('utility upload preview uses revocable local object URLs, real metadata and no server upload',()=>{
  const ui=read('components/tool-upload-preview.tsx');
