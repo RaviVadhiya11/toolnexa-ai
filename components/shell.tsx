@@ -70,6 +70,7 @@ export function Shell({children}:{children:React.ReactNode}){
     <Link href="/studio/background-remove"><ImageIcon size={18}/> Remove Background</Link>
     <Link href="/studio/image-to-vector"><LayoutGrid size={18}/> Image to Vector</Link>
     <Link href="/studio/batch"><Crown size={18}/> Batch Pro+ ZIP</Link>
+    <Link href="/studio/passport-social"><ImageIcon size={18}/> Passport &amp; Social Sizes</Link>
    </div>
    <div className="premium-sidebar-upgrade">
     <span className="premium-upgrade-icon"><Crown size={20}/></span>
