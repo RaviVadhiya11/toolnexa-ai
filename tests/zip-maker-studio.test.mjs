@@ -88,3 +88,30 @@ test('ZIP Maker is discoverable and does not add a duplicate editor footer',()=>
  assert.match(html,/\.footnote\{display:none!important\}/);
  assert.match(html,/\.header\{display:none!important\}/);
 });
+
+test('Design D Dashboard uses real ZIP session activity and preserves editor action IDs',()=>{
+ const html=read('public/studio-zip-maker.html');
+ for(const heading of ['Advanced ZIP Maker Studio','Upload & File Manager','Smart Compression & Export',
+  'Subscription & Limits','Export & Create ZIP','Recent ZIP Activity','Compression Savings',
+  'ZIP Activity · This Session','Create ZIP & Download'])
+  assert.ok(html.includes(heading),'Missing Design D feature: '+heading);
+ const ids=['zipDashboard','dropZone','selectFiles','selectFolder','addDemo','fileInput','folderInput',
+  'fileCount','contentsCount','sortFiles','clearFiles','fileList','statFiles','statSize','zipName',
+  'keepFolders','includeReadme','summaryFiles','summarySize','summaryMode','createZip',
+  'progressZone','progressFill','progressLabel','progressPercent','zipCurrentPlan','zipPlanDetails',
+  'zipLimitMeter','activityList','activityChart','insightSavings','toast'];
+ for(const id of ids){
+  const matches=[...html.matchAll(new RegExp('id="'+id+'"','g'))];
+  assert.equal(matches.length,1,'Expected one working element '+id);
+ }
+ assert.match(html,/zipSessionHistory\.push\(\{name:archiveName,input:/);
+ assert.match(html,/function renderZipActivity\(\)/);
+ assert.match(html,/function updateDashboardStats\(total\)/);
+ assert.match(html,/Math\.max\(0,latest\.input-latest\.output\)/);
+ assert.match(html,/data-tier="Max"/);
+ assert.match(html,/maxFiles=1000,maxTotal=1024\*1024\*1024/);
+ assert.doesNotMatch(html,/Math\.random\(\)/);
+ assert.doesNotMatch(html,/unlimited daily ZIPs/i);
+ assert.match(html,/@media\(max-width:750px\)/);
+ assert.match(read('components/zip-maker-experience.tsx'),/sandbox="allow-scripts allow-downloads allow-top-navigation-by-user-activation"/);
+});
