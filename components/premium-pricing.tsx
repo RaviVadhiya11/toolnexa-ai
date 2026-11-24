@@ -1,5 +1,5 @@
 'use client';
-import {useState} from 'react';
+import {useEffect,useState} from 'react';
 import {PayPalSubscribe} from '@/components/paypal-subscribe';
 import {billingPeriods,paidTiers,subscriptionPrices,type BillingPeriod,type PaidTier} from '@/lib/subscription-pricing';
 
@@ -16,6 +16,13 @@ export function PremiumPricing({clientId,plans,enabled,yearlyEnabled,maxEnabled}
 }){
  const [billingPeriod,setBillingPeriod]=useState<BillingPeriod>('monthly');
  const [selected,setSelected]=useState<PaidTier|null>(null);
+ useEffect(()=>{
+  const chosen=new URLSearchParams(window.location.search).get('plan');
+  if(chosen&&paidTiers.includes(chosen as PaidTier)){
+   setSelected(chosen as PaidTier);
+   requestAnimationFrame(()=>document.getElementById('subscription-checkout')?.scrollIntoView({behavior:'smooth',block:'start'}));
+  }
+ },[]);
  const planId=selected?plans[billingPeriod][selected]:'';
  const allIds=billingPeriods.flatMap(period=>paidTiers.map(tier=>plans[period][tier])).filter(Boolean);
  const isReady=(tier:PaidTier)=>enabled&&(billingPeriod==='monthly'||yearlyEnabled)&&(tier!=='Max'||maxEnabled)&&
