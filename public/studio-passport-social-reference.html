@@ -591,11 +591,23 @@
             </div>
           </div>
 
-          <div class="rounded-xl border border-amber-400/25 bg-amber-400/10 px-3 py-3 text-xs text-slate-200 space-y-1">
-            <p class="font-semibold text-amber-200">✦ Secure Premium Exports</p>
-            <p>600 PPI passport &amp; print PDF, Pro 2× social export, and 4K/8K tools use your verified subscription.</p>
-            <a href="/studio/passport-social/pro" target="_top" class="inline-block mt-2 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold">Open Pro HD Studio ↗</a>
-          </div>
+          <!-- Integrated Premium Studio; keep the image in this editor, never switch pages. -->
+          <section id="inlineProStudio" aria-label="Pro HD Export Studio" class="rounded-2xl border border-amber-400/40 bg-gradient-to-br from-amber-500/10 via-slate-900/90 to-violet-500/10 px-4 py-4 sm:px-5 sm:py-5 space-y-3 shadow-lg shadow-amber-500/5">
+            <div class="flex items-center justify-between gap-3">
+              <h4 class="font-display font-extrabold text-base text-amber-200 flex items-center gap-2"><i data-lucide="crown" class="h-5 w-5"></i> Pro HD Export Studio</h4>
+              <span class="px-2 py-1 rounded-lg bg-amber-400/20 text-amber-200 border border-amber-400/20 text-[10px] font-bold">PRO / PREMIUM</span>
+            </div>
+            <p class="text-xs leading-relaxed text-slate-300">Use the <strong>same uploaded photo, filters, crop &amp; print settings</strong>. Premium downloads check your active PayPal subscription securely.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button id="btnProPhoto" type="button" class="rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:brightness-110 px-3 py-3 text-sm font-bold text-slate-950 flex gap-2 items-center justify-center"><i data-lucide="image-down" class="w-4 h-4"></i><span>600 PPI Passport HD</span></button>
+              <button id="btnProSheet" type="button" class="rounded-xl bg-white/5 hover:bg-white/10 border border-amber-400/35 px-3 py-3 text-sm font-semibold text-amber-100 flex items-center justify-center gap-2"><i data-lucide="printer" class="h-4 w-4"></i><span>600 PPI Print Sheet</span></button>
+              <button id="btnProPdf" type="button" class="rounded-xl bg-white/5 hover:bg-white/10 border border-amber-400/35 px-3 py-3 text-sm font-semibold text-amber-100 flex items-center justify-center gap-2"><i data-lucide="file-text" class="h-4 w-4"></i><span>Print-ready PDF (4×6 / A4)</span></button>
+              <button id="btnProAi" type="button" class="rounded-xl bg-gradient-to-r from-violet-600/75 to-cyan-600/75 hover:brightness-110 border border-white/15 px-3 py-3 text-sm font-bold text-white flex items-center justify-center gap-2"><i data-lucide="sparkles" class="h-4 w-4"></i><span>AI Detail · 4K / 8K ↓</span></button>
+            </div>
+            <p id="proStatus" role="status" aria-live="polite" class="text-xs text-amber-100/80 leading-relaxed">Choose an HD format. Your edits stay in this page.</p>
+            <a id="proUpgradeLink" href="/pricing" target="_top" class="hidden w-full text-center rounded-xl border border-amber-300/50 bg-amber-400/20 px-3 py-3 font-bold text-sm text-amber-200">View Pro &amp; Premium Plans</a>
+            <p class="text-[11px] text-slate-400">600 PPI is the output pixel density at the specified print size; it cannot recreate details absent from a low-resolution upload. Always check official passport photo requirements.</p>
+          </section>
           <!-- Download Action Buttons -->
           <div class="space-y-2.5 pt-1">
             <button id="btnDownloadSingle" class="w-full py-3.5 px-4 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400 shadow-lg shadow-violet-600/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
@@ -1272,7 +1284,7 @@
         // Render single photo first at target resolution
         const dim = getTargetDimensions();
         const singleCanvas = document.createElement('canvas');
-        renderSinglePhotoToCanvas(singleCanvas, dim.w, dim.h, false);
+        renderSinglePhotoToCanvas(singleCanvas, Math.max(1,Math.round(dim.w*scaleDown)), Math.max(1,Math.round(dim.h*scaleDown)), false);
 
         // Compute optimal grid layout (cols × rows) for selected copies
         const copies = state.sheetCopies;
@@ -1353,7 +1365,7 @@
         c.fillStyle = '#94a3b8';
         c.font = `500 ${Math.max(10, Math.round(22 * scaleDown))}px Inter, sans-serif`;
         c.textAlign = 'center';
-        c.fillText(`ToolNexa AI Studio • ${sheet.label} (300 DPI) • ${dim.label}`, sheetW / 2, sheetH - Math.round(16 * scaleDown));
+        c.fillText(`ToolNexa AI Studio • ${sheet.label} (${Math.round(300*scaleDown)} PPI) • ${dim.label}`, sheetW / 2, sheetH - Math.round(16 * scaleDown));
       }
 
       /* -------------------------------------------------------
@@ -1551,6 +1563,179 @@
           triggerBlobDownload(blob, `${state.fileName}-print-sheet-${state.sheetSize}-${state.sheetCopies}x-300dpi.${ext}`);
           showToast(`300 DPI Print Sheet (${state.sheetSize.toUpperCase()}) downloaded!`, 'success');
         }, state.exportFormat, Math.max(0.9, state.exportQuality));
+      }
+
+
+      /* ----- Integrated Premium: checked by parent Next.js + active PayPal ----- */
+      let premiumBusy = false;
+      function premiumStatus(text, isError = false) {
+        const node = document.getElementById('proStatus');
+        if (node) {
+          node.textContent = text;
+          node.classList.toggle('text-rose-300', isError);
+          node.classList.toggle('text-amber-100/80', !isError);
+        }
+      }
+      function updatePremiumMode() {
+        const passport = state.mode === 'passport';
+        const photo = document.querySelector('#btnProPhoto span');
+        const sheet = document.getElementById('btnProSheet');
+        const pdf = document.getElementById('btnProPdf');
+        if (photo) photo.textContent = passport ? '600 PPI Passport HD' : '2× Social Pro HD';
+        if (sheet) {
+          sheet.classList.toggle('hidden', !passport);
+          const label = sheet.querySelector('span');
+          if (label) label.textContent = state.sheetSize === '4x6'
+            ? '600 PPI Print Sheet' : 'A4 Print Sheet · 300 PPI';
+        }
+        if (pdf) pdf.classList.toggle('hidden', !passport);
+      }
+      function requestPremiumAuthorization(resolution = '4k') {
+        if (window.parent === window) {
+          return Promise.reject(new Error('Please open the Studio through ToolNexa AI to unlock Pro downloads.'));
+        }
+        const id = 'premium-' + (++exportRequestSequence);
+        return new Promise((resolve,reject) => {
+          const timer = setTimeout(() => {
+            window.removeEventListener('message', handler);
+            reject(new Error('Membership verification timed out. Please retry.'));
+          }, 22000);
+          function handler(event) {
+            if (event.origin !== window.location.origin || event.source !== window.parent) return;
+            const data = event.data;
+            if (!data || data.type !== 'toolnexa-photo-premium-result' || data.id !== id) return;
+            clearTimeout(timer);
+            window.removeEventListener('message', handler);
+            if (data.ok === true) resolve(data);
+            else {
+              const upgrade = document.getElementById('proUpgradeLink');
+              if (upgrade) upgrade.classList.toggle('hidden', !data.upgrade);
+              reject(new Error(data.error || 'Verified Pro membership required.'));
+            }
+          }
+          window.addEventListener('message', handler);
+          window.parent.postMessage({type:'toolnexa-photo-premium',id,resolution},window.location.origin);
+        });
+      }
+      function premiumCheckCanvas(w,h) {
+        if (!Number.isSafeInteger(w) || !Number.isSafeInteger(h) ||
+            w < 1 || h < 1 || w > 8192 || h > 8192 || w * h > 32000000)
+          throw Error('This HD size is too large for safe browser export (32 MP maximum). Choose a smaller preset or print sheet.');
+      }
+      function imageBlobAsync(canvas,mime,quality) {
+        return new Promise((resolve,reject)=>{
+          canvas.toBlob(blob=>blob ? resolve(blob) : reject(new Error('Unable to encode image on this device.')),mime,quality);
+        });
+      }
+      // Compact PDF binary writer: JPEG stream in a real-size PDF page.
+      // Works offline, no remote PDF service and no additional permissions.
+      async function makePhysicalPdf(canvas,paperName){
+        const image = await imageBlobAsync(canvas,'image/jpeg',0.94);
+        if (image.type !== 'image/jpeg') throw Error('JPEG export is not supported by this browser.');
+        const raw = new Uint8Array(await image.arrayBuffer());
+        const points = paperName==='a4' ? [595.276,841.89] : [288,432];
+        const encode=new TextEncoder(),chunks=[],offsets=[0];let length=0;
+        const push=bytes=>{chunks.push(bytes);length+=bytes.length;};
+        const txt=str=>push(encode.encode(str));
+        const obj=(id,str)=>{offsets[id]=length;txt(id+' 0 obj\n'+str+'\nendobj\n');};
+        txt('%PDF-1.4\n% TOOLNEXA\n');
+        obj(1,'<< /Type /Catalog /Pages 2 0 R >>');
+        obj(2,'<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
+        obj(3,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+points[0]+' '+points[1]+'] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>');
+        offsets[4]=length;
+        txt('4 0 obj\n<< /Type /XObject /Subtype /Image /Width '+canvas.width+' /Height '+canvas.height+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+raw.byteLength+' >>\nstream\n');
+        push(raw);
+        txt('\nendstream\nendobj\n');
+        const commands='q\n'+points[0]+' 0 0 '+points[1]+' 0 0 cm\n/Im0 Do\nQ\n';
+        const data=encode.encode(commands);
+        offsets[5]=length;
+        txt('5 0 obj\n<< /Length '+data.length+' >>\nstream\n');
+        push(data);txt('endstream\nendobj\n');
+        const startXref=length;
+        txt('xref\n0 6\n0000000000 65535 f \n');
+        for(let id=1;id<=5;id++)txt(String(offsets[id]).padStart(10,'0')+' 00000 n \n');
+        txt('trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n'+startXref+'\n%%EOF');
+        return new Blob(chunks,{type:'application/pdf'});
+      }
+      async function premiumExport(action) {
+        if (premiumBusy) return;
+        if (!state.image) {showToast('Upload a photo or select the demo first.','error');return;}
+        premiumBusy=true;
+        document.querySelectorAll('#inlineProStudio button').forEach(b=>b.disabled=true);
+        document.getElementById('proUpgradeLink')?.classList.add('hidden');
+        premiumStatus('Checking your verified Pro or Premium subscription…');
+        let canvas=null;
+        try {
+          const dim=getTargetDimensions();
+          let width=dim.w,height=dim.h;
+          if (action==='photo'){
+            width*=2;height*=2;
+          } else if (action==='sheet'||action==='pdf'){
+            if (state.mode!=='passport')throw Error('Print sheets and PDF require Passport mode.');
+            const scale=state.sheetSize==='4x6'?2:1;
+            const paper=SHEET_CONFIG[state.sheetSize];
+            width=paper.w*scale;height=paper.h*scale;
+          } else throw Error('Unsupported Premium export');
+          premiumCheckCanvas(width,height);
+          // Quota is reserved by the main website only after live PayPal approval.
+          await requestPremiumAuthorization('4k');
+          premiumStatus('Rendering high-resolution '+width+'×'+height+' file locally…');
+          await new Promise(resolve=>requestAnimationFrame(resolve));
+          canvas=document.createElement('canvas');
+          if (action==='photo')renderSinglePhotoToCanvas(canvas,width,height,false);
+          else renderPrintSheetToCanvas(canvas,state.sheetSize==='4x6'?2:1);
+          if (action==='pdf'){
+            const blob=await makePhysicalPdf(canvas,state.sheetSize);
+            triggerBlobDownload(blob,state.fileName+'-'+state.sheetSize+'-print-ready.pdf');
+            premiumStatus('✓ Print-ready PDF saved at physical '+(state.sheetSize==='4x6'?'4×6 inch':'A4')+' size.');
+          }else{
+            const blob=await imageBlobAsync(canvas,state.exportFormat,state.exportQuality);
+            if(blob.type!==state.exportFormat)throw Error('Selected file format unsupported on this device. Try JPG.');
+            const ext=state.exportFormat==='image/jpeg'?'jpg':state.exportFormat==='image/png'?'png':'webp';
+            const density=action==='photo'?(state.mode==='social'?'2x-social':'600ppi-id'):(state.sheetSize==='4x6'?'600ppi-4x6':'300ppi-a4');
+            triggerBlobDownload(blob,state.fileName+'-'+density+'-'+width+'x'+height+'.'+ext);
+            premiumStatus('✓ Pro HD '+width+'×'+height+' image saved. Photo crop and filters preserved.');
+          }
+        }catch(error){premiumStatus(error instanceof Error?error.message:'Premium export failed.',true)}
+        finally {
+          if (canvas){canvas.width=0;canvas.height=0;}
+          premiumBusy=false;
+          document.querySelectorAll('#inlineProStudio button').forEach(b=>b.disabled=false);
+        }
+      }
+      function initializeIntegratedPremium(){
+        document.getElementById('btnProPhoto')?.addEventListener('click',()=>void premiumExport('photo'));
+        document.getElementById('btnProSheet')?.addEventListener('click',()=>void premiumExport('sheet'));
+        document.getElementById('btnProPdf')?.addEventListener('click',()=>void premiumExport('pdf'));
+        document.getElementById('btnProAi')?.addEventListener('click',()=>{
+          window.parent.postMessage({type:'toolnexa-photo-open-ai'},window.location.origin);
+          premiumStatus('Opening the AI Detail / 4K / 8K controls below in this same page…');
+        });
+        window.addEventListener('message',async event=>{
+          if (event.origin!==window.location.origin || event.source!==window.parent) return;
+          const data=event.data;
+          if (!data || data.type!=='toolnexa-photo-canvas-request' ||
+              typeof data.id!=='string' || data.id.length>80) return;
+          let canvas=null;
+          try {
+            if (!state.image)throw Error('Upload a photo first.');
+            const dim=getTargetDimensions();
+            const ratio=Math.min(1,1800/Math.max(dim.w,dim.h));
+            const w=Math.max(1,Math.round(dim.w*ratio));
+            const h=Math.max(1,Math.round(dim.h*ratio));
+            canvas=document.createElement('canvas');
+            renderSinglePhotoToCanvas(canvas,w,h,false);
+            const blob=await imageBlobAsync(canvas,'image/png',1);
+            window.parent.postMessage({type:'toolnexa-photo-canvas-result',id:data.id,ok:true,blob},window.location.origin);
+          }catch(error){
+            window.parent.postMessage({type:'toolnexa-photo-canvas-result',id:data.id,ok:false,
+              error:error instanceof Error?error.message:'Unable to read current photo'},window.location.origin);
+          }finally {if(canvas){canvas.width=0;canvas.height=0;}}
+        });
+        // Changing paper or Passport/Social mode updates the controls in place.
+        document.querySelectorAll('.mode-tab-btn,.sheet-size-btn').forEach(node=>
+          node.addEventListener('click',()=>queueMicrotask(updatePremiumMode)));
+        updatePremiumMode();
       }
 
       /* -------------------------------------------------------
@@ -2125,7 +2310,7 @@
         lucide.createIcons();
       }
 
-      window.addEventListener('DOMContentLoaded', init);
+      window.addEventListener('DOMContentLoaded', ()=>{init();initializeIntegratedPremium();});
       // The iframe must measure its content, NOT document/body scrollHeight:
       // a viewport-sized body creates a resize feedback loop and huge blank space.
       window.addEventListener('DOMContentLoaded', () => {
