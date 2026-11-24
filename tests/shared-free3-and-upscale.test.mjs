@@ -59,31 +59,41 @@ test('pricing reflects Starter 2x, Pro 4K, Premium and Max 8K',()=>{
  assert.equal((price.match(/4K and 8K upscale export/g)||[]).length,2);
 });
 
-test('4K default allows Free upscale preview and disables download before completion',()=>{
+
+test('4K preview is lightweight, Free can click Download, and full canvas is created only after payment',()=>{
  const ui=read('components/studio-upscale-panel.tsx');
  assert.match(ui,/useState<UpscaleResolution>\('4k'\)/);
  assert.match(ui,/disabled=\{working\|\|disabled\}/);
- assert.doesNotMatch(ui,/disabled=\{working\|\|disabled\|\|!entitled\}/);
- assert.match(ui,/disabled=\{!resultReady\|\|checkingDownload\}/);
- assert.match(ui,/const resultReady=result!==null&&!working/);
+ assert.match(ui,/disabled=\{checkingDownload\|\|working\}/);
+ assert.doesNotMatch(ui,/disabled=\{!resultReady\|\|checkingDownload\}/);
+ assert.match(ui,/const maxPreview=720/);
  assert.match(ui,/await reserveStudioUsage\(usageSlug\)/);
  assert.match(ui,/setResult\(blob\)/);
  assert.match(ui,/previewCtx\.fillText\('TOOLNEXA · PREVIEW ONLY'/);
+ assert.match(ui,/prepared\.current=renderSource/);
  assert.match(ui,/sourceKey/);
+ const authPosition=ui.indexOf("if(!response.ok||data.authorized!==true)");
+ const fullPosition=ui.indexOf("const canvas=document.createElement('canvas');canvas.width=w;");
+ const downloadPosition=ui.indexOf("downloadFile(file,");
+ assert.ok(authPosition>0&&fullPosition>authPosition&&downloadPosition>fullPosition,
+  'Full pixels must not be generated or downloaded before server entitlement is verified');
 });
-test('Download click verifies paid plan; Free and Starter 4K users see plan popup and no file',()=>{
+test('unauthorized download opens shared plans modal, with retry and pricing preselect',()=>{
  const ui=read('components/studio-upscale-panel.tsx');
+ const modal=read('components/premium-plan-modal.tsx');
  assert.match(ui,/onClick=\{\(\)=>void download\(\)\}/);
  assert.match(ui,/fetch\('\/api\/studio\/upscale-authorize'/);
  assert.match(ui,/purpose:'download'/);
  assert.match(ui,/response\.status===401\|\|response\.status===403/);
  assert.match(ui,/setShowPlans\(true\)/);
- assert.match(ui,/role="dialog" aria-modal="true"/);
- assert.match(ui,/href="\/pricing" target="_blank"/);
- assert.match(ui,/downloadFile\(result/);
- const trigger=ui.indexOf("if(!response.ok||data.authorized!==true)");
- const delivered=ui.indexOf("downloadFile(result");
- assert.ok(trigger>=0&&delivered>trigger,'Download must come only after authorization succeeds');
+ assert.match(ui,/PremiumPlanModal open=\{showPlans\}/);
+ assert.match(modal,/role="dialog" aria-modal="true"/);
+ assert.match(modal,/target="_blank" rel="noopener noreferrer"/);
+ assert.match(modal,/\/pricing\?plan=/);
+ assert.match(modal,/Verify & Download/);
+ assert.match(read('components/premium-pricing.tsx'),/new URLSearchParams\(window\.location\.search\)\.get\('plan'\)/);
+ const api=read('app/api/studio/upscale-authorize/route.ts');
+ assert.match(api,/verifyStudioMember\(\)/);
  const base=read('lib/studio-upscale.ts');
  assert.match(base,/if\(plan==='Free'\)return false/);
 });
