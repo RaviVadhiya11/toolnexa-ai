@@ -2,8 +2,10 @@ import type {Metadata} from 'next';
 import {ImageToVector} from '@/components/image-to-vector';
 import {StudioWorkspace} from '@/components/studio-workspace';
 export const metadata:Metadata={
- title:'Image to Real SVG Vector Converter',
- description:'Upload a PNG, JPG or WebP image to trace actual editable SVG vector paths, preview before-and-after and export SVG for free with Pro HD PNG downloads.'
+ title:'Vector Logo & Image-to-SVG Studio',
+ description:'Trace PNG and JPG images into editable SVG vector paths, or create simple logos using preset shapes and local export tools.'
+,
+ alternates:{canonical:'/studio/vector'}
 };
 export default function VectorPage(){return <>
  <ImageToVector/>
