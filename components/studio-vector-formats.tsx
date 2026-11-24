@@ -68,7 +68,7 @@ export function StudioVectorFormats({mode}:{mode:Mode}){
   setBusy(true);setStatus('Reading SVG…');
   try{
    if(file.size>2500000||!file.name.toLowerCase().endsWith('.svg'))throw Error('Choose an SVG smaller than 2.5 MB.');
-   setXml(cleanSVG(await file.text()));setName(file.name);setStatus('True SVG vector loaded. Select your export format.');
+   setXml(cleanSVG(await file.text()));setHistory({past:[],future:[]});setName(file.name);setStatus('True SVG vector loaded. Select your export format.');
   }catch(e){setStatus(e instanceof Error?e.message:'Unable to read SVG')}
   finally{setBusy(false)}
  }
@@ -78,7 +78,7 @@ export function StudioVectorFormats({mode}:{mode:Mode}){
    const doc=new DOMParser().parseFromString(xml,'image/svg+xml');
    const targets=doc.documentElement.querySelectorAll('path,rect,circle,ellipse,polygon,polyline,line');
    for(const shape of targets){shape.setAttribute('fill',fill);shape.setAttribute('stroke',stroke);shape.setAttribute('stroke-width',String(width));shape.setAttribute('opacity',String(opacity/100))}
-   setXml(cleanSVG(new XMLSerializer().serializeToString(doc.documentElement)));
+   commitSvg(new XMLSerializer().serializeToString(doc.documentElement));
    setStatus(targets.length+' vector shapes updated.');
   }catch(e){setStatus(e instanceof Error?e.message:'Could not update colors')}
  }
@@ -177,7 +177,7 @@ export function StudioVectorFormats({mode}:{mode:Mode}){
     <button type="button" disabled={!xml||busy} onClick={()=>void run()}>{busy?'Processing…':mode==='edit'?'Download Edited SVG':'Export '+format.toUpperCase()}</button>
    </div>
    <div className="studio-panel suite-canvas">
-    <div className="studio-work-top"><strong>Vector Preview</strong><span>{mode==='edit'?'Editable shapes':'Original paths retained'}</span></div>
+    <div className="studio-work-top"><strong>Vector Preview</strong><span>{shapeCount} shape{shapeCount===1?'':'s'} · {mode==='edit'?'Live editing':'Geometry preserved'}</span></div>
     <div className="suite-artboard">{preview?<img src={preview} alt="Sanitized SVG vector preview"/>:<p>Upload a vector SVG or create a shape to begin.</p>}</div>
     <p role="status" className="studio-message">{status}</p>
    </div>
