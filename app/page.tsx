@@ -17,7 +17,7 @@ const studioItems=[
  {href:'/studio/batch',title:'Batch Pro+ ZIP Engine',desc:'Premium/Max sequential image jobs and one ZIP export',tag:'Premium / Max',icon:Layers3}
 ] as const;
 const pricing=[
- {name:'Free',price:'0',detail:'3 shared tool runs per day',features:['All 60 utilities','Studio previews,'No paid export access'],href:'/tools'},
+ {name:'Free',price:'0',detail:'3 shared tool runs per day',features:['All 60 utilities','Studio previews','No paid export access'],href:'/tools'},
  {name:'Starter',price:subscriptionPrices.Starter.monthly,detail:'500 shared tool runs per day',features:['60 utilities + Studio previews','Up to 2× paid image export','Monthly subscription'],href:'/pricing?plan=Starter'},
  {name:'Pro',price:subscriptionPrices.Pro.monthly,detail:'1,000 shared tool runs per day',features:['4× HD and 4K image export','Pro HD backgrounds and vectors','Monthly subscription'],href:'/pricing?plan=Pro'},
  {name:'Premium',price:subscriptionPrices.Premium.monthly,detail:'1,500 shared tool runs per day',features:['Up to 8K eligible export','Premium Studio tools','Monthly subscription'],href:'/pricing?plan=Premium'},
