@@ -737,3 +737,50 @@
  .ps-page .ps-hero-chips span{font-size:9px}
  .ps-preview-toolbar{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.ps-page *{scroll-behavior:auto}}
+
+/* NEON GLASS 3D — verified editor controls and previews (visual layer only).
+   Imported by the Studio layout; no change to processing, auth or pricing. */
+html.dark .premium-shell :is(.studio-shell,.studio-home,.suite-workspace,.photo-enhance-page,.ps-page){
+ --panel:#121c3b;--border:#8795dc58;--muted:#aebddb;--accent:#76eaff;
+ color:#f1f6ff;
+}
+html.dark .premium-shell :is(.studio-panel,.suite-editor-grid,.suite-controls,.suite-advanced,
+ .photo-enhance-input,.photo-enhance-preview-panel,.studio-upscale-panel,.studio-upscale-result,
+ .ps-page .studio-panel,.studio-quota,.studio-upgrade-notice){
+ background:linear-gradient(153deg,rgba(31,40,87,.88),rgba(10,19,45,.94))!important;
+ border:1px solid #8195ed68!important;border-radius:20px;
+ box-shadow:0 17px 41px #02081975,inset 0 1px #e6ebff1b;
+ color:#edf3ff;
+}
+html.dark .premium-shell :is(.studio-plan,.studio-message,.suite-upload,.studio-inline-upload,
+ .photo-dropzone,.photo-preset,.ps-page .ps-preview-stage,.studio-upscale-preview){
+ border-color:#8b93e363!important;background-color:#121d3c;
+ box-shadow:inset 0 1px #e0dcff1c;
+}
+html.dark .premium-shell :is(.studio-panel button:not(.studio-secondary),
+ .studio-upgrade,.photo-auto-enhance,.studio-hd,.studio-download){
+ background:linear-gradient(112deg,#9845ff,#5e64eb 53%,#0fb7e0)!important;
+ border:1px solid #acb5ff7a;color:#fff;box-shadow:0 6px 22px #6543ed48,inset 0 1px #ffffff31;
+}
+html.dark .premium-shell :is(.studio-panel button.studio-secondary,.studio-top-links a){
+ border:1px solid #8190cf7d;background:linear-gradient(145deg,#252754,#1b2b51);color:#dbeaff;
+}
+html.dark .premium-shell :is(.studio-controls select,.studio-export select,.studio-controls input[type=file],
+ .studio-controls input[type=text],.studio-controls input[type=number],.photo-enhance-input input){
+ border:1px solid #859bdd80;background:#0b1634;color:#eaf4ff;
+}
+html.dark .premium-shell .studio-plan>span{color:#7ee5fc}
+html.dark .premium-shell .studio-pro{border-color:#ba7cfa9c!important}
+html.dark .premium-shell .studio-stage{border:1px solid #94a0d566}
+html.dark .premium-shell .suite-tile-art{box-shadow:inset 0 1px #c9c5ff1b,0 0 23px #7149ef43}
+html.dark .premium-shell .suite-tile:hover{border-color:#6ee6fb!important}
+html.dark .premium-shell .photo-preset.selected,html.dark .premium-shell .ps-page .ps-preset.active{
+ border-color:#6ee6fb!important;box-shadow:0 0 16px #6d55f651}
+html.dark .premium-shell .ps-page .ps-export{background:linear-gradient(145deg,#252154,#14284b)!important;border-color:#a581ed83!important}
+@media(max-width:770px){
+ html.dark .premium-shell .studio-shell,html.dark .premium-shell .suite-workspace{min-width:0}
+ html.dark .premium-shell .studio-panel{border-radius:15px}
+}
+@media(prefers-reduced-motion:reduce){
+ html.dark .premium-shell :is(.studio-panel button,.studio-upgrade){transition:none!important}
+}
