@@ -1025,3 +1025,94 @@ h1,h2,h3,h4,.flagship-brand-link{font-family:"Plus Jakarta Sans",Inter,ui-sans-s
  .flagship-bento-card,.flagship-compare-handle{transition:none}
  .flagship-bento-card:hover{transform:none}
 }
+
+
+/* Classic navigation restored without changing the Pro+ flagship presentation.
+ * The sidebar is now a voluntary, keyboard-accessible drawer on EVERY viewport. */
+.flagship-nav-menu{display:inline-flex;flex-shrink:0}
+.premium-shell>.premium-sidebar.flagship-workspace-drawer{display:none}
+.premium-shell>.premium-sidebar.flagship-workspace-drawer.sidebar-open{
+ display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;
+ z-index:130;width:min(88vw,340px);height:100dvh;overflow-y:auto;overscroll-behavior:contain;
+ border-right:1px solid #818cf859;padding:20px 15px;
+ background:linear-gradient(165deg,#101521,#0c0e16 65%);box-shadow:14px 0 46px #0009;
+ transform:translateX(0);border-radius:0;gap:0}
+.premium-shell>.premium-sidebar.flagship-workspace-drawer.sidebar-open .mobile-sidebar-close{
+ display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;flex-shrink:0;
+ border-radius:10px;background:#17213a;border:1px solid #818cf858;color:#eff6ff}
+.premium-shell:has(.flagship-workspace-drawer.sidebar-open)>.premium-menu-backdrop{
+ display:block;position:fixed;inset:0;z-index:125;background:#030510c6;border:0;width:100%;height:100%;
+ backdrop-filter:blur(4px)}
+.premium-shell>.flagship-workspace-drawer .premium-sidebar-head{min-width:0;gap:10px}
+.flagship-workspace-drawer .premium-sidebar-label{color:#8796b8;letter-spacing:.12em;font-size:10px}
+.flagship-workspace-drawer .nav{color:#bbc9e0}
+.flagship-workspace-drawer .nav:hover,.flagship-workspace-drawer .nav.active{
+ color:#fff;background:linear-gradient(110deg,#6366f12a,#06b6d41a);border:1px solid #818cf856}
+.flagship-workspace-drawer .nav[aria-current=page]{color:#e0e7ff}
+.flagship-workspace-drawer .premium-category-link small{margin-left:auto;color:#67e8f9}
+.flagship-workspace-drawer .premium-sidebar-upgrade{margin-top:21px;background:linear-gradient(135deg,#272243,#132339);
+ border:1px solid #f59e0b45}
+.flagship-workspace-drawer .premium-sidebar-upgrade strong{color:#fde68a}
+.flagship-drawer-search{display:grid;gap:9px;margin:3px 0 16px}
+.flagship-drawer-search label{font-size:11px;color:#a5b4fc;font-weight:850}
+.flagship-drawer-search>div{display:flex;gap:6px;align-items:stretch}
+.flagship-drawer-search input{min-width:0;flex:1;width:100%;padding:11px 10px;border-radius:10px;
+ font-size:12px;background:#0a1221;color:#f8fafc;border:1px solid #818cf84d}
+.flagship-drawer-search button{display:grid;place-items:center;min-width:40px;min-height:40px;
+ color:#eff6ff;border:1px solid #818cf868;background:#4f46e5b3;border-radius:10px}
+.flagship-drawer-shortcuts{display:grid;gap:6px;border-top:1px solid #ffffff20;padding-top:16px;margin-top:12px}
+.flagship-drawer-shortcuts .premium-sidebar-label{margin:0 0 7px}
+.flagship-drawer-shortcuts a{display:flex;align-items:center;gap:11px;padding:10px 12px;
+ background:#141d2f;border:1px solid #ffffff14;color:#d8e7f9;border-radius:10px;
+ text-decoration:none;font-size:12px;font-weight:750}
+.flagship-drawer-shortcuts a:hover{border-color:#818cf8;color:#fff;background:#28224e}
+.flagship-drawer-shortcuts svg{color:#67e8f9}
+.flagship-nav-menu[aria-expanded=true]{background:#4f46e5;color:#fff;border-color:#818cf8}
+.flagship-nav-menu:focus-visible,.flagship-drawer-search button:focus-visible{
+ outline:3px solid #22d3ee;outline-offset:2px}
+@media(min-width:1021px){.flagship-nav-menu{display:inline-flex}
+ .premium-shell>.premium-sidebar.flagship-workspace-drawer.sidebar-open{width:330px}}
+@media(max-width:1020px){.premium-shell>.premium-sidebar.flagship-workspace-drawer.sidebar-open{
+ z-index:130;position:fixed;width:min(88vw,340px)}}
+@media(max-width:750px){.flagship-nav-menu{display:inline-flex}
+ .premium-shell>.premium-sidebar.flagship-workspace-drawer.sidebar-open{padding:17px 12px}}
+
+/* Retain previous theme switch behavior with Pro+ layout and cards.
+ * Existing .dark styles still define the primary flagship experience. */
+.light .flagship-top{background:#fffffff0!important;border-bottom-color:#dee4f0;color:#25304b}
+.light .flagship-brand-link,.light .flagship-brand-link b{color:#192641}
+.light .flagship-nav-links{background:#f4f6fc;border-color:#dbe3f0}
+.light .flagship-nav-links a{color:#475670}
+.light .flagship-nav-links a.active,.light .flagship-nav-links a:hover{background:#e1e7fa;color:#243a71}
+.light .flagship-nav-menu,.light .flagship-search-trigger,.light .flagship-workspace-link,.light .flagship-theme-toggle{
+ color:#364868;background:#fff;border-color:#d7deec}
+.light .flagship-hero-eyebrow{color:#955f02;background:#fff3d5;border-color:#e8c169}
+.light .flagship-hero h1{color:#1b2540}
+.light .flagship-hero h1 span{background:linear-gradient(115deg,#33337a,#535ad9,#057b9d);
+ background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.light .flagship-hero-copy>p,.light .flagship-hero-points{color:#53627a}
+.light .flagship-hero-upload,.light .flagship-compare-frame,.light .flagship-metrics>div,
+.light .flagship-bento-card,.light .flagship-utilities,.light .flagship-compare-table-wrap,
+.light .flagship-plan-card,.light .flagship-command-panel{
+ background:#ffffffed;border-color:#dce3f2;color:#23304c;box-shadow:0 10px 30px #18275c10}
+.light .flagship-upload-copy strong,.light .flagship-section-head h2,.light .flagship-metrics strong,
+.light .flagship-bento-card h3,.light .flagship-plan-head>strong,.light .flagship-plan-price,
+.light .flagship-compare-table-wrap td:first-child{color:#192b4e}
+.light .flagship-upload-copy small,.light .flagship-metrics span,.light .flagship-bento-card p,
+.light .flagship-section-head p,.light .flagship-plan-sub,.light .flagship-plan-card li,
+.light .flagship-compare-table-wrap td,.light .flagship-compare-table-wrap th{color:#5d6b81}
+.light .flagship-bento-card.featured,.light .flagship-plan-card.popular{
+ background:linear-gradient(140deg,#f0f0ff,#effaff);border-color:#b5bbfc}
+.light .flagship-compare-foot,.light .flagship-compare-hint{color:#5f6c81}
+.light .flagship-compare-foot a{color:#7d5205}
+.light .flagship-command-search input{color:#202e4a!important}
+.light .flagship-command-search button{color:#203657;background:#e5ebf9}
+.light .flagship-command-results button{color:#192f4f}
+.light .flagship-command-results button.active,.light .flagship-command-results button:hover{background:#e8e9ff}
+.light .flagship-command-results small,.light .flagship-command-footer{color:#5a6880}
+.light .flagship-command-footer{background:#f4f6fc;border-color:#e1e7f3}
+.light .flagship-command-tool-icon{background:#e8e8ff}
+.light .flagship-command-results button[role=option] svg{color:#56678b}
+.light .flagship-compare-table-wrap td:last-child{color:#087754}
+.light .flagship-home .flagship-trust{background:linear-gradient(130deg,#f0f4ff,#e8f9ff);border-color:#b3baff}
+@media(prefers-reduced-motion:reduce){.premium-shell>.premium-sidebar.flagship-workspace-drawer{transition:none}}
