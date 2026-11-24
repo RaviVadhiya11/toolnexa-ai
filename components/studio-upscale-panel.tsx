@@ -187,8 +187,15 @@ export function StudioUpscalePanel({getCanvas,format='photo',disabled=false,sour
    <option value="8k">8K · up to 7680×4320 · Download Premium/Max</option>
   </select>
   {enableAI&&format==='photo'&&<>
-   <label htmlFor="studio-upscale-engine">Enhancement quality</label>
-   <select id="studio-upscale-engine" value={engine} onChange={event=>setEngine(event.target.value as 'classic'|'ai')}>
+   <span className="studio-demo-field-label">Image processing engine</span>
+   <div className="studio-v4-engine-grid" role="group" aria-label="Choose image enhancement engine">
+    <button type="button" className={engine==='classic'?'selected':''} aria-pressed={engine==='classic'}
+     onClick={()=>setEngine('classic')}><strong>⚡ Fast Browser HD</strong><small>Local, quick interpolation</small></button>
+    <button type="button" className={engine==='ai'?'selected':''} aria-pressed={engine==='ai'}
+     onClick={()=>setEngine('ai')}><strong>✦ On-device AI Detail</strong><small>Experimental neural 2× pass</small></button>
+   </div>
+   <label className="studio-v4-native-label" htmlFor="studio-upscale-engine">Engine details</label>
+   <select className="studio-v4-native-select" id="studio-upscale-engine" value={engine} onChange={event=>setEngine(event.target.value as 'classic'|'ai')}>
     <option value="classic">Classic HD · Fast, original colours</option>
     <option value="ai">AI Detail · Neural 2× pass (experimental)</option>
    </select>
