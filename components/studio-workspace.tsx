@@ -4,6 +4,7 @@ import Link from 'next/link';
 import {reserveStudioUsage,StudioQuotaNotice} from '@/components/studio-quota';
 import {StudioUpscalePanel} from '@/components/studio-upscale-panel';
 import {useStudioPremiumDownload} from '@/components/studio-premium-download';
+import {withPaidDownload} from '@/lib/download-access';
 
 type Mode='vector'|'image';
 type Design='diamond'|'flower'|'orbit'|'hex'|'waves'|'star';
@@ -136,17 +137,23 @@ export function StudioWorkspace({mode}:{mode:Mode}){
   return canvas;
  }
  async function downloadSvg(){
-  try{await reserveStudioUsage('studio-vector');saveBlob(new Blob([svg],{type:'image/svg+xml;charset=utf-8'}),'toolnexa-real-vector.svg');setMessage('SVG vector downloaded.')}
-  catch(err){setMessage(err instanceof Error?err.message:'Daily limit reached')}
+  await withPaidDownload({slug:'studio-vector',feature:'Logo Studio SVG vector download'},async()=>{
+   try{await reserveStudioUsage('studio-vector');
+    saveBlob(new Blob([svg],{type:'image/svg+xml;charset=utf-8'}),'toolnexa-real-vector.svg');
+    setMessage('SVG vector downloaded.');
+   }catch(err){setMessage(err instanceof Error?err.message:'SVG download failed');}
+  });
  }
  async function standard(){
-  setWorking(true);setMessage('');
-  try{const canvas=await makeCanvas();
-   await reserveStudioUsage(mode==='vector'?'studio-vector':'studio-enhance');
-   saveBlob(await canvasBlob(canvas),mode==='vector'?'toolnexa-vector-standard.png':'toolnexa-image-standard.png');
-   setMessage('Standard-resolution PNG downloaded.');
-  }catch(err){setMessage(err instanceof Error?err.message:'Unable to export image')}
-  finally{setWorking(false)}
+  await withPaidDownload({slug:mode==='vector'?'studio-vector':'studio-enhance',feature:'Logo & Image Studio PNG export'},async()=>{
+   setWorking(true);setMessage('');
+   try{const canvas=await makeCanvas();
+    await reserveStudioUsage(mode==='vector'?'studio-vector':'studio-enhance');
+    saveBlob(await canvasBlob(canvas),mode==='vector'?'toolnexa-vector-standard.png':'toolnexa-image-standard.png');
+    setMessage('Standard-resolution PNG downloaded.');
+   }catch(err){setMessage(err instanceof Error?err.message:'Unable to export image')}
+   finally{setWorking(false)}
+  });
  }
  async function hd(){
   await premium.run(async()=>{
