@@ -44,7 +44,7 @@ export const tools:Tool[]=[
 {slug:"sql-formatter",title:"SQL Formatter",category:"Developer" as Category,icon:"🗃️",description:"Format SQL using a structured dialect-aware formatter"},
 {slug:"hex-rgb-converter",title:"HEX / RGB Converter",category:"Developer" as Category,icon:"🌈",description:"Convert color values between HEX and RGB"},
 {slug:"timestamp-converter",title:"Timestamp Converter",category:"Developer" as Category,icon:"🕒",description:"Convert ISO dates and Unix timestamps"},
-{slug:"invoice-generator",title:"Invoice Generator",category:"Business" as Category,icon:"🧾",description:"Create a downloadable invoice PDF with itemized totals"},
+{slug:"invoice-generator",title:"Advanced Bill Maker & Invoice Generator",category:"Business" as Category,icon:"🧾",description:"Create GST and non-GST bills with logo, signature, live preview and print-ready A4 PDF"},
 {slug:"quotation-maker",title:"Quotation Maker",category:"Business" as Category,icon:"📋",description:"Create a downloadable professional quotation PDF"},
 {slug:"emi-calculator",title:"EMI Calculator",category:"Business" as Category,icon:"🏦",description:"Calculate monthly loan EMI and repayment totals"},
 {slug:"age-calculator",title:"Age Calculator",category:"Business" as Category,icon:"🎂",description:"Calculate exact age in years, months and days"},
