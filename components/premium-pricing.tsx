@@ -57,7 +57,7 @@ export function PremiumPricing({clientId,plans,enabled,yearlyEnabled,maxEnabled}
   <header className="pricing-intro">
    <span className="tier-tag">TOOLNEXA AI PREMIUM</span>
    <h1>Simple plans. More possibilities.</h1>
-   <p>Choose monthly or yearly recurring access. Yearly billing is paid upfront for 12 months and saves approximately 16% compared with paying monthly. All 60 utility tools and 11 Studio workspaces share the same daily allowance in either billing period.</p>
+   <p>Choose monthly or yearly recurring access. Yearly billing is paid upfront for 12 months and saves approximately 16% compared with paying monthly. All 60 utility tools and 12 Studio workspaces share the same daily allowance in either billing period.</p>
   </header>
   <div className="flex flex-wrap justify-center items-center gap-3 mt-6 mb-6" role="group" aria-label="Choose billing period">
    {billingPeriods.map(period=><button type="button" key={period}
@@ -145,6 +145,6 @@ export function PremiumPricing({clientId,plans,enabled,yearlyEnabled,maxEnabled}
    </section>
   </div></div>,document.body)}
   <div className="pricing-trust"><span>✓ Live PayPal subscriptions</span><span>✓ PhonePe PG India option prepared — pending activation</span><span>✓ Server-verified recurring billing only</span></div>
-  <p className="small-note mt-6 text-center">Free usage: 3 shared tool runs per UTC day across all 60 utility tools and 11 Studio workspaces. Free users can preview an upscale, but high-resolution downloads require an eligible active paid plan. Each preview operation counts toward daily usage. Starter: 500, Pro: 1,000, Premium: 1,500 daily runs; Max: 3,000 daily runs. Allowances reset at 00:00 UTC. Paid Batch Text Analyzer sizes: Starter 20, Pro 60, Premium 150, Max 300 texts per request. Guests have a per-browser counter. Signed-in usage can sync across devices after server-side account quotas are enabled. Gemini AI preview is separately capped at 3 per signed-in user and 30 site-wide daily, not a paid AI entitlement. Local-only processing cannot be fully abuse-proof.</p>
+  <p className="small-note mt-6 text-center">Free usage: 3 shared tool runs per UTC day across all 60 utility tools and 12 Studio workspaces. Free users can preview an upscale, but high-resolution downloads require an eligible active paid plan. Each preview operation counts toward daily usage. Starter: 500, Pro: 1,000, Premium: 1,500 daily runs; Max: 3,000 daily runs. Allowances reset at 00:00 UTC. Paid Batch Text Analyzer sizes: Starter 20, Pro 60, Premium 150, Max 300 texts per request. Guests have a per-browser counter. Signed-in usage can sync across devices after server-side account quotas are enabled. Gemini AI preview is separately capped at 3 per signed-in user and 30 site-wide daily, not a paid AI entitlement. Local-only processing cannot be fully abuse-proof.</p>
  </section>;
 }

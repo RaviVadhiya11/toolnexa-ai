@@ -6,13 +6,14 @@ const paths=[
  '/studio/vector','/studio/image-to-vector','/studio/convert',
  '/studio/svg-editor','/studio/enhance','/studio/background-remove',
  '/studio/retouch','/studio/restore','/studio/batch',
- '/studio/passport-social','/studio/zip-maker'
+ '/studio/passport-social','/studio/zip-maker','/studio/bill-maker'
 ];
-test('Studio landing page retains all original workspaces plus the approved ZIP Maker',()=>{
+test('Studio landing page retains all original workspaces plus ZIP Maker and Bill Maker',()=>{
  const page=read('app/studio/page.tsx');
  for(const route of paths)assert.ok(page.includes("href:'"+route+"'"),'Missing route '+route);
  const cards=[...page.matchAll(/href:'\/studio\//g)];
- assert.equal(cards.length,11,'All eleven Studio workspaces should be visible');
+ assert.equal(cards.length,paths.length,'All twelve Studio workspaces should be visible');
+ assert.deepEqual([...page.matchAll(/href:'(\/studio\/[a-z-]+)'/g)].map(m=>m[1]).sort(),[...paths].sort());
  for(const route of paths)assert.ok(read('app'+route+'/page.tsx').includes('export default function'),'No Next.js page for '+route);
 });
 test('legacy 60 tools remain unchanged',()=>{
