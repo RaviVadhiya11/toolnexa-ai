@@ -1,8 +1,6 @@
 import type {Metadata} from 'next';
+import {toolMetadata} from '@/lib/tool-seo';
+import {ToolSearchGuide} from '@/components/tool-search-guide';
 import {ZipMakerExperience} from '@/components/zip-maker-experience';
-export const metadata:Metadata={
- title:'Advanced ZIP Maker Studio — Compress Files & Folders',
- description:'Create a secure ZIP archive in your browser. Add files and folders, preserve nested paths and choose Fast, Smart or Maximum compression. Verified Starter to Max subscriptions.',
- alternates:{canonical:'/studio/zip-maker'}
-};
-export default function ZipMakerPage(){return <ZipMakerExperience/>}
+export const metadata:Metadata={...toolMetadata('studio/zip-maker','/studio/zip-maker'),alternates:{canonical:'/studio/zip-maker'}};
+export default function ZipMakerPage(){return <><ZipMakerExperience/><ToolSearchGuide seoKey="studio/zip-maker" studio/></>}

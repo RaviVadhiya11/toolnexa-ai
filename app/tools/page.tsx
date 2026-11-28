@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import type {Metadata} from 'next';
-export const metadata:Metadata={title:'All 60 Free Online Tools',description:'Find free browser-based PDF, image, text, developer and business utilities. Browse all 60 ToolNexa AI tools.',alternates:{canonical:'/tools'}};
+import {tools,categories} from '@/lib/tools';
+import {toolSeo} from '@/lib/tool-seo-data';
+export const metadata:Metadata={title:'Online Tools Directory – PDF, Image, Business & Developer',description:'Browse 60 online tools for PDF files, image conversions, invoices, text and developer tasks. Preview in your browser; paid plans unlock exports.',alternates:{canonical:'/tools'}};
 import {Suspense} from 'react';
 import {ToolList} from '@/components/tool-list';
 import {Sparkles,Layers3} from 'lucide-react';
@@ -29,4 +31,5 @@ export default function ToolsPage(){return <div className="premium-tools-page">
   </div>
  </section>
  <Suspense fallback={<div className="panel mt-5">Loading tools…</div>}><ToolList/></Suspense>
+ <section className="tool-detail-info mt-5" aria-labelledby="directory-heading"><h2 id="directory-heading">Browse all tools by category</h2><p>Find a specific tool by its task, format or category.</p>{categories.filter(category=>category!=='All').map(category=><details key={category} className="mt-4"><summary className="font-semibold">{category} tools</summary><div className="tool-related-grid mt-2">{tools.filter(tool=>tool.category===category).map(tool=><Link key={tool.slug} href={'/tools/'+tool.slug} className="tool-related-card"><strong>{toolSeo[tool.slug].title}</strong></Link>)}</div></details>)}</section>
  </div>}

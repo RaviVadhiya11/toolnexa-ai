@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type {Metadata} from 'next';
-export const metadata:Metadata={title:'12 Creator Studio Workspaces — Image, Vector & ZIP Tools',description:'Explore 12 ToolNexa AI Creator Studio workspaces for image enhancement, vector conversion, background removal, ZIP Maker, invoices and passport photo sizes.',alternates:{canonical:'/studio'}};
+export const metadata:Metadata={title:'Online Image, Vector, ZIP & Invoice Studio Tools',description:'Explore 12 ToolNexa AI Creator Studio workspaces for image enhancement, vector conversion, background removal, ZIP Maker, invoices and passport photo sizes.',alternates:{canonical:'/studio'}};
 const items=[
  {href:'/studio/bill-maker',icon:'🧾',title:'Bill & Invoice Maker Studio',desc:'Create professional GST and non-GST bills with logo, signature, live A4 preview, PDF and print.',tag:'NEW · Business'},
  {href:'/studio/zip-maker',icon:'▣',title:'Advanced ZIP Maker Studio',desc:'Create professional ZIP archives from files and folders locally, with real compression, nested paths and Starter–Max limits.',tag:'NEW · Verified ZIP'},
