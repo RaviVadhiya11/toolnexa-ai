@@ -42,9 +42,22 @@ async function renderBill(b:Bill,scale:number):Promise<string[]>{
  const sy=Math.max(ty,ny)+12;if(signature){if(sy+74>788){finish();start(false);image(signature,390,y+5,155,50);text('Authorized signature',551,y+69,9,false,'#64748b','right');}else{image(signature,390,sy,155,50);text('Authorized signature',551,sy+64,9,false,'#64748b','right');}}
  finish();return pages;
 }
-async function reserve(){const response=await fetch('/api/usage/quota',{cache:'no-store',credentials:'same-origin'}),q=await response.json();if(!response.ok||!isUsagePlan(q.plan)||!['device','account','browser'].includes(q.mode))throw Error(q.error||'Unable to verify daily usage.');const limit=dailyLimits[q.plan],key=quotaKey(q.mode==='device'?null:q.userId),used=q.mode==='device'?await reconcileFreeDeviceUsage(Number(q.used),q.userId):q.mode==='account'?Number(q.used):readUsage(key);
- const limitError=()=>{showDownloadGate({kind:'limit',feature:'Bill Maker',requiredTier:'Starter',currentPlan:q.plan,message:'Daily allowance reached. Upgrade or return after the UTC reset.'});throw Error('Daily allowance reached.');};if(!Number.isSafeInteger(used)||used<0)throw Error('Invalid usage response.');if(used>=limit)limitError();if(q.mode==='browser'){if(consumeUsage(key,limit)===null)limitError();return;}
- const r=await fetch('/api/usage/quota',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug:SLUG,...(q.mode==='device'?{clientUsed:readUsage(quotaKey(null))}:{})})});const d=await r.json();if(r.status===429)limitError();if(!r.ok||!Number.isSafeInteger(d.used))throw Error(d.error||'Unable to reserve daily usage.');if(q.mode==='device')mirrorFreeDeviceUsage(d.used);
+async function reserve(){
+ const response=await fetch('/api/usage/quota',{cache:'no-store',credentials:'same-origin'});
+ const q=await response.json() as {plan?:unknown;mode?:unknown;used?:unknown;userId?:unknown;error?:string};
+ if(!response.ok||!isUsagePlan(q.plan)||!['device','account','browser'].includes(String(q.mode)))throw Error(q.error||'Unable to verify daily usage.');
+ const plan=q.plan,mode=q.mode,userId=typeof q.userId==='string'?q.userId:null;
+ const limit=dailyLimits[plan],key=quotaKey(mode==='device'?null:userId);
+ const used=mode==='device'?await reconcileFreeDeviceUsage(Number(q.used),userId):mode==='account'?Number(q.used):readUsage(key);
+ const limitError=()=>{showDownloadGate({kind:'limit',feature:'Bill Maker',requiredTier:'Starter',currentPlan:plan,message:'Daily allowance reached. Upgrade or return after the UTC reset.'});throw Error('Daily allowance reached.');};
+ if(!Number.isSafeInteger(used)||used<0)throw Error('Invalid usage response.');
+ if(used>=limit)limitError();
+ if(mode==='browser'){if(consumeUsage(key,limit)===null)limitError();return;}
+ const r=await fetch('/api/usage/quota',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug:SLUG,...(mode==='device'?{clientUsed:readUsage(quotaKey(null))}:{})})});
+ const d=await r.json() as {used?:unknown;error?:string};
+ if(r.status===429)limitError();
+ if(!r.ok||typeof d.used!=='number'||!Number.isSafeInteger(d.used)||d.used<0)throw Error(d.error||'Unable to reserve daily usage.');
+ if(mode==='device')mirrorFreeDeviceUsage(d.used);
 }
 function printPages(pages:string[]){const frame=document.createElement('iframe');frame.title='Print bill';frame.style.cssText='position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;bottom:0;right:0';frame.onload=()=>{const win=frame.contentWindow;if(!win){frame.remove();return;}win.onafterprint=()=>frame.remove();win.focus();win.print();setTimeout(()=>frame.remove(),120000);};frame.srcdoc='<!doctype html><html><head><title>Bill</title><style>@page{size:A4;margin:0}body{margin:0}img{width:210mm;height:297mm;display:block;break-after:page}img:last-child{break-after:auto}</style></head><body>'+pages.map(p=>'<img src="'+p+'" alt="Bill page">').join('')+'</body></html>';document.body.append(frame);}
 export function BillMaker(){
