@@ -14,19 +14,19 @@ const siteSchema={
    publisher:{'@id':site+'#organization'},inLanguage:'en'},
   {'@type':'WebApplication','@id':site+'#application',name:'ToolNexa AI',url:site,
    description:'60 browser utilities and 12 Creator Studio workspaces for PDF, image, text, vector, ZIP and developer tasks.',
-   applicationCategory:'UtilitiesApplication',operatingSystem:'Web browser',isAccessibleForFree:true}
+   applicationCategory:'UtilitiesApplication',operatingSystem:'Web browser'}
  ]
 };
 export const metadata:Metadata={
  metadataBase:new URL(site),
- title:{default:'ToolNexa AI | 60 Utility Tools + 12 Creator Studio Workspaces',template:'%s | ToolNexa AI'},
- description:'ToolNexa AI includes 60 browser utility tools and 12 specialist Creator Studio workspaces for images, PDF, ZIP, text and development with verified premium exports.',
+ title:{default:'ToolNexa AI – Online PDF, Image, Invoice & AI Tools',template:'%s | ToolNexa AI'},
+ description:'Merge PDFs, resize photos, create GST invoices, remove backgrounds and convert files with 60 online utilities and 12 Studio workspaces. Paid file exports.',
  applicationName:'ToolNexa AI',
  ...(process.env.GOOGLE_SITE_VERIFICATION?{verification:{google:process.env.GOOGLE_SITE_VERIFICATION}}:{}),
  // Public indexing remains explicit and enabled only in the launched Production environment.
  robots:{index:process.env.SITE_PUBLIC_LAUNCH_ENABLED==='true',follow:process.env.SITE_PUBLIC_LAUNCH_ENABLED==='true'},
  openGraph:{
-  type:'website',siteName:'ToolNexa AI',url:site,
+  type:'website',siteName:'ToolNexa AI',url:site,locale:'en_US',
   title:'ToolNexa AI — 60 Utility Tools + 12 Studio Workspaces',
   description:'PDF, Image, Text, Developer and Business tools in one premium workspace.'
  },
