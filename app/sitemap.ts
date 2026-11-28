@@ -2,7 +2,7 @@ import type {MetadataRoute} from 'next';
 import {tools} from '@/lib/tools';
 import {CANONICAL_SITE_URL} from '@/lib/site-url';
 
-const mainPages=['','/about','/tools','/studio','/pricing','/privacy','/terms','/billing','/support'] as const;
+const mainPages=['','/about','/tools','/studio','/pricing','/privacy','/terms','/billing','/support','/contact'] as const;
 const studioPages=[
  '/studio/enhance','/studio/background-remove','/studio/batch',
  '/studio/convert','/studio/image-to-vector','/studio/restore',

@@ -1,4 +1,5 @@
 import type {Metadata,Viewport} from 'next';
+import {SUPPORT_EMAIL} from '@/lib/contact';
 import {CANONICAL_SITE_URL} from '@/lib/site-url';
 import './globals.css';
 import './neon-glass-3d.css';
@@ -9,7 +10,7 @@ const site=CANONICAL_SITE_URL;
 const siteSchema={
  '@context':'https://schema.org',
  '@graph':[
-  {'@type':'Organization','@id':site+'#organization',name:'ToolNexa AI',url:site},
+  {'@type':'Organization','@id':site+'#organization',name:'ToolNexa AI',url:site,email:SUPPORT_EMAIL,contactPoint:{'@type':'ContactPoint',contactType:'customer support',email:SUPPORT_EMAIL,url:site+'/contact'}},
   {'@type':'WebSite','@id':site+'#website',name:'ToolNexa AI',url:site,
    publisher:{'@id':site+'#organization'},inLanguage:'en'},
   {'@type':'WebApplication','@id':site+'#application',name:'ToolNexa AI',url:site,

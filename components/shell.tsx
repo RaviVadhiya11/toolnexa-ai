@@ -1,12 +1,14 @@
 'use client';
 import Link from 'next/link';
+import {SupportEmail} from '@/components/support-email';
+import {SUPPORT_MAILTO} from '@/lib/contact';
 import {usePathname,useRouter} from 'next/navigation';
 import {FlagshipCommandPalette} from '@/components/flagship-command-palette';
 import {useEffect,useRef,useState} from 'react';
 import {AccountStatus} from '@/components/account-status';
 import {DownloadAccessDialog} from '@/components/download-access-dialog';
 import {tools} from '@/lib/tools';
-import {ShieldCheck,Home,LayoutGrid,LayoutDashboard,Crown,Moon,Sun,Search,FileText,Image as ImageIcon,Code2,Briefcase,Type,Menu,X,Sparkles,ArrowUpRight,LifeBuoy,CreditCard,Clapperboard} from 'lucide-react';
+import {ShieldCheck,Home,LayoutGrid,LayoutDashboard,Crown,Moon,Sun,Search,FileText,Image as ImageIcon,Code2,Briefcase,Type,Menu,X,Sparkles,ArrowUpRight,LifeBuoy,CreditCard,Clapperboard,Mail} from 'lucide-react';
 const nav=[{href:'/',label:'Home',icon:Home},{href:'/tools',label:'All Tools',icon:LayoutGrid},{href:'/studio',label:'Creator Studio',icon:Sparkles},{href:'/dashboard',label:'Dashboard',icon:LayoutDashboard},{href:'/pricing',label:'Pricing',icon:Crown},{href:'/admin',label:'Admin',icon:ShieldCheck}];
 const mobileNav=[{href:'/',label:'Home',icon:Home},{href:'/tools',label:'Tools',icon:LayoutGrid},{href:'/studio',label:'Studio',icon:Sparkles},{href:'/dashboard',label:'Dashboard',icon:LayoutDashboard},{href:'/pricing',label:'Plans',icon:Crown}];
 const groups=[{name:'Text',icon:Type},{name:'Image',icon:ImageIcon},{name:'PDF',icon:FileText},{name:'Developer',icon:Code2},{name:'Business',icon:Briefcase},{name:'Creator',icon:Clapperboard}] as const;
@@ -131,14 +133,16 @@ export function Shell({children}:{children:React.ReactNode}){
       <Link href="/pricing">Premium Pricing</Link>
       <Link href="/dashboard">My Dashboard</Link>
       <Link href="/support">Help &amp; Support</Link>
+      <Link href="/contact">Contact Us</Link>
      </nav>
     </div>
     <section className="editorial-footer-contact-section" aria-labelledby="footer-contact-heading">
       <div className="editorial-contact-copy">
        <span className="editorial-contact-badge"><LifeBuoy size={19}/></span>
-       <div><h2 id="footer-contact-heading">CONTACT US &amp; SUPPORT</h2><p>Need help with tools or your subscription? Find the right support option below.</p></div>
+       <div><h2 id="footer-contact-heading">CONTACT US &amp; SUPPORT</h2><p>Need help with tools or your subscription? Email <SupportEmail/> or find the right support option below.</p></div>
       </div>
       <div className="editorial-contact-actions">
+       <a href={SUPPORT_MAILTO} className="editorial-contact-button"><Mail size={17}/> Email Support</a>
        <Link href="/support" className="editorial-contact-button"><LifeBuoy size={17}/> Help Center</Link>
        <Link href="/support" className="editorial-contact-button"><Briefcase size={17}/> Report an Issue <ArrowUpRight size={15}/></Link>
        <Link href="/billing" className="editorial-contact-button"><CreditCard size={17}/> Billing Help</Link>
@@ -150,7 +154,7 @@ export function Shell({children}:{children:React.ReactNode}){
       <Link href="/privacy">Privacy Policy</Link>
       <Link href="/terms">Terms &amp; Conditions</Link>
       <Link href="/billing">Billing &amp; Cancellation</Link>
-      <Link href="/support">Contact &amp; Support</Link>
+      <Link href="/contact">Contact &amp; Support</Link>
      </nav>
      <p>© {new Date().getFullYear()} ToolNexa AI. All rights reserved.</p>
     </div>
