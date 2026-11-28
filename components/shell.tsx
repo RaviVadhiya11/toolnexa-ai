@@ -72,6 +72,7 @@ export function Shell({children}:{children:React.ReactNode}){
     <Link href="/studio/image-to-vector"><LayoutGrid size={18}/> Image to Vector</Link>
     <Link href="/studio/batch"><Crown size={18}/> Batch Pro+ ZIP</Link>
     <Link href="/studio/passport-social"><ImageIcon size={18}/> Passport &amp; Social Sizes</Link>
+    <Link href="/studio/bill-maker"><FileText size={18}/> Bill &amp; Invoice Maker</Link>
     <Link href="/studio/zip-maker"><FileText size={18}/> Advanced ZIP Maker</Link>
    </div>
    <div className="premium-sidebar-upgrade">
@@ -114,7 +115,7 @@ export function Shell({children}:{children:React.ReactNode}){
       <Link href="/" className="brand premium-brand editorial-footer-brand"><span className="brand-icon"><Sparkles size={23}/></span><span>ToolNexa <em>AI</em></span></Link>
       <h2 id="footer-about-title">ABOUT TOOLNEXA AI</h2>
       <p>All your everyday PDF, image, text, developer, business and creator tools in one smart workspace.</p>
-      <p className="editorial-footer-caption">60 practical utility tools and 11 specialist Creator Studio workspaces.</p>
+      <p className="editorial-footer-caption">60 practical utility tools and 12 specialist Creator Studio workspaces.</p>
       <Link href="/support" className="editorial-footer-contact"><span className="editorial-footer-contact-icon"><Briefcase size={17}/></span>Report a technical issue <ArrowUpRight size={17}/></Link>
      </section>
      <nav className="editorial-footer-column" aria-labelledby="footer-categories-title">

@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import type {Metadata} from 'next';
-export const metadata:Metadata={title:'11 Creator Studio Workspaces — Image, Vector & ZIP Tools',description:'Explore 11 ToolNexa AI Creator Studio workspaces for image enhancement, vector conversion, background removal, ZIP Maker and passport photo sizes.',alternates:{canonical:'/studio'}};
+export const metadata:Metadata={title:'12 Creator Studio Workspaces — Image, Vector & ZIP Tools',description:'Explore 11 ToolNexa AI Creator Studio workspaces for image enhancement, vector conversion, background removal, ZIP Maker, invoices and passport photo sizes.',alternates:{canonical:'/studio'}};
 const items=[
+ {href:'/studio/bill-maker',icon:'🧾',title:'Bill & Invoice Maker Studio',desc:'Create professional GST and non-GST bills with logo, signature, live A4 preview, PDF and print.',tag:'NEW · Business'},
  {href:'/studio/zip-maker',icon:'▣',title:'Advanced ZIP Maker Studio',desc:'Create professional ZIP archives from files and folders locally, with real compression, nested paths and Starter–Max limits.',tag:'NEW · Verified ZIP'},
  {href:'/studio/vector',icon:'✦',title:'Real Vector Studio',desc:'Generate editable SVG designs and open the image tracer.',tag:'Vector'},
  {href:'/studio/image-to-vector',icon:'◈',title:'Image to Vector Pro',desc:'Upload PNG, JPG or WebP and trace actual editable SVG paths.',tag:'Real SVG'},
@@ -16,8 +17,8 @@ const items=[
 ] as const;
 export default function StudioHome(){return <main className="studio-home suite-home">
  <span className="studio-eyebrow">NEON GLASS 3D · TOOLNEXA CREATOR STUDIO</span>
- <h1>Creative AI, Image, Vector &amp; ZIP Suite <span className="suite-count">11 Workspaces</span></h1>
- <p>Create SVG vector paths from your own images, clean photographs, edit designs and export professional files. Free users share 3 daily runs. Starter adds 2× upscale, Pro adds 4×/4K, and Premium/Max add up to 8K, and all paid tiers can create ZIP archives based on their plan limits.</p>
+ <h1>Creative AI, Image, Vector, ZIP &amp; Billing Suite <span className="suite-count">12 Workspaces</span></h1>
+ <p>Create professional invoices and SVG vector paths from your own images, clean photographs, edit designs and export professional files. Free users share 3 daily runs. Starter adds 2× upscale, Pro adds 4×/4K, and Premium/Max add up to 8K, and all paid tiers can create ZIP archives based on their plan limits.</p>
  <div className="suite-home-grid">{items.map(item=><Link href={item.href} key={item.href} className="suite-tile">
   <div className="suite-tile-art"><span>{item.icon}</span><small>{item.tag}</small></div>
   <strong>{item.title}</strong><p>{item.desc}</p><b>Open Tool →</b>

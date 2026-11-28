@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import {usePathname} from 'next/navigation';
 const tools=[
+ {path:'/studio/bill-maker',name:'Bill & Invoice',icon:'🧾'},
  {path:'/studio/vector',name:'Logo Studio',icon:'✦'},
  {path:'/studio/image-to-vector',name:'Vectorize',icon:'◇'},
  {path:'/studio/convert',name:'Convert',icon:'⇄'},

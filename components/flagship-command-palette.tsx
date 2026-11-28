@@ -6,6 +6,7 @@ import {Search,X,ArrowUp,ArrowDown,CornerDownLeft,Sparkles,LayoutGrid} from 'luc
 import {tools} from '@/lib/tools';
 
 const studio=[
+ {href:'/studio/bill-maker',name:'Bill & Invoice Maker Studio',detail:'GST · invoice · signature · PDF · print',icon:'🧾'},
  {href:'/studio/enhance',name:'AI Detail Enhancer & 8K Upscale',detail:'Image · enhance · 2× / 4× / 4K / 8K',icon:'✦'},
  {href:'/studio/image-to-vector',name:'Image to Vector',detail:'Trace raster art into editable SVG paths',icon:'◇'},
  {href:'/studio/vector',name:'Logo & Vector Studio',detail:'Create logos and vector graphics',icon:'✧'},
@@ -60,7 +61,7 @@ export function FlagshipCommandPalette(){
       aria-label="Search utility and Studio tools" placeholder="Search Studio tools, PDF, images, text, developers…"/>
     <button type="button" onClick={()=>setOpen(false)} aria-label="Close search"><X size={20}/></button>
    </div>
-   <div className="flagship-command-meta"><Sparkles size={15}/> 11 Studio workspaces · 60 working utilities</div>
+   <div className="flagship-command-meta"><Sparkles size={15}/> 12 Studio workspaces · 60 working utilities</div>
    <div className="flagship-command-results" role="listbox" aria-label="Tools matching your search">
     {results.length?results.map((item,index)=><button key={item.href} type="button" role="option"
       aria-selected={index===selected} className={index===selected?'active':''}

@@ -10,6 +10,7 @@ import {subscriptionPrices} from '@/lib/subscription-pricing';
 import {ArrowRight,Sparkles,ShieldCheck,Zap,Layers3,FileText,Image as ImageIcon,Code2,Check,ChevronRight,Crown,Lock,PenTool,Scissors,WandSparkles,Workflow,Palette,SlidersHorizontal,ScanText,FileArchive} from 'lucide-react';
 
 const studioItems=[
+ {href:'/studio/bill-maker',title:'Bill & Invoice Maker Studio',desc:'Professional GST invoices, business logo, signature, A4 preview and PDF export',tag:'NEW · Billing',icon:FileText},
  {href:'/studio/enhance',title:'AI Photo Enhancer & Upscale',desc:'Local tone, neural 2× detail option and up to 8K export',tag:'8K · Premium+',icon:WandSparkles},
  {href:'/studio/image-to-vector',title:'Image to Real SVG Vector',desc:'Trace raster artwork into editable SVG paths',tag:'Real SVG',icon:PenTool},
  {href:'/studio/background-remove',title:'Background Remover',desc:'AI cutout or precise solid-color cleanup',tag:'AI / Local',icon:Scissors},
@@ -34,7 +35,7 @@ export default function Home(){return <div className="premium-home flagship-home
   <div className="flagship-hero-copy">
    <span className="flagship-hero-eyebrow"><span/> <Crown size={15}/> ALL-IN-ONE TOOLS · NEON GLASS 3D</span>
    <h1>60+ AI &amp; Utility Tools <span>for Creators, Students &amp; Professionals.</span></h1>
-   <p>Edit, convert, compress and create with 60 practical utility tools and 11 Creator Studio workspaces—all in one responsive platform.</p>
+   <p>Edit, convert, compress and create with 60 practical utility tools and 12 Creator Studio workspaces—all in one responsive platform.</p>
    <div className="flagship-hero-actions">
     <Link className="button" href="/tools"><Layers3 size={18}/> Explore All Tools <ArrowRight size={16}/></Link>
     <Link className="button outline" href="/studio"><Sparkles size={17}/> Open AI Studio</Link>
@@ -47,6 +48,7 @@ export default function Home(){return <div className="premium-home flagship-home
  </section>
  <nav className="flagship-classic-shortcuts" aria-label="Quick access to the original tool categories and editors">
   <span>QUICK ACCESS</span>
+  <Link href="/studio/bill-maker"><FileText size={16}/> Bill &amp; Invoice Maker</Link>
   <Link href="/studio/zip-maker"><FileArchive size={16}/> ZIP Maker</Link>
   <Link href="/studio/enhance"><Sparkles size={16}/> Enhance Image</Link>
   <Link href="/studio/passport-social"><ImageIcon size={16}/> Passport / Social</Link>
@@ -57,7 +59,7 @@ export default function Home(){return <div className="premium-home flagship-home
   <Link href="/dashboard"><Crown size={16}/> My Workspace</Link>
  </nav>
  <section className="flagship-metrics" aria-label="ToolNexa product features">
-  <div><strong>60 + 11</strong><span>Utilities + Studio workspaces</span></div>
+  <div><strong>60 + 12</strong><span>Utilities + Studio workspaces</span></div>
   <div><strong>Up to 8K</strong><span>Plan-gated export resolution</span></div>
   <div><strong>3 / day</strong><span>Shared Free tool runs</span></div>
   <div><strong>PayPal</strong><span>Verified subscription checkout</span></div>
@@ -72,7 +74,7 @@ export default function Home(){return <div className="premium-home flagship-home
  </section>
  <section className="flagship-section" aria-labelledby="flagship-studio-title">
   <div className="flagship-section-head"><div><span className="flagship-kicker gold">CREATOR STUDIO</span>
-    <h2 id="flagship-studio-title">11 premium-style Creator Studio workspaces</h2>
+    <h2 id="flagship-studio-title">12 premium-style Creator Studio workspaces</h2>
     <p>Open a real editor, not a simulated demo screen. See original and processed results in the same stage.</p></div>
    <Link href="/studio">All Studio tools <ArrowRight size={16}/></Link></div>
   <div className="flagship-studio-bento">

@@ -4,16 +4,16 @@ import {readFileSync} from 'node:fs';
 
 const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 
-test('Tools page Studio promotion stays compact with short copy and 4 real shortcuts',()=>{
+test('Tools page Studio promotion stays compact with short copy and 5 real shortcuts',()=>{
  const page=read('app/tools/page.tsx');
  assert.match(page,/className="tools-studio-spotlight"/);
- assert.match(page,/11 Studios/);
+ assert.match(page,/12 Studios/);
  assert.match(page,/Create more with/);
  assert.match(page,/ToolNexa Studio/);
  assert.match(page,/tools-studio-spotlight-actions/);
- for(const path of ['/studio','/studio/image-to-vector','/studio/passport-social','/studio/zip-maker'])
+ for(const path of ['/studio','/studio/image-to-vector','/studio/passport-social','/studio/zip-maker','/studio/bill-maker'])
   assert.ok(page.includes('href="'+path+'"'),'Missing Studio shortcut '+path);
- assert.doesNotMatch(page,/NEW: 11 Creator Studio Workspaces/);
+ assert.doesNotMatch(page,/NEW: 12 Creator Studio Workspaces/);
  assert.doesNotMatch(page,/real Premium\/Max batch ZIP processing/);
  assert.match(page,/<ToolList\/>/);
 });

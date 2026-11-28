@@ -9,11 +9,11 @@ export default function ToolsPage(){return <div className="premium-tools-page">
  <section className="tools-studio-spotlight" aria-labelledby="tools-studio-spotlight-title">
   <div className="tools-studio-spotlight-top">
    <span className="tools-studio-spotlight-kicker"><Sparkles size={15} aria-hidden="true"/> CREATOR WORKSPACES</span>
-   <span className="tools-studio-spotlight-count">11 Studios</span>
+   <span className="tools-studio-spotlight-count">12 Studios</span>
   </div>
   <div className="tools-studio-spotlight-content">
    <h2 id="tools-studio-spotlight-title">Create more with <span>ToolNexa Studio</span></h2>
-   <p>Enhance images, make vectors, resize passport photos and create ZIP files—all in one workspace.</p>
+   <p>Enhance images, make vectors, resize passport photos, create invoices and ZIP files—all in one workspace.</p>
   </div>
   <div className="tools-studio-spotlight-tags" aria-label="Featured Studio capabilities">
    <span>✦ Image &amp; Vector</span><span>✦ Passport &amp; Social</span><span>✦ ZIP &amp; PDF</span>
@@ -23,6 +23,7 @@ export default function ToolsPage(){return <div className="premium-tools-page">
    <nav className="tools-studio-shortcuts" aria-label="Popular Studio tools">
     <Link href="/studio/image-to-vector">Image to Vector <span aria-hidden="true">↗</span></Link>
     <Link href="/studio/passport-social">Passport Photos <span aria-hidden="true">↗</span></Link>
+    <Link href="/studio/bill-maker">Bill &amp; Invoice <span aria-hidden="true">↗</span></Link>
     <Link href="/studio/zip-maker">ZIP Maker <span aria-hidden="true">↗</span></Link>
    </nav>
   </div>
