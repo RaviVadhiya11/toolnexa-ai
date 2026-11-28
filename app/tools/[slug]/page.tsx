@@ -2,6 +2,7 @@ import Link from 'next/link';
 import {notFound} from 'next/navigation';
 import type {Metadata} from 'next';
 import {tools} from '@/lib/tools';
+import {BillMaker} from '@/components/bill-maker';
 import {ToolRunner} from '@/components/tool-runner';
 import {AdvancedToolRunner} from '@/components/advanced-tool-runner';
 import {YouTubeThumbnailDownloader} from '@/components/youtube-thumbnail-downloader';
@@ -38,10 +39,10 @@ export default async function ToolPage({params}:{params:Promise<{slug:string}>})
  return <div className="tool-detail-page"><SeoJsonLd data={schema}/>
   <nav className="tool-breadcrumb" aria-label="Breadcrumb"><Link href="/tools">All Tools</Link><span>›</span><span>{tool.category}</span><span>›</span><strong>{tool.title}</strong></nav>
   <header className="tool-detail-hero"><div className="tool-detail-hero-icon">{tool.icon}</div><div className="tool-detail-hero-main"><span className="tool-detail-category">{tool.category} TOOL · FREE DAILY ALLOWANCE</span><h1>{tool.title}</h1><p>{tool.description}. Easy to use with a shared daily allowance and optional higher subscriber limits.</p></div></header>
-  {slug==='youtube-thumbnail-downloader'?<YouTubeThumbnailDownloader/>:tools.findIndex(t=>t.slug===slug)<20?<ToolRunner key={slug} tool={tool}/>:<AdvancedToolRunner key={slug} tool={tool}/>}
+  {slug==='invoice-generator'?<BillMaker/>:slug==='youtube-thumbnail-downloader'?<YouTubeThumbnailDownloader/>:tools.findIndex(t=>t.slug===slug)<20?<ToolRunner key={slug} tool={tool}/>:<AdvancedToolRunner key={slug} tool={tool}/>}
   <section className="tool-detail-info">
    <h2>How to use this tool</h2>
-   {slug==='youtube-thumbnail-downloader'?<div className="tool-info-steps">
+   {slug==='invoice-generator'?<div className="tool-info-steps"><div><span>01</span><strong>Set up your business</strong><p>Add business, customer, logo and signature details.</p></div><div><span>02</span><strong>Build your bill</strong><p>Add items, discounts, tax and payments, then review the live preview.</p></div><div><span>03</span><strong>Export or print</strong><p>Use your existing subscription and daily allowance to save or print the A4 bill.</p></div></div>:slug==='youtube-thumbnail-downloader'?<div className="tool-info-steps">
     <div><span>01</span><strong>Paste a YouTube link</strong><p>The tool automatically detects video, Shorts, live or youtu.be links.</p></div>
     <div><span>02</span><strong>Preview every available size</strong><p>Only real thumbnails are displayed; missing maximum-resolution images are omitted.</p></div>
     <div><span>03</span><strong>Choose quality &amp; download</strong><p>Preview freely, then download the selected original JPG with a verified subscription.</p></div>

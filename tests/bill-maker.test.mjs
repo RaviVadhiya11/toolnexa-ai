@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import ts from 'typescript';
+const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
+const js=ts.transpileModule(read('lib/bill-maker.ts'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText;
+const {billTotals,newItem,validBillItem}=await import('data:text/javascript;base64,'+Buffer.from(js).toString('base64'));
+test('discount, split GST, interstate GST, paid and balance',()=>{const item={...newItem(),description:'Service',quantity:'2',rate:'100',discount:'10',tax:'18'};assert.ok(validBillItem(item));const split=billTotals([item],'split','100');assert.equal(split.subtotal,200);assert.equal(split.discount,20);assert.equal(split.cgst,16.2);assert.equal(split.sgst,16.2);assert.equal(split.total,212.4);assert.equal(split.balance,112.4);assert.equal(billTotals([item],'igst','0').igst,32.4);assert.equal(billTotals([item],'none','200').overpaid,20);});
+test('reject invalid item inputs',()=>{assert.equal(validBillItem(newItem()),false);assert.equal(validBillItem({...newItem(),description:'x',quantity:'-1'}),false);assert.equal(validBillItem({...newItem(),description:'x',tax:'101'}),false);});
+test('bill maker routed and uses shared authorization and quota',()=>{assert.match(read('app/tools/[slug]/page.tsx'),/<BillMaker\/>/);const c=read('components/bill-maker.tsx');for(const token of ['withPaidDownload','/api/usage/quota','renderBill','printPages','jsPDF','image/png'])assert.ok(c.includes(token));});
