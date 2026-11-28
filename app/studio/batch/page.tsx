@@ -1,6 +1,6 @@
 import type {Metadata} from 'next';
+import {toolMetadata} from '@/lib/tool-seo';
+import {ToolSearchGuide} from '@/components/tool-search-guide';
 import {StudioBatchProcessor} from '@/components/studio-batch-processor';
-export const metadata:Metadata={title:'Batch Image Enhancer & ZIP Export',description:'Process up to eight local images into a ZIP with real Premium/Max subscription verification and daily usage limits.',
- alternates:{canonical:'/studio/batch'}
-};
-export default function BatchPage(){return <StudioBatchProcessor/>;}
+export const metadata:Metadata={...toolMetadata('studio/batch','/studio/batch'),alternates:{canonical:'/studio/batch'}};
+export default function BatchPage(){return <><StudioBatchProcessor/><ToolSearchGuide seoKey="studio/batch" studio/></>}
